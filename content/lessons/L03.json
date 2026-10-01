@@ -1,0 +1,208 @@
+{
+  "id": "L03",
+  "version": 1,
+  "status": "authored",
+  "title": "Build a tiny story machine",
+  "zone": "Prediction Playground",
+  "minutes": 30,
+  "prerequisites": [
+    "L02"
+  ],
+  "objectives": [
+    "Generate text by repeatedly selecting a next word.",
+    "Explain a bigram toy's limited context and stopping condition."
+  ],
+  "prediction": "If your toy remembers only the previous word, can it reliably keep a character's name from ten sentences ago? Why or why not?",
+  "explanation": [
+    "A bigram is a pair of adjacent items. Our toy reads word pairs such as robots → like and like → puzzles. It learns how often each next word followed the current word.",
+    "To generate, start with robots, select its most common next word, append that word, and repeat. Each new word creates the next step's context. Here the model's context is only one word.",
+    "An end marker tells the toy when a sentence ends. A maximum-step limit prevents endless loops when the learned transitions cycle. Useful chat apps also need output limits and interruption handling.",
+    "This small machine can repeat a trained phrase but struggles to combine ideas sensibly. A bigger context and a different model architecture are needed for richer behavior; scaling a dictionary alone does not reproduce an LLM."
+  ],
+  "analogy_limit": "The story chain demonstrates repeated prediction. It only uses adjacent-word counts and deterministic most-common selection, not transformer attention or an actual hosted model's tokenizer.",
+  "python_example": {
+    "code": "from collections import Counter, defaultdict\n\ndata = ['robots like puzzles', 'robots like puzzles', 'robots eat rice']\ntransitions = defaultdict(Counter)\nfor sentence in data:\n    words = sentence.split() + ['<END>']\n    for current, following in zip(words, words[1:]):\n        transitions[current][following] += 1\n\nword = 'robots'\noutput = [word]\nfor _ in range(8):\n    options = transitions.get(word)\n    if not options:\n        break\n    word = options.most_common(1)[0][0]\n    if word == '<END>':\n        break\n    output.append(word)\nprint(' '.join(output))\n",
+    "expected_output": "robots like puzzles\n",
+    "walkthrough": [
+      "defaultdict(Counter) creates an empty counter when a new current word is observed during learning.",
+      "zip(words, words[1:]) pairs each word with the next one. The end marker becomes a learned next item.",
+      "The generation loop chooses the most frequent next word and appends it to a list.",
+      "The loop stops at END, an unknown transition, or eight steps. join() converts the list into text."
+    ]
+  },
+  "game": {
+    "id": "L03-game",
+    "type": "choice_rounds",
+    "title": "Story Chain",
+    "instructions": "Use the toy's transition counts to predict a chain. Do not choose the funniest story unless the counts support it. Two correct rounds passes.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L03-game-r1",
+        "prompt": "After robots, the counts are like: 2 and eat: 1. What does our most-common rule choose?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "like"
+          },
+          {
+            "id": "b",
+            "text": "eat"
+          },
+          {
+            "id": "c",
+            "text": "dance"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Like has the highest observed count.",
+          "b": "Eat is observed but less common under this deterministic rule.",
+          "c": "Dance was not observed after robots in this training data."
+        }
+      },
+      {
+        "id": "L03-game-r2",
+        "prompt": "The toy selects <END> after puzzles. What happens?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "The app invents another word"
+          },
+          {
+            "id": "b",
+            "text": "Generation stops without printing the marker"
+          },
+          {
+            "id": "a",
+            "text": "The model retrains"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The marker is a generation stopping signal, not a training action.",
+          "b": "The code checks the marker before appending it.",
+          "c": "The stopping check exits the loop instead of guessing more."
+        }
+      },
+      {
+        "id": "L03-game-r3",
+        "prompt": "Training contains robots like robots. Why keep a maximum-step limit?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "To bound generation if transitions keep cycling"
+          },
+          {
+            "id": "a",
+            "text": "To make facts true"
+          },
+          {
+            "id": "b",
+            "text": "To improve spelling"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "A step limit does not verify factual claims.",
+          "b": "The limit controls work, not spelling.",
+          "c": "Cycles can repeat. A limit prevents unbounded generation."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L03-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L03-quiz-r1",
+        "prompt": "How much text does this toy use to choose the next word?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "Every page on the internet"
+          },
+          {
+            "id": "b",
+            "text": "All chats in the database"
+          },
+          {
+            "id": "a",
+            "text": "The immediately previous word"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Its transitions are indexed by one current word.",
+          "b": "The generator never reads chat storage.",
+          "c": "No network lookup appears in the code."
+        }
+      },
+      {
+        "id": "L03-quiz-r2",
+        "prompt": "What does zip(words, words[1:]) produce?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Adjacent word pairs"
+          },
+          {
+            "id": "a",
+            "text": "A compressed archive"
+          },
+          {
+            "id": "c",
+            "text": "A trained neural network"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Python's zip pairs items from iterables; it is not a file compressor here.",
+          "b": "The second list starts one position later, so each pair links neighbors.",
+          "c": "It pairs values; it does not train a neural network."
+        }
+      },
+      {
+        "id": "L03-quiz-r3",
+        "prompt": "Does a readable output prove this toy understands every sentence?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Yes, because END was reached"
+          },
+          {
+            "id": "a",
+            "text": "Yes, one good sentence proves general understanding"
+          },
+          {
+            "id": "c",
+            "text": "No, the toy may just repeat local patterns"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "One output is weak evidence about broader behavior.",
+          "b": "Stopping correctly does not establish general understanding.",
+          "c": "Local patterns can create readable text without broad capability."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L03-build",
+    "title": "Give the robot a new menu",
+    "instructions": "Change the training data to two copies of 'robots cook noodles' and one copy of 'robots eat rice'. Keep robots as the starting word. Predict the output, then run it. Try an unknown start word afterward.",
+    "criteria": [
+      "The most-common chain prints robots cook noodles.",
+      "An unknown starting word ends safely instead of throwing an exception."
+    ],
+    "hints": [
+      "Keep the end marker and the step limit.",
+      "transitions.get(word) returns no options for an unseen start; the existing guard handles it."
+    ],
+    "reference_solution": "Use the example generator with data = ['robots cook noodles', 'robots cook noodles', 'robots eat rice']. With word = 'robots', it prints 'robots cook noodles'. With word = 'spaceships', it prints only 'spaceships' and exits safely."
+  },
+  "reflection": "Which two stopping rules would you keep in a real chatbot, and what extra context would it need beyond one word?",
+  "tutor_context": "Explain zip, defaultdict, Counter, list append, and stopping limits. Treat the bigram generator as an educational count model. Do not claim it is a miniature transformer."
+}

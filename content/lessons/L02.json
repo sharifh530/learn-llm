@@ -1,0 +1,208 @@
+{
+  "id": "L02",
+  "version": 1,
+  "status": "authored",
+  "title": "Learning versus replying",
+  "zone": "Prediction Playground",
+  "minutes": 25,
+  "prerequisites": [
+    "L01"
+  ],
+  "objectives": [
+    "Separate training, inference, and saved conversation state.",
+    "Learn a simple next-word preference by counting examples."
+  ],
+  "prediction": "Your toy sees 'cats eat fish' twice and 'cats eat rice' once. Which word should a most-common-word rule select after eat? Decide before running the code.",
+  "explanation": [
+    "Training is the stage where examples change a model's learned parameters. Inference is using those learned parameters to produce an output. Think of learning recipes versus cooking one meal with a recipe you already know.",
+    "Our toy learns counts. Every training sentence contributes an observation: what word followed eat? Two fish observations and one rice observation make fish the most common in this small dataset.",
+    "collections.Counter is a Python dictionary-like counter. Counter(['fish', 'fish', 'rice']) records how many times each item occurs. most_common(1) asks for the single most frequent item and its count.",
+    "A saved chat is different again. The application stores messages and can supply them as context on a later request. Saving a message or changing a prompt does not, by itself, retrain the hosted model."
+  ],
+  "analogy_limit": "Recipe learning is an analogy. Our count table has no neural weights, gradient optimization, or transformer layers. Real LLM training is far more complex than counting a few words.",
+  "python_example": {
+    "code": "from collections import Counter\n\ntraining_sentences = ['cats eat fish', 'dogs eat fish', 'birds eat rice']\nfollowing_eat = Counter()\nfor sentence in training_sentences:\n    words = sentence.split()\n    if words[1] == 'eat':\n        following_eat[words[2]] += 1\nprint(dict(following_eat))\nprediction = following_eat.most_common(1)[0][0]\nprint(prediction)\n",
+    "expected_output": "{'fish': 2, 'rice': 1}\nfish\n",
+    "walkthrough": [
+      "split() creates a list of words. This dataset always has three words, so its fixed indexes are safe only for these examples.",
+      "The loop learns counts from the training sentences.",
+      "most_common(1) returns a list containing a (word, count) pair. The first [0] selects that pair; the second selects its word.",
+      "Selecting fish uses the counts; it does not add another observation."
+    ]
+  },
+  "game": {
+    "id": "L02-game",
+    "type": "choice_rounds",
+    "title": "Training or Playing?",
+    "instructions": "Sort each action into training, inference, or app memory. Two of three correct passes.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L02-game-r1",
+        "prompt": "You scan three example sentences and update the word counts.",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Training our count toy"
+          },
+          {
+            "id": "b",
+            "text": "Inference only"
+          },
+          {
+            "id": "c",
+            "text": "Saving a chat"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The examples changed the toy's learned counts.",
+          "b": "Here the stored counts change, so this is the learning stage.",
+          "c": "You are fitting counts from examples, not storing a conversation record."
+        }
+      },
+      {
+        "id": "L02-game-r2",
+        "prompt": "You use the existing count table to select fish.",
+        "choices": [
+          {
+            "id": "c",
+            "text": "Cloud backup"
+          },
+          {
+            "id": "a",
+            "text": "Training"
+          },
+          {
+            "id": "b",
+            "text": "Inference"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "No training observation was added.",
+          "b": "You are using what the toy already learned.",
+          "c": "No backup was created by selecting a word."
+        }
+      },
+      {
+        "id": "L02-game-r3",
+        "prompt": "Your app saves 'My name is Mira' to SQLite for later context.",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The hosted model was retrained"
+          },
+          {
+            "id": "c",
+            "text": "The app stored conversation state"
+          },
+          {
+            "id": "b",
+            "text": "The model gained a new neural layer"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Saving chat history does not update the hosted model's parameters.",
+          "b": "A database write does not alter model architecture.",
+          "c": "The app can later send this message as context; that is separate from training."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L02-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L02-quiz-r1",
+        "prompt": "What made fish the toy's preferred prediction?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Fish appeared most often after eat in the examples"
+          },
+          {
+            "id": "b",
+            "text": "Fish is universally the correct food"
+          },
+          {
+            "id": "c",
+            "text": "Python likes short words"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The preference came from this dataset's counts.",
+          "b": "The data does not prove a universal fact about animals.",
+          "c": "The code counts observations; word length does not choose the result."
+        }
+      },
+      {
+        "id": "L02-quiz-r2",
+        "prompt": "Which action would change this toy's learned preference toward rice?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Print fish more times"
+          },
+          {
+            "id": "c",
+            "text": "Rename the output variable"
+          },
+          {
+            "id": "b",
+            "text": "Add enough rice training examples and rebuild counts"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Printing does not feed observations back into this toy.",
+          "b": "Changing training data and recomputing counts changes the learned preference.",
+          "c": "A variable name does not change the counts."
+        }
+      },
+      {
+        "id": "L02-quiz-r3",
+        "prompt": "A hosted chatbot uses your name from a previous message. What might explain it?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "The app included that message in the request context"
+          },
+          {
+            "id": "b",
+            "text": "It must have read your computer files"
+          },
+          {
+            "id": "a",
+            "text": "Every reply permanently retrains the model"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Normal chat generation does not imply retraining.",
+          "b": "Name recall alone is not evidence of file access.",
+          "c": "Conversation context can supply the name without updating the model."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L02-build",
+    "title": "Change what the toy learns",
+    "instructions": "Add two more three-word training sentences ending in rice. Rebuild the counts and predict again. Before running it, calculate the new fish and rice counts yourself.",
+    "criteria": [
+      "The new counts contain fish: 2 and rice: 3.",
+      "The new most-common prediction is rice, and you can explain why."
+    ],
+    "hints": [
+      "For example, 'robots eat rice' has the required three-word shape.",
+      "Run the counting loop from an empty Counter after changing the dataset."
+    ],
+    "reference_solution": "from collections import Counter\nsentences = ['cats eat fish', 'dogs eat fish', 'birds eat rice', 'robots eat rice', 'mice eat rice']\ncounts = Counter(sentence.split()[2] for sentence in sentences)\nprint(dict(counts))\nprint(counts.most_common(1)[0][0])"
+  },
+  "reflection": "Describe one example each of training, inference, and application memory using your chatbot project.",
+  "tutor_context": "Teach training versus inference versus app memory. Explain Counter and nested indexes with tiny lists. Count-table learning is a toy, not neural training."
+}

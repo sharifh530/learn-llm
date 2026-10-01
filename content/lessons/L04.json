@@ -1,0 +1,208 @@
+{
+  "id": "L04",
+  "version": 1,
+  "status": "authored",
+  "title": "Tokens are text pieces",
+  "zone": "Token Arcade",
+  "minutes": 20,
+  "prerequisites": [
+    "L03"
+  ],
+  "objectives": [
+    "Explain why tokens are not necessarily whole words.",
+    "Distinguish an illustrative token split from a model-specific tokenizer."
+  ],
+  "prediction": "Imagine text building blocks ['play', 'ful', ' robot', '!']. How many pieces are there, and what text do they form?",
+  "explanation": [
+    "Models process text through a tokenizer, which maps text into token IDs. Tokens can correspond to a word, part of a word, punctuation, or another text piece. The exact mapping depends on the model's tokenizer.",
+    "In our illustrative split, play and ful are separate pieces, while the leading space belongs to ' robot'. Four pieces reconstruct 'playful robot!'. A different real tokenizer may split that text differently.",
+    "Text length, word count, and token count are different measures. Python split() makes whitespace-separated words; it is not a universal LLM tokenizer. Even different languages and punctuation patterns can affect token counts.",
+    "Your chatbot will budget context and output in tokens. When accuracy matters, ask the configured model's token-counting interface rather than presenting a word-count guess as exact. For this lesson, our list is deliberately hand-written."
+  ],
+  "analogy_limit": "Building blocks show that text can be assembled from pieces. These four pieces are illustrative and are not asserted to be Gemini's actual encoding. The code is a joiner, not a tokenizer implementation.",
+  "python_example": {
+    "code": "pieces = ['play', 'ful', ' robot', '!']\ntext = ''.join(pieces)\nprint(text)\nprint('pieces:', len(pieces))\nprint('whitespace words:', len(text.split()))\n",
+    "expected_output": "playful robot!\npieces: 4\nwhitespace words: 2\n",
+    "walkthrough": [
+      "The space before robot is inside that piece.",
+      "''.join(pieces) concatenates without inserting extra spaces.",
+      "len(pieces) counts our manual pieces, while split() counts whitespace-separated words.",
+      "Neither measurement proves the token count for an actual hosted model."
+    ]
+  },
+  "game": {
+    "id": "L04-game",
+    "type": "choice_rounds",
+    "title": "Token Puzzle",
+    "instructions": "Work with the manual pieces shown in each round. Do not assume these are actual model tokens. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L04-game-r1",
+        "prompt": "Join ['sun', 'shine', '!'] without adding separators.",
+        "choices": [
+          {
+            "id": "c",
+            "text": "sunsh ine"
+          },
+          {
+            "id": "a",
+            "text": "sunshine!"
+          },
+          {
+            "id": "b",
+            "text": "sun shine !"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "No piece contains a space, so none is inserted.",
+          "b": "That would require adding spaces between pieces.",
+          "c": "That changes the supplied pieces."
+        }
+      },
+      {
+        "id": "L04-game-r2",
+        "prompt": "How many manual pieces are in ['un', 'happy', ' cat', '.']?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Four, because the list has four items"
+          },
+          {
+            "id": "c",
+            "text": "One, because it is one sentence"
+          },
+          {
+            "id": "a",
+            "text": "Two, because there are two words"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Word count and piece count are different.",
+          "b": "Four entries form the illustrative text pieces.",
+          "c": "Sentence boundaries do not determine the number of pieces."
+        }
+      },
+      {
+        "id": "L04-game-r3",
+        "prompt": "You need the actual token count for your configured Google model. What should you do?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Use this manual split for every model"
+          },
+          {
+            "id": "a",
+            "text": "Count spaces and call it exact"
+          },
+          {
+            "id": "c",
+            "text": "Use the model's supported counting interface"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Space counting is an estimate of words, not exact model tokens.",
+          "b": "Tokenizers vary, and our pieces were invented for teaching.",
+          "c": "Use the appropriate model interface and label any fallback estimate."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L04-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L04-quiz-r1",
+        "prompt": "Must one token always equal one whole word?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "No, it may represent a smaller or different text piece"
+          },
+          {
+            "id": "c",
+            "text": "Yes, unless the code uses a dictionary"
+          },
+          {
+            "id": "b",
+            "text": "Yes, in every model"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Tokenization is model-specific and need not match word boundaries.",
+          "b": "That confuses words with tokens.",
+          "c": "A Python container does not determine the model's token boundaries."
+        }
+      },
+      {
+        "id": "L04-quiz-r2",
+        "prompt": "What is this lesson's Python code actually doing?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Calling Gemini's tokenizer"
+          },
+          {
+            "id": "c",
+            "text": "Training a vocabulary"
+          },
+          {
+            "id": "b",
+            "text": "Joining hand-written pieces"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "No Google SDK or tokenizer is called.",
+          "b": "The pieces are already supplied, and join reconstructs the text.",
+          "c": "There is no learning step or vocabulary fitting."
+        }
+      },
+      {
+        "id": "L04-quiz-r3",
+        "prompt": "Why do we care about tokens in a chatbot?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "They make every answer factual"
+          },
+          {
+            "id": "b",
+            "text": "They replace the need for prompts"
+          },
+          {
+            "id": "c",
+            "text": "They help measure model input/output limits and usage"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Tokenization does not guarantee truth.",
+          "b": "Prompts are still input text that gets encoded.",
+          "c": "Token budgets are useful for context, generation, and usage management."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L04-build",
+    "title": "Assemble a text puzzle",
+    "instructions": "Create pieces ['chat', 'bot', ' builder', '!']. Join them, count the list entries, and count whitespace words. Add a comment saying this is a manual illustration, not a real model tokenizer.",
+    "criteria": [
+      "Output includes chatbot builder!, four manual pieces, and two whitespace words.",
+      "A code comment clearly identifies the manual illustration."
+    ],
+    "hints": [
+      "Use an empty string as the join separator.",
+      "len(pieces) counts pieces; len(text.split()) counts whitespace-separated words."
+    ],
+    "reference_solution": "# Manual illustration, not a model tokenizer.\npieces = ['chat', 'bot', ' builder', '!']\ntext = ''.join(pieces)\nprint(text)\nprint(len(pieces))\nprint(len(text.split()))"
+  },
+  "reflection": "Explain why 'ten words' does not mean 'exactly ten tokens' for your chatbot.",
+  "tutor_context": "Use text building blocks; clearly label all manual splits. Explain join and leading spaces. Never claim whitespace split is the actual Google tokenizer."
+}

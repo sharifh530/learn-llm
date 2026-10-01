@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block scripts %}<script type="module" src="/static/js/home.js"></script>{% endblock %}
+{% block content %}
+<section class="home-hero">
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="little-line"></span> A playground for curious Python people</div>
+    <h1>Big ideas.<br><span>Tiny experiments.</span></h1>
+    <p class="hero-description">Learn how language models work.<br>Build a small chatbot, one playful lesson at a time.</p>
+    <div class="hero-actions"><a class="button" href="/lessons/{{ progress.continue_id }}">{{ 'Start your first experiment' if progress.xp == 0 else 'Continue learning' }} <span aria-hidden="true">→</span></a><a class="text-link" href="#learning-path">Explore the path <span aria-hidden="true">↓</span></a></div>
+    <div class="learning-loop"><span><b>01</b> Learn it</span><span><b>02</b> Play with it</span><span><b>03</b> Build it</span></div>
+  </div>
+  <div class="experiment-preview">
+    <div class="preview-top"><span class="tag">Try a tiny experiment</span><span class="small muted">Prediction 01</span></div>
+    <div class="preview-visual" aria-hidden="true"><span class="word-chip">patterns</span><span class="word-chip offset">+ context</span><span class="connection">↓</span><span class="prediction-chip">a likely next word</span></div>
+    <p class="preview-question">“I drink a cup of <span>____</span>.”</p>
+    <p class="small muted">Which word feels like the usual next step?</p>
+    <div class="preview-choices" role="group" aria-label="Quick prediction"><button data-preview="tea">tea</button><button data-preview="socks">socks</button><button data-preview="moon">moon</button></div>
+    <p class="preview-feedback" id="preview-feedback" role="status">Make a guess. That’s where learning starts.</p>
+    <div class="preview-bottom"><span>Not magic. A pattern.</span><a href="/lessons/L01">Meet your first lesson ↗</a></div>
+  </div>
+</section>
+<section class="progress-strip" aria-label="Your progress">
+  <div><strong>{{ progress.completed }} / {{ progress.available }}</strong><span>available lessons complete</span></div>
+  <div><strong>{{ progress.xp }} XP</strong><span>earned through practice</span></div>
+  <div><strong>{{ progress.journal_count }}</strong><span>experiments in your journal</span></div>
+  <div class="strip-note"><span class="status-dot" aria-hidden="true"></span><span>Your first six lessons are ready.<br>Future lessons grow with your prompts.</span></div>
+</section>
+<section id="learning-path" class="learning-path">
+  <div class="section-heading"><div><p class="eyebrow">Your learning path</p><h2>A little further, every time.</h2><p>Start small. Follow your curiosity. Come back whenever you like.</p></div><span class="tag neutral">8 zones · 24 planned lessons</span></div>
+  <div class="zone-grid">
+    {% for zone in course.zones %}
+    <article class="zone-panel {% if loop.index > 2 %}future-zone{% endif %}">
+      <div class="zone-heading"><span class="zone-number">{{ '%02d'|format(loop.index) }}</span><div><h3>{{ zone.title }}</h3><p>{{ ['Guess what comes next.', 'Play with text, chance, and context.', 'Give clear instructions. Get a real reply.', 'Turn a reply into a conversation.', 'Peek inside the prediction machine.', 'Give your chatbot useful notes.', 'Make it careful, useful, and testable.', 'Finish it. Explain it. Make it yours.'][loop.index0] }}</p></div></div>
+      <ol class="lesson-list">
+        {% for identity in zone.lessons %}
+        {% set entry = course.lessons | selectattr('id','equalto',identity) | first %}
+        {% set state = progress.lessons.get(identity,{}) %}
+        <li>{% if entry.status == 'authored' %}<a href="/lessons/{{ identity }}"><span class="lesson-indicator {% if state.completed %}done{% endif %}" aria-hidden="true">{{ '✓' if state.completed else identity[1:] }}</span><span>{{ entry.title }}<small>{{ authored[identity].minutes }} min{% if state.updated %} · Updated: optional review{% elif state.completed %} · Complete{% endif %}</small></span><span class="row-arrow" aria-hidden="true">↗</span></a>{% else %}<div class="outline-row"><span class="lesson-indicator" aria-hidden="true">{{ identity[1:] }}</span><span>{{ entry.title }}</span><span class="small muted">Later</span></div>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% if progress.badges %}<section class="earned-badges"><h2>Skills worth keeping.</h2>{% for badge in progress.badges %}<span class="tag">✦ {{ badge }}</span>{% endfor %}</section>{% endif %}
+<section class="build-banner"><div><span class="tag neutral">Your build workshop</span><h2>Make the ideas do something.</h2><p>Every lesson adds a small experiment to your chatbot toolkit.</p></div><a class="button secondary" href="/workshop">Open the workshop →</a></section>
+{% endblock %}

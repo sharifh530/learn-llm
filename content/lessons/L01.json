@@ -1,0 +1,205 @@
+{
+  "id": "L01",
+  "version": 1,
+  "status": "authored",
+  "title": "The next-word detective",
+  "zone": "Prediction Playground",
+  "minutes": 20,
+  "prerequisites": [],
+  "objectives": [
+    "Explain next-token prediction using a familiar sentence.",
+    "Distinguish a likely continuation from a verified fact."
+  ],
+  "prediction": "Finish this sentence before reading further: I drink a cup of ___. Would tea, socks, or moon be a more ordinary continuation?",
+  "explanation": [
+    "You probably picked tea. You have seen many examples of cups and drinks, so that continuation fits. A language model also uses patterns learned from examples to assign probabilities to possible next pieces of text.",
+    "LLM means large language model. In many text-generation systems, the model predicts a next token, the application selects one, and the process repeats. A token is a text piece; for now we use whole words to keep the idea visible.",
+    "A model can assign high probability to a familiar claim even when the claim is false. Likely wording is not a fact check. We will later add source notes and evaluations to make our chatbot more dependable.",
+    "Start with a Python dictionary. A dictionary stores key-value pairs. Our hand-written table can map a sentence prefix to one next word. This is a rule table, not a trained LLM, but you can inspect its entire behavior."
+  ],
+  "analogy_limit": "The detective analogy describes finding a plausible continuation. Real LLMs do not consult our tiny dictionary and do not guarantee truth. Their token choices depend on learned numerical parameters and the supplied context.",
+  "python_example": {
+    "code": "next_word = {\n    'I drink a cup of': 'tea',\n    'The cat says': 'meow',\n}\nprompt = 'I drink a cup of'\nprint(next_word.get(prompt, 'I do not know yet'))\nprint(next_word.get('The rocket likes', 'I do not know yet'))\n",
+    "expected_output": "tea\nI do not know yet\n",
+    "walkthrough": [
+      "The dictionary key is a known prefix; its value is our chosen next word.",
+      "get(key, default) returns the value when the key exists, otherwise the default.",
+      "The second prefix is missing, so the fallback is printed rather than inventing an entry."
+    ]
+  },
+  "game": {
+    "id": "L01-game",
+    "type": "choice_rounds",
+    "title": "Next Word Detective",
+    "instructions": "Choose the most ordinary continuation for each scene. These answers describe common language patterns, not laws about the world. Get two of three right to pass.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L01-game-r1",
+        "prompt": "The sky is full of dark clouds. It might ___ soon.",
+        "choices": [
+          {
+            "id": "a",
+            "text": "rain"
+          },
+          {
+            "id": "c",
+            "text": "keyboard"
+          },
+          {
+            "id": "b",
+            "text": "sandwich"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Rain is a familiar continuation. It is a prediction, not a weather report.",
+          "b": "Sandwich is a noun that does not fit this ordinary verb slot.",
+          "c": "Keyboard does not describe the ordinary event suggested by the clouds."
+        }
+      },
+      {
+        "id": "L01-game-r2",
+        "prompt": "I used a spoon to eat the ___.",
+        "choices": [
+          {
+            "id": "b",
+            "text": "soup"
+          },
+          {
+            "id": "c",
+            "text": "thunder"
+          },
+          {
+            "id": "a",
+            "text": "bicycle"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "A bicycle is not an ordinary food. A silly story could use it, but that is not this task.",
+          "b": "Soup fits the spoon-and-food pattern.",
+          "c": "Thunder is a sound, so it is not an ordinary thing to eat."
+        }
+      },
+      {
+        "id": "L01-game-r3",
+        "prompt": "A fluent chatbot says our fictional town was founded in 1620. No source was provided. What have we established?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The date is certainly true"
+          },
+          {
+            "id": "c",
+            "text": "It produced a plausible sentence; we still need evidence"
+          },
+          {
+            "id": "b",
+            "text": "The model looked at the town archives"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Fluency cannot prove the date.",
+          "b": "We have no evidence of an archive lookup or tool call.",
+          "c": "Exactly. The sentence may sound right without being supported."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L01-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L01-quiz-r1",
+        "prompt": "What is the simplified repeating step in text generation?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Search every website"
+          },
+          {
+            "id": "c",
+            "text": "Retrain the model after every word"
+          },
+          {
+            "id": "a",
+            "text": "Predict and select another token"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The selected token becomes part of the context for the next step.",
+          "b": "Web search requires a separate connected tool; generation alone does not imply it.",
+          "c": "Normal inference does not retrain the model after each token."
+        }
+      },
+      {
+        "id": "L01-quiz-r2",
+        "prompt": "Is the example dictionary a trained LLM?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "No, it is a hand-authored lookup toy"
+          },
+          {
+            "id": "c",
+            "text": "Yes, because it uses Python"
+          },
+          {
+            "id": "a",
+            "text": "Yes, because it prints text"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Printing text is not enough to make a system an LLM.",
+          "b": "You wrote the entries directly. Nothing learned parameters from data here.",
+          "c": "A programming language does not determine whether a model learned from data."
+        }
+      },
+      {
+        "id": "L01-quiz-r3",
+        "prompt": "Why should an important factual answer be checked?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Because Python cannot store facts"
+          },
+          {
+            "id": "a",
+            "text": "Because short replies are always wrong"
+          },
+          {
+            "id": "c",
+            "text": "Because plausible wording can be unsupported"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Length does not determine truth.",
+          "b": "Python can store factual data; that is unrelated to the model's claim.",
+          "c": "Prediction can produce an unsupported claim. Evidence and evaluation help."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L01-build",
+    "title": "Add one prediction and one honest fallback",
+    "instructions": "Copy the example into a local Python file. Add the prefix 'My robot likes' with the continuation 'puzzles'. Print that result and the result for one prefix you did not add.",
+    "criteria": [
+      "The new known prefix prints puzzles.",
+      "The unknown prefix prints the fallback rather than raising an error."
+    ],
+    "hints": [
+      "Add another key-value pair inside the dictionary.",
+      "Use .get() with the same fallback for both lookups."
+    ],
+    "reference_solution": "next_word = {'My robot likes': 'puzzles'}\nprint(next_word.get('My robot likes', 'I do not know yet'))\nprint(next_word.get('My robot sleeps on', 'I do not know yet'))"
+  },
+  "reflection": "Explain to a friend why a chatbot can sound confident without proving its answer is true.",
+  "tutor_context": "Basic Python dictionary learner. Explain likely next text versus verified truth. Keep whole-word prediction explicitly labeled as a simplification; give hints before the mission solution."
+}

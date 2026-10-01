@@ -1,0 +1,209 @@
+{
+  "id": "L05",
+  "version": 1,
+  "status": "authored",
+  "title": "The probability arcade",
+  "zone": "Token Arcade",
+  "minutes": 30,
+  "prerequisites": [
+    "L04"
+  ],
+  "objectives": [
+    "Explain how temperature reshapes a toy probability distribution.",
+    "Distinguish sampling settings from factual verification."
+  ],
+  "prediction": "A snack raffle favors tea over juice and water. If we make the odds more even, is water now guaranteed to win?",
+  "explanation": [
+    "A text model produces scores for possible next tokens. Sampling converts scores into probabilities and picks from those probabilities. The top choice can be common without being the only possible choice.",
+    "Temperature is one way to reshape probabilities. In this toy, divide each score by a positive temperature, apply exp, and normalize so probabilities add to one. Lower temperature makes the highest score dominate more; higher temperature flattens the distribution.",
+    "exp is a mathematical function that turns these scores into positive values. You do not need to memorize its formula today. Inspect how the final probabilities change when the temperature changes.",
+    "Temperature is not a truth knob. A lower value can repeat a false claim more consistently. A higher value does not guarantee creativity. Actual models may recommend specific defaults or restrict which settings are supported. We will check the configured model before offering a live control."
+  ],
+  "analogy_limit": "The raffle helps explain sampling probabilities. Our fixed snack scores are invented, and the code displays probabilities rather than sampling. It is not a factuality experiment or a guarantee about a particular hosted model.",
+  "python_example": {
+    "code": "import math\n\nscores = {'tea': 2.0, 'juice': 1.0, 'water': 0.0}\ndef probabilities(temperature):\n    if temperature <= 0:\n        raise ValueError('Use a positive temperature in this toy')\n    peak = max(scores.values())\n    weights = {name: math.exp((score - peak) / temperature)\n               for name, score in scores.items()}\n    total = sum(weights.values())\n    return {name: weight / total for name, weight in weights.items()}\n\nfor temperature in [0.5, 2.0]:\n    odds = probabilities(temperature)\n    print('T =', temperature)\n    print(', '.join(f'{name}: {chance:.2f}' for name, chance in odds.items()))\n",
+    "expected_output": "T = 0.5\ntea: 0.87, juice: 0.12, water: 0.02\nT = 2.0\ntea: 0.51, juice: 0.31, water: 0.19\n",
+    "walkthrough": [
+      "The toy scores are inputs, not observed truth ratings.",
+      "Subtracting the maximum score helps numerical stability without changing the normalized probabilities.",
+      "The dictionary comprehension builds one weight per snack; division by total normalizes them.",
+      "Two-decimal display rounding can make the printed values add to 1.01. The unrounded values sum to approximately one.",
+      "Temperature zero is excluded here to avoid division by zero; this toy does not implement greedy decoding."
+    ]
+  },
+  "game": {
+    "id": "L05-game",
+    "type": "choice_rounds",
+    "title": "Snack Raffle",
+    "instructions": "Predict what the two displayed distributions imply. Remember that likelihood and correctness are different. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L05-game-r1",
+        "prompt": "At T=0.5, tea has about 87% probability. What does that mean for sampling?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Tea must be the healthiest drink"
+          },
+          {
+            "id": "c",
+            "text": "Water is impossible"
+          },
+          {
+            "id": "a",
+            "text": "Tea is likely, but not guaranteed in one draw"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Sampling can still select a lower-probability option.",
+          "b": "The probabilities do not measure health or truth.",
+          "c": "Water still has positive probability in this toy."
+        }
+      },
+      {
+        "id": "L05-game-r2",
+        "prompt": "What happened when the toy temperature rose from 0.5 to 2.0?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The most likely snack became certain"
+          },
+          {
+            "id": "c",
+            "text": "The training data grew"
+          },
+          {
+            "id": "b",
+            "text": "The probabilities became more even"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The highest probability decreased, rather than becoming certain.",
+          "b": "The distribution flattened, increasing relative chances for lower-score options.",
+          "c": "Only the sampling transform changed; no data was added."
+        }
+      },
+      {
+        "id": "L05-game-r3",
+        "prompt": "Your chatbot repeats a wrong date. Should lowering temperature count as verification?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes, consistent dates are always true"
+          },
+          {
+            "id": "c",
+            "text": "No, the claim still needs evidence"
+          },
+          {
+            "id": "b",
+            "text": "Yes, because probabilities become sharper"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Repeated error is still error.",
+          "b": "Sharper probability is not factual support.",
+          "c": "Use source evidence and evaluations to check the date."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L05-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L05-quiz-r1",
+        "prompt": "Why divide each weight by the total weight?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "To normalize the probabilities"
+          },
+          {
+            "id": "b",
+            "text": "To change the words into source citations"
+          },
+          {
+            "id": "c",
+            "text": "To retrain the model"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Normalized probabilities sum to approximately one before display rounding.",
+          "b": "Normalization has nothing to do with citations.",
+          "c": "This transform changes sampling probabilities, not learned scores."
+        }
+      },
+      {
+        "id": "L05-quiz-r2",
+        "prompt": "Does the example code actually draw a random snack?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "No, it only computes and prints probabilities"
+          },
+          {
+            "id": "c",
+            "text": "Yes, print randomly chooses a dictionary key"
+          },
+          {
+            "id": "a",
+            "text": "Yes, exp picks one"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "exp produces weights; a separate sampling step would choose an option.",
+          "b": "No random selection function is called.",
+          "c": "print only displays the constructed text."
+        }
+      },
+      {
+        "id": "L05-quiz-r3",
+        "prompt": "What should we verify before adding a live temperature slider?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "The configured model's supported settings and recommendations"
+          },
+          {
+            "id": "b",
+            "text": "That all models have identical controls"
+          },
+          {
+            "id": "a",
+            "text": "That higher values guarantee truth"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Temperature cannot guarantee truth.",
+          "b": "Generation controls can differ across models.",
+          "c": "Build the live control around actual provider support."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L05-build",
+    "title": "Test a flatter distribution",
+    "instructions": "Add T=1.0 to the example. Before running it, predict whether tea's probability will lie between the T=0.5 and T=2.0 values. Check the unrounded sum of probabilities.",
+    "criteria": [
+      "Tea's probability at T=1.0 is approximately 0.665 and lies between the two earlier values.",
+      "The unrounded probabilities sum to approximately one; you do not mistake display rounding for extra probability."
+    ],
+    "hints": [
+      "Call probabilities(1.0).",
+      "Use abs(sum(odds.values()) - 1) < 1e-9 to check the sum with a small numerical tolerance."
+    ],
+    "reference_solution": "With the example function defined:\nodds = probabilities(1.0)\nprint(round(odds['tea'], 3))  # 0.665\nprint(abs(sum(odds.values()) - 1) < 1e-9)  # True"
+  },
+  "reflection": "How would you explain to someone why a consistent chatbot answer can still be wrong?",
+  "tutor_context": "Explain invented logits, normalized probabilities, and positive temperature with a raffle analogy. Do not equate temperature with accuracy or creativity. Explain rounding and avoid deep calculus."
+}

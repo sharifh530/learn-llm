@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174cc9">
+  <title>{% block title %}Tiny Chat Lab · Learn by building{% endblock %}</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script type="module" src="/static/js/common.js"></script>
+  {% block scripts %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="Tiny Chat Lab home"><span class="brand-mark" aria-hidden="true">t<span>·</span></span><span>Tiny Chat <strong>Lab</strong></span></a>
+      <nav aria-label="Main navigation">
+        <a href="/" {% if page in ['home','lesson','unavailable'] %}aria-current="page"{% endif %}>Learn</a>
+        <a href="/workshop" {% if page == 'workshop' %}aria-current="page"{% endif %}>Build</a>
+        <a href="/chat" {% if page == 'chat' %}aria-current="page"{% endif %}>My chatbot</a>
+        <a href="/settings" {% if page == 'settings' %}aria-current="page"{% endif %}>Settings</a>
+      </nav>
+      <div class="header-progress"><span aria-hidden="true">✦</span> <strong data-total-xp>{{ progress.xp }}</strong> XP</div>
+    </div>
+  </header>
+  <main id="main" class="page-shell">{% block content %}{% endblock %}</main>
+  <footer class="site-footer"><span>One idea. One game. One thing you build.</span><span>Local learning · No API key needed</span></footer>
+  <dialog id="tutor-dialog" class="tutor-dialog" aria-labelledby="tutor-title">
+    <div class="dialog-header"><span class="tag">Your learning companion</span><button class="icon-button" data-close-tutor aria-label="Close Ask AI">×</button></div>
+    <h2 id="tutor-title">A little help, when you need it.</h2>
+    <p>Ask AI will connect to Google Cloud / Vertex AI in M2. You can keep learning with the authored hints, feedback, and reference solutions.</p>
+    <div class="notice"><strong>No model connected</strong><p>Your questions are not sent to Google in this version.</p></div>
+    <label for="tutor-draft">Save a question for later</label>
+    <textarea id="tutor-draft" rows="3" maxlength="2000" placeholder="For example: why isn't a saved chat the same as training?"></textarea>
+    <p class="muted small">Draft stays in this browser tab. Nothing is submitted to an AI.</p>
+    <a class="button" href="/settings">See connection plan <span aria-hidden="true">↗</span></a>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
+</body>
+</html>

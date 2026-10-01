@@ -1,0 +1,208 @@
+{
+  "id": "L06",
+  "version": 1,
+  "status": "authored",
+  "title": "The conversation backpack",
+  "zone": "Token Arcade",
+  "minutes": 25,
+  "prerequisites": [
+    "L05"
+  ],
+  "objectives": [
+    "Separate stored history from the messages sent to a model.",
+    "Explain why a context budget can omit an earlier fact."
+  ],
+  "prediction": "Your app saves four messages but only sends the newest two. Can the model see an earlier name just because it is saved in the database?",
+  "explanation": [
+    "Imagine a conversation backpack with limited space. Your app has a shelf containing all saved messages, but only the messages packed for this request are available through that request's conversation context.",
+    "A context window is a model-specific limit on tokenized request material, with output limits that also need planning. The app must choose which instructions, prior turns, notes, and current question fit. Stored history is not automatically the same as selected context.",
+    "Our Python toy keeps two recent messages using a list slice. A slice such as messages[-2:] returns the last two list items. It makes the selection visible, but counts messages rather than tokens.",
+    "If an earlier personal name is omitted and not supplied elsewhere, the model cannot use that stored message through this request. It might guess, so an application should not treat a lucky answer as proof that context selection worked. In the real app, preserve instructions, valid role ordering, and an output budget."
+  ],
+  "analogy_limit": "A backpack is a selection analogy, not a model memory architecture. The last-two-message toy is not a production context policy. Real requests must account for tokens, roles, instructions, notes, and output reserve.",
+  "python_example": {
+    "code": "messages = [\n    {'role': 'user', 'text': 'My name is Mira.'},\n    {'role': 'assistant', 'text': 'Hello Mira.'},\n    {'role': 'user', 'text': 'I like puzzles.'},\n    {'role': 'assistant', 'text': 'Let us try a puzzle.'},\n]\nselected = messages[-2:]\nprint('saved:', len(messages))\nprint('selected:', len(selected))\nfor message in selected:\n    print(message['role'] + ': ' + message['text'])\n",
+    "expected_output": "saved: 4\nselected: 2\nuser: I like puzzles.\nassistant: Let us try a puzzle.\n",
+    "walkthrough": [
+      "The list represents stored history.",
+      "The slice creates the request's selected-history toy, without deleting the original list.",
+      "The name appears in the saved messages but not in selected.",
+      "A real current user question would be added after valid selected history; this example only inspects the selection."
+    ]
+  },
+  "game": {
+    "id": "L06-game",
+    "type": "choice_rounds",
+    "title": "Memory Backpack",
+    "instructions": "Decide what the model can use from the packed context. Separate saved storage from request content. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L06-game-r1",
+        "prompt": "Four messages are saved, but selected contains only the last two. How many messages did our toy pack?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "Four"
+          },
+          {
+            "id": "a",
+            "text": "Two"
+          },
+          {
+            "id": "c",
+            "text": "All messages ever written"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The slice selected two list entries.",
+          "b": "Four were saved, but saving and selecting are different.",
+          "c": "This code only uses the list shown and its slice."
+        }
+      },
+      {
+        "id": "L06-game-r2",
+        "prompt": "The name Mira was in an omitted message. What does this reveal?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "The name is absent from this selected request context"
+          },
+          {
+            "id": "a",
+            "text": "The name was erased from the database"
+          },
+          {
+            "id": "c",
+            "text": "The model was retrained to forget"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The original list remains; selection does not delete saved history.",
+          "b": "The packed messages do not include that name.",
+          "c": "Context selection does not retrain model parameters."
+        }
+      },
+      {
+        "id": "L06-game-r3",
+        "prompt": "Which is the better future app policy?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "Keep valid roles/instructions and select history under a token budget"
+          },
+          {
+            "id": "b",
+            "text": "Always take two messages and call it exact token budgeting"
+          },
+          {
+            "id": "a",
+            "text": "Always send unlimited history"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Models and apps have input/output limits.",
+          "b": "Two messages may have very different token counts.",
+          "c": "A real policy accounts for structure and size while preserving necessary context."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L06-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L06-quiz-r1",
+        "prompt": "What does messages[-2:] do?",
+        "choices": [
+          {
+            "id": "c",
+            "text": "Counts exact model tokens"
+          },
+          {
+            "id": "a",
+            "text": "Returns the last two items"
+          },
+          {
+            "id": "b",
+            "text": "Deletes the first two saved items"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Negative indexes count backward from the end.",
+          "b": "This slice returns a new list; it does not delete the original history.",
+          "c": "It selects messages, not tokenizes them."
+        }
+      },
+      {
+        "id": "L06-quiz-r2",
+        "prompt": "What makes saved history useful to a stateless model request?",
+        "choices": [
+          {
+            "id": "b",
+            "text": "The app including relevant saved content in the request"
+          },
+          {
+            "id": "c",
+            "text": "Changing a CSS color"
+          },
+          {
+            "id": "a",
+            "text": "Merely keeping a SQLite file on disk"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The provider does not automatically read your local database.",
+          "b": "The app chooses and supplies relevant context.",
+          "c": "Presentation does not alter the request content."
+        }
+      },
+      {
+        "id": "L06-quiz-r3",
+        "prompt": "Which three mechanisms should stay distinct?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Fonts, colors, and margins"
+          },
+          {
+            "id": "c",
+            "text": "Trained parameters, stored app history, and selected request context"
+          },
+          {
+            "id": "b",
+            "text": "Tea, juice, and water"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Those are UI concerns, not the three model/app memory mechanisms.",
+          "b": "Those are our sampling examples.",
+          "c": "They can affect behavior in different ways; saving is not training or automatic selection."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L06-build",
+    "title": "Inspect the backpack",
+    "instructions": "Change the example to select the last three messages. Print which messages are selected and whether any contains Mira. Compare this to selecting only the last two. Keep the full saved list unchanged.",
+    "criteria": [
+      "The three-message selection includes 'Hello Mira.' while the two-message selection does not.",
+      "The saved list still contains four messages after both selections."
+    ],
+    "hints": [
+      "Use messages[-3:] and messages[-2:].",
+      "any('Mira' in m['text'] for m in selected) tests whether at least one selected message contains the name."
+    ],
+    "reference_solution": "With messages from the example:\nfor count in [3, 2]:\n    selected = messages[-count:]\n    print(count, any('Mira' in m['text'] for m in selected))\nprint('saved:', len(messages))\nExpected: 3 True; 2 False; saved: 4."
+  },
+  "reflection": "Explain how your future chatbot will keep saved history separate from the messages sent to Google.",
+  "tutor_context": "Explain list slices, saved history, selected context, and trained parameters. The backpack is a token-budget analogy; last-N messages is only a toy. Do not infer context correctness from a lucky model guess."
+}

@@ -1,0 +1,2 @@
+{% extends "base.html" %}
+{% block content %}<section class="unavailable"><span class="tag neutral">{{ 'Coming in a later session' if entry else 'Lesson not found' }}</span><h1>{{ entry.title if entry else 'That experiment is not here yet.' }}</h1><p>This part of the course is an outline. Ask to expand it when you’re ready; your current progress stays saved.</p><a class="button" href="/">Back to the learning path →</a></section>{% endblock %}
