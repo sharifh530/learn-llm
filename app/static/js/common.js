@@ -27,7 +27,10 @@ export function toast(message) {
 
 export function showXP(progress, amount = 0) {
   document.querySelectorAll("[data-total-xp]").forEach(element => {element.textContent = progress.xp;});
-  if (amount > 0) toast(`+${amount} XP · Progress saved`);
+  if (amount > 0) {
+    toast(`+${amount} XP · Progress saved`);
+    document.dispatchEvent(new CustomEvent("lab:xp", {detail: {amount}}));
+  }
 }
 
 export function node(tag, className, text) {

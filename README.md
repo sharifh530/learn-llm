@@ -49,6 +49,7 @@ We will build an application around a pretrained model. We will also build tiny 
 | [Architecture](docs/ARCHITECTURE.md) | How will the Python app, browser, database, and AI connect? |
 | [Google integration](docs/GOOGLE_INTEGRATION.md) | How will my Vertex AI key or Cloud credentials be used? |
 | [Design](docs/DESIGN.md) | How will the learning experience feel playful and usable? |
+| [UI verification](docs/UI_VALIDATION.md) | What was checked in the studio redesign and motion update? |
 | [Backlog](docs/BACKLOG.md) | What are the implementation tasks and completion criteria? |
 | [Validation](docs/VALIDATION.md) | How will we know it works and teaches the right concepts? |
 | [Decisions](docs/DECISIONS.md) | Which choices are settled and which depend on later information? |
@@ -86,6 +87,7 @@ The plan uses Google Cloud / Vertex AI because you selected it. Cloud express ke
 .\.venv\Scripts\python.exe -m playwright install chromium
 .\.venv\Scripts\python.exe tools/browser_check.py
 .\.venv\Scripts\python.exe tools/browser_ai_check.py
+.\.venv\Scripts\python.exe tools/design_check.py
 ```
 
 Browser checks use an isolated database and do not change your progress. The documentation check remains `python tools/verify_docs.py`. M2 has 43 passing backend tests, nine matching Python examples, a 54-round Chromium learning flow, and a separate FAKE-provider browser flow. A real Google connection still needs credentials; see the M2 verification record.

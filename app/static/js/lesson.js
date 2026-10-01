@@ -7,6 +7,7 @@ const tabs = [...document.querySelectorAll("[data-step]")];
 
 function selectStep(step, focus = false) {
   if (!tabs.some(tab => tab.dataset.step === step)) step = "learn";
+  document.querySelector(".lesson-layout").dataset.currentStep = step;
   tabs.forEach(tab => {
     const active = tab.dataset.step === step;
     tab.setAttribute("aria-selected", String(active));

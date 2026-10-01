@@ -1,5 +1,12 @@
 # Course and project changelog
 
+## 1 October 2026: studio redesign
+
+- Added a cream/sage/teal palette with citrus and coral accents, self-hosted fonts, a custom robot, and illustrated learning zones.
+- Improved reading hierarchy, responsive lesson navigation, and compact Play/Quiz covers.
+- Added native page and feedback motion, brief XP celebrations, and a persistent motion control that honors reduced motion.
+- Preserved lesson content, progress, scoring, and Google request behavior. See [UI verification](UI_VALIDATION.md) for responsive, interaction, and contrast evidence.
+
 ## 1 October 2026: M1 implemented
 
 - Built the Python FastAPI/Jinja app with responsive Learn, Build, My chatbot, and Settings screens.

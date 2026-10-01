@@ -2,14 +2,14 @@
 {% block scripts %}<script type="module" src="/static/js/chat.js"></script>{% endblock %}
 {% block content %}
 <div class="chat-layout">
-  <aside class="chat-aside"><span class="tag">My chatbot</span><h1>Meet your<br>first little bot.</h1><p>Try Python rules, then compare a real Google reply.</p>
+  <aside class="chat-aside"><span class="tag">My chatbot</span><div class="chat-pip" aria-hidden="true"><img src="/static/pip.svg" alt=""><span class="pip-caption">Small bot. Big curiosity.</span></div><h1>Meet your<br>first little bot.</h1><p>Try Python rules, then compare a real Google reply.</p>
     <label for="chat-mode">Choose your experiment</label>
     <select id="chat-mode"><option value="demo">Demo · Python rules</option><option value="google_cloud">Google Cloud AI</option></select>
     <div class="notice"><strong id="chat-mode-label">Demo: no model connected</strong><p id="chat-mode-help">Hand-written replies. No Google calls. It doesn’t remember earlier messages.</p></div>
     <a class="text-link" href="/settings">Connect Google AI →</a><button class="button secondary" id="clear-chat">Start fresh</button>
     <p class="small muted">Conversation display stays in this browser tab. Each request sends only the current message. Conversation memory arrives in M3.</p>
   </aside>
-  <section class="chat-surface" aria-labelledby="chat-heading"><header class="chat-header"><div><span class="bot-avatar" aria-hidden="true">t·</span><div><h2 id="chat-heading">Tiny demo bot</h2><p id="chat-subtitle">Rule-based · Ready to experiment</p></div></div><span class="tag neutral">M2</span></header>
+  <section class="chat-surface" aria-labelledby="chat-heading"><header class="chat-header"><div><span class="bot-avatar" aria-hidden="true"><img src="/static/pip.svg" alt=""></span><div><h2 id="chat-heading">Tiny demo bot</h2><p id="chat-subtitle">Rule-based · Ready to experiment</p></div></div><span class="tag neutral">M2</span></header>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
     <div class="chat-suggestions" role="group" aria-label="Example messages"><button data-chat-prompt="What is a token?">What is a token?</button><button data-chat-prompt="Training versus inference?">Training vs inference</button><button data-chat-prompt="How does context work?">How does context work?</button></div>
     <form id="chat-form" class="chat-composer"><label class="sr-only" for="chat-input">Your message</label><textarea id="chat-input" rows="2" maxlength="2000" placeholder="Try asking about tokens, training, or context…" required></textarea><button class="button" type="submit" id="chat-send">Send <span aria-hidden="true">↑</span></button></form>

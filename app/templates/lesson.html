@@ -6,11 +6,11 @@
   <aside class="lesson-sidebar">
     <a class="text-link back-link" href="/">← Learning path</a>
     <p class="eyebrow">{{ lesson.zone }}</p>
-    <nav aria-label="Available lessons">{% for identity, item in authored.items() %}<a href="/lessons/{{ identity }}" {% if identity == lesson.id %}aria-current="page"{% endif %}><span>{{ identity[1:] }}</span>{{ item.title }}{% if progress.lessons[identity].completed %}<b aria-label="Complete">✓</b>{% endif %}</a>{% endfor %}</nav>
-    <div class="sidebar-note"><strong>Small steps count.</strong><p>No timer. No rush.<br>Hints and retries are part of learning.</p></div>
+    <details class="lesson-contents" open><summary>Your experiments <span>{{ progress.available }}</span></summary><nav aria-label="Available lessons">{% for identity, item in authored.items() %}<a href="/lessons/{{ identity }}" {% if identity == lesson.id %}aria-current="page"{% endif %}><span>{{ identity[1:] }}</span>{{ item.title }}{% if progress.lessons[identity].completed %}<b aria-label="Complete">✓</b>{% endif %}</a>{% endfor %}</nav></details>
+    <div class="sidebar-note"><img src="/static/pip.svg" alt="" aria-hidden="true"><strong>Small steps count.</strong><p>No timer. No rush.<br>Hints and retries are part of learning.</p></div>
   </aside>
   <div class="lesson-main">
-    <header class="lesson-header"><div><span class="tag">Lesson {{ lesson.id[1:] }} · {{ lesson.minutes }} min</span><h1>{{ lesson.title }}</h1><p>One idea. A little practice. Something you can build.</p></div><button class="button secondary compact" data-open-tutor>Ask AI ↗</button></header>
+    <header class="lesson-header"><div><span class="tag">Lesson {{ lesson.id[1:] }} · {{ lesson.minutes }} min</span><h1>{{ lesson.title }}</h1><p>One idea. A little practice. Something you can build.</p></div><button class="button secondary compact" data-open-tutor><span aria-hidden="true">✦</span> Ask AI ↗</button></header>
     <div class="updated-notice notice" {% if not progress.lessons[lesson.id].updated %}hidden{% endif %}>A new lesson version is available. Your completion is saved; review it whenever you like.</div>
     <div class="lesson-tabs" role="tablist" aria-label="Lesson steps">
       {% for step in ['learn','play','quiz','build'] %}<button id="tab-{{ step }}" role="tab" aria-controls="panel-{{ step }}" aria-selected="{{ 'true' if step == 'learn' else 'false' }}" tabindex="{{ '0' if step == 'learn' else '-1' }}" data-step="{{ step }}"><span class="step-number">{{ loop.index }}</span>{{ step|capitalize }}<span class="step-check" data-check="{{ 'game' if step == 'play' else 'reading' if step == 'learn' else step }}" aria-label="Completed">{% if progress.lessons[lesson.id]['game' if step == 'play' else 'reading' if step == 'learn' else step] %}✓{% endif %}</span></button>{% endfor %}

@@ -11,7 +11,7 @@
   </div>
   <div class="experiment-preview">
     <div class="preview-top"><span class="tag">Try a tiny experiment</span><span class="small muted">Prediction 01</span></div>
-    <div class="preview-visual" aria-hidden="true"><span class="word-chip">patterns</span><span class="word-chip offset">+ context</span><span class="connection">↓</span><span class="prediction-chip">a likely next word</span></div>
+    <div class="preview-visual" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><img class="hero-pip" src="/static/pip.svg" alt=""><span class="word-chip">patterns</span><span class="word-chip offset">+ context</span><span class="prediction-chip">a likely next word ↗</span><span class="lab-spark spark-one">✦</span><span class="lab-spark spark-two">✧</span></div>
     <p class="preview-question">“I drink a cup of <span>____</span>.”</p>
     <p class="small muted">Which word feels like the usual next step?</p>
     <div class="preview-choices" role="group" aria-label="Quick prediction"><button data-preview="tea">tea</button><button data-preview="socks">socks</button><button data-preview="moon">moon</button></div>
@@ -29,8 +29,8 @@
   <div class="section-heading"><div><p class="eyebrow">Your learning path</p><h2>A little further, every time.</h2><p>Start small. Follow your curiosity. Come back whenever you like.</p></div><span class="tag neutral">8 zones · 24 planned lessons</span></div>
   <div class="zone-grid">
     {% for zone in course.zones %}
-    <article class="zone-panel {% if zone.lessons[0] not in authored %}future-zone{% endif %}">
-      <div class="zone-heading"><span class="zone-number">{{ '%02d'|format(loop.index) }}</span><div><h3>{{ zone.title }}</h3><p>{{ ['Guess what comes next.', 'Play with text, chance, and context.', 'Give clear instructions. Get a real reply.', 'Turn a reply into a conversation.', 'Peek inside the prediction machine.', 'Give your chatbot useful notes.', 'Make it careful, useful, and testable.', 'Finish it. Explain it. Make it yours.'][loop.index0] }}</p></div></div>
+    <article class="zone-panel zone-{{ loop.index }} {% if zone.lessons[0] not in authored %}future-zone{% endif %}">
+      <div class="zone-heading"><span class="zone-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-{{ ['predict','token','prompt','chat','model','notes','test','finish'][loop.index0] }}"></use></svg></span><div><span class="zone-number">Zone {{ '%02d'|format(loop.index) }} · {{ 'Ready to explore' if zone.lessons[0] in authored else 'Coming later' }}</span><h3>{{ zone.title }}</h3><p>{{ ['Guess what comes next.', 'Play with text, chance, and context.', 'Give clear instructions. Get a real reply.', 'Turn a reply into a conversation.', 'Peek inside the prediction machine.', 'Give your chatbot useful notes.', 'Make it careful, useful, and testable.', 'Finish it. Explain it. Make it yours.'][loop.index0] }}</p></div></div>
       <ol class="lesson-list">
         {% for identity in zone.lessons %}
         {% set entry = course.lessons | selectattr('id','equalto',identity) | first %}
