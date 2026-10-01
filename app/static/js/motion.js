@@ -31,7 +31,7 @@ function entrance(element, delay = 0, distance = 16) {
   element.animate([{opacity:.3,transform:`translateY(${distance}px)`},{opacity:1,transform:"translateY(0)"}],
     {duration:500, delay, easing:"cubic-bezier(.2,.75,.25,1)"});
 }
-document.querySelectorAll(".hero-copy,.experiment-preview,.lesson-header,.lesson-tabs,.page-heading,.chat-aside,.chat-surface").forEach((element,index) => entrance(element, Math.min(index * 70,210)));
+document.querySelectorAll(".hero-copy,.experiment-preview,.lesson-header,.lesson-tabs,.page-heading,.chat-aside,.chat-surface,.observatory-heading").forEach((element,index) => entrance(element, Math.min(index * 70,210)));
 
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
@@ -43,7 +43,7 @@ const observer = new IntersectionObserver(entries => {
 document.querySelectorAll(".progress-strip,.zone-panel,.build-banner,.mission-panel,.workshop-overview,.settings-panel").forEach(element => observer.observe(element));
 
 // Tab changes and newly mounted feedback keep native focus and position.
-const panels = document.querySelectorAll(".step-panel");
+const panels = document.querySelectorAll(".step-panel,.lab-panel");
 const changes = new MutationObserver(records => {
   const targets = new Set();
   records.forEach(record => {

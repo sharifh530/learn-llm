@@ -1,5 +1,12 @@
 # Course and project changelog
 
+## 1 October 2026: M4 Model Observatory
+
+- Added local fruit-vector cosine, manual masked-softmax attention, and one-weight gradient-update experiments, with numeric results, keyboard controls, responsive layouts, and reduced-motion support.
+- Authored L13–L15 version 1; course version 4 now has 15 lessons and 90 rounds. Existing lesson files/versions, IDs, and answer keys are unchanged.
+- Added optional registered `lab` links, a teaching walkthrough, and numeric/backend/browser verification. No database migration, provider calls, or learner awards are made by the toys.
+- M5 is next; actual Google credential gates from M2/M3 remain pending. See [M4 verification](M4_VALIDATION.md).
+
 ## 1 October 2026: M3 software
 
 - Added schema-v3 saved conversations/personas, selected multi-turn context, streaming snapshots, Stop, recovery, explicit reply variants, and reversible archive/restore.

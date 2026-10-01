@@ -22,7 +22,7 @@ Verify actual contrast in the implemented combinations, including muted text, di
 
 ### Home
 
-Top: brand, Learn, Build, My Chatbot, Settings. Main: “Ready for your next experiment?” and one large Continue action. Below: eight zones in an ordered learning path; twelve authored lessons are available, future zones have descriptive outlines. A small workshop summary shows which chatbot features already work.
+Top: brand, Learn, Build, My Chatbot, Settings. Main: “Ready for your next experiment?” and one large Continue action. Below: eight zones in an ordered learning path; fifteen authored lessons are available, future zones have descriptive outlines. A small workshop summary shows which chatbot features already work.
 
 No invented achievements or usage numbers. The first-time state says “Your first experiment is ready.”
 
@@ -71,3 +71,9 @@ On phones the lesson contents are expandable. Play and Quiz use a shorter lesson
 Font sources: [Bricolage Grotesque](https://github.com/google/fonts/tree/main/ofl/bricolagegrotesque), [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans). The custom SVG illustrations and icons are native project assets.
 
 See [UI verification](UI_VALIDATION.md) for measured checks and limits.
+
+## Model Observatory · M4
+
+A citrus orbital illustration introduces three keyboard-accessible experiment tabs. Sage controls sit beside live numeric results. Fruit ranking has numeric cosine values and meters; zero vectors explicitly have no direction. Attention rows pair weights with visible mask labels. Training shows separate sage training and apricot held-out losses, with solid/dashed chart lines and an exact-value table. No learner achievements or provider outputs are invented.
+
+Phone layouts stack controls and results. Inputs and explanations remain still; entrance and tab motion use the existing system/user preference. The page links from Build and authored L13–L15.

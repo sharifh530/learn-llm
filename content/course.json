@@ -1,7 +1,7 @@
 {
   "id": "tiny-chat-lab",
   "title": "Tiny Chat Lab",
-  "version": 3,
+  "version": 4,
   "learner_level": "Basic Python; no machine learning prerequisites",
   "provider": "google_cloud_vertex",
   "xp": {
@@ -203,26 +203,29 @@
     {
       "id": "L13",
       "title": "Similarity on a map",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L12"
-      ]
+      ],
+      "path": "lessons/L13.json"
     },
     {
       "id": "L14",
       "title": "Attention Spotlight",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L13"
-      ]
+      ],
+      "path": "lessons/L14.json"
     },
     {
       "id": "L15",
       "title": "Inside the training gym",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L14"
-      ]
+      ],
+      "path": "lessons/L15.json"
     },
     {
       "id": "L16",

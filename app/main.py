@@ -4,6 +4,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -19,6 +20,8 @@ from app.providers import AIError
 from app.progress import ProgressError, ProgressService
 from app.chat import ChatService, PERSONAS
 from app.models import ChatCreate, ChatUpdate, ChatRetry, ChatSelection, ChatContext, EmptyInput
+from app.models import SimilarityToy, AttentionToy, TrainingToy
+from app import labs
 
 
 def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None):
@@ -59,6 +62,13 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     async def progress_error(request, error):
         return JSONResponse({"detail": str(error)}, status_code=error.status)
 
+    @app.exception_handler(RequestValidationError)
+    async def invalid_input(request, error):
+        # Raw invalid values can include NaN/Infinity or exception objects.
+        # Return stable field diagnostics without echoing unserializable inputs.
+        details = [{key: item[key] for key in ("type", "loc", "msg")} for item in error.errors()]
+        return JSONResponse({"detail": details}, status_code=422)
+
     @app.exception_handler(AIError)
     async def ai_error(request, error):
         return JSONResponse({"detail": str(error), "code": error.code}, status_code=error.status)
@@ -93,6 +103,22 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     @app.get("/workshop", response_class=HTMLResponse)
     def workshop(request: Request):
         return render(request, "workshop.html", entries=progress.journals())
+
+    @app.get('/observatory',response_class=HTMLResponse)
+    def observatory(request: Request):
+        return render(request,'observatory.html',fruits=labs.FRUITS,words=labs.WORDS)
+
+    @app.post('/api/labs/similarity')
+    def similarity_toy(body: SimilarityToy):
+        return labs.similarity(body.vector)
+
+    @app.post('/api/labs/attention')
+    def attention_toy(body: AttentionToy):
+        return labs.attention(body.scores,body.query_index,body.causal,body.temperature)
+
+    @app.post('/api/labs/training')
+    def training_toy(body: TrainingToy):
+        return labs.training(body.weight,body.learning_rate,body.steps,body.operation)
 
     @app.get("/chat", response_class=HTMLResponse)
     def chat(request: Request):
@@ -215,6 +241,6 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "milestone": "M3", "mode": ai.status()["mode"]}
+        return {"status": "ok", "milestone": "M4", "mode": ai.status()["mode"]}
 
     return app

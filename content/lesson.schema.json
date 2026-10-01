@@ -54,7 +54,8 @@
       }
     },
     "reflection": {"$ref": "#/$defs/text"},
-    "tutor_context": {"$ref": "#/$defs/text"}
+    "tutor_context": {"$ref": "#/$defs/text"},
+    "lab": {"type": "string", "enum": ["similarity", "attention", "training"]}
   },
   "$defs": {
     "text": {"type": "string", "minLength": 1},

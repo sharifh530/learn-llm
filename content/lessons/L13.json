@@ -1,0 +1,211 @@
+{
+  "id": "L13",
+  "version": 1,
+  "status": "authored",
+  "title": "Similarity on a map",
+  "zone": "Model Observatory",
+  "minutes": 25,
+  "prerequisites": [
+    "L12"
+  ],
+  "objectives": [
+    "Describe a vector as an ordered list of numeric features.",
+    "Compare directions with cosine and handle a zero vector honestly.",
+    "Distinguish authored features from learned language embeddings."
+  ],
+  "prediction": "Apple has [7, 8, 3]. Would [3.5, 4, 1.5] have a different direction? What about [0, 0, 0]?",
+  "explanation": [
+    "Imagine each fruit has a fingerprint with three ratings: sweetness, crunch, sourness. Apple is [7, 8, 3]. The order matters: changing it changes what the numbers mean. This vector is a human-made representation, not a fruit identifier or a learned embedding.",
+    "Cosine similarity compares the angle between two vectors using dot product divided by their magnitudes. Magnitude is sqrt(sum of squared features), not the number of list items. Same direction gives 1; perpendicular directions give 0; opposite directions give -1. Our nonnegative fruit ratings stay between 0 and 1.",
+    "Halving all Apple features preserves its direction, so cosine stays 1. Raising only sourness rotates the direction toward Lemon in our tiny feature space. A zero vector has no direction: return None and show Undefined instead of inventing a similarity or a winner.",
+    "Language-model embeddings are numeric representations learned from data. Our three fruit ratings only illustrate representation and comparison. Similarity depends on the representation and metric; a high score cannot prove two sentences mean the same thing, or that either is true.",
+    "Open Fruit vectors in the Model Observatory. Change one slider at a time and predict the ranking. The browser sends three bounded numbers to app/labs.py. Python computes the comparison locally. Nothing is sent to Google, and no lesson credit is earned by moving sliders."
+  ],
+  "analogy_limit": "Fruit ratings are authored, low-dimensional features. They are not Gemini embeddings, semantic search, or evidence of truth. A numeric match is meaningful only relative to the chosen representation.",
+  "python_example": {
+    "code": "from math import sqrt\n\ndef cosine(a, b):\n    magnitude = sqrt(sum(x*x for x in a)) * sqrt(sum(x*x for x in b))\n    if magnitude == 0:\n        return None\n    return sum(x*y for x, y in zip(a, b)) / magnitude\n\napple = [7, 8, 3]\nscaled = [3.5, 4, 1.5]\nprint(f'Same direction: {cosine(apple, scaled):.4f}')\nprint('Zero vector:', cosine(apple, [0, 0, 0]))\n",
+    "expected_output": "Same direction: 1.0000\nZero vector: None\n",
+    "walkthrough": [
+      "zip pairs corresponding feature positions.",
+      "The two square roots compute magnitudes.",
+      "The zero check prevents dividing by zero.",
+      "Scaling each feature equally changes magnitude but preserves direction."
+    ]
+  },
+  "game": {
+    "id": "L13-game",
+    "type": "choice_rounds",
+    "title": "Fruit Fingerprint Match",
+    "instructions": "Predict the result, then read every explanation. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L13-game-r1",
+        "prompt": "Apple [7, 8, 3] is scaled to [3.5, 4, 1.5]. Its cosine with Apple is…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "0.5"
+          },
+          {
+            "id": "c",
+            "text": "Undefined"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Both vectors point in the same direction.",
+          "b": "Half the magnitude does not mean half the cosine.",
+          "c": "Both magnitudes are nonzero."
+        }
+      },
+      {
+        "id": "L13-game-r2",
+        "prompt": "Your imaginary fruit is [0, 0, 10]. Which authored fruit points closest?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Banana [9, 2, 1]"
+          },
+          {
+            "id": "b",
+            "text": "Lemon [2, 1, 10]"
+          },
+          {
+            "id": "c",
+            "text": "Apple [7, 8, 3]"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Banana mostly points along sweetness.",
+          "b": "The sourness dimension dominates both directions.",
+          "c": "Apple has more sweetness and crunch than sourness."
+        }
+      },
+      {
+        "id": "L13-game-r3",
+        "prompt": "All three sliders are zero. What should the app display?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Apple wins by default"
+          },
+          {
+            "id": "b",
+            "text": "Every cosine is exactly 0"
+          },
+          {
+            "id": "c",
+            "text": "Undefined cosine; no direction"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "A default order is not a mathematical winner.",
+          "b": "Undefined is different from a perpendicular vector.",
+          "c": "The denominator is zero, so no direction can be compared."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L13-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L13-quiz-r1",
+        "prompt": "What does vector [7, 8, 3] mean in this toy?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Seven tokens, eight prompts, three replies"
+          },
+          {
+            "id": "b",
+            "text": "Sweetness 7, crunch 8, sourness 3"
+          },
+          {
+            "id": "c",
+            "text": "A secret Gemini embedding"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "These dimensions are fruit features.",
+          "b": "Ordered feature meanings make the vector interpretable.",
+          "c": "The numbers were authored by humans."
+        }
+      },
+      {
+        "id": "L13-quiz-r2",
+        "prompt": "What is length in the cosine denominator?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Magnitude from squared features"
+          },
+          {
+            "id": "b",
+            "text": "The list length, always 3"
+          },
+          {
+            "id": "c",
+            "text": "The length of the fruit name"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "sqrt(sum(x*x)) measures magnitude.",
+          "b": "The feature count is not magnitude.",
+          "c": "String length is irrelevant to this formula."
+        }
+      },
+      {
+        "id": "L13-quiz-r3",
+        "prompt": "Two sentences have high vector similarity. What can you conclude without other evidence?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Both are true"
+          },
+          {
+            "id": "b",
+            "text": "They are identical"
+          },
+          {
+            "id": "c",
+            "text": "Their representations are close under that metric"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Similarity cannot verify factual truth.",
+          "b": "Different inputs can produce similar vectors.",
+          "c": "The representation and metric define what close means."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L13-build",
+    "title": "Invent a fruit and test a direction",
+    "instructions": "Open the Fruit vectors toy. Compare Apple, a sour fruit, and the zero vector. Run the Python example locally and change scaled to [7, 8, 6]. Write the two cosine results and explain why only changing sourness changes direction. Save your observation in the journal before marking this practice done.",
+    "criteria": [
+      "You record the scaled-Apple match and explain why the zero vector has no winner.",
+      "You describe your invented vector as authored features, without calling it a learned language embedding."
+    ],
+    "hints": [
+      "First use [7, 8, 3], then [0, 0, 10], then [0, 0, 0].",
+      "In Python, replace only the third scaled feature to change direction rather than uniformly scale."
+    ],
+    "reference_solution": "Scaled Apple has cosine 1.0000. [7, 8, 6] is about 0.9716 with Apple. An all-zero vector has undefined cosine. These claims concern the authored fruit features only."
+  },
+  "reflection": "Why does scaling every feature preserve cosine while changing just sourness usually changes it?",
+  "lab": "similarity",
+  "tutor_context": "Teach Similarity on a map using the authored local similarity toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+}

@@ -1,6 +1,6 @@
 # Authored lessons: Tiny Chat Lab
 
-Start with L01. Predict before running code or revealing answers. The first twelve examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison.
+Start with L01. Predict before running code or revealing answers. The first fifteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory.
 
 These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries locally.
 
@@ -2528,5 +2528,644 @@ Demo variants can be identical because the same rule receives the same input. Th
 ### Explain it back
 
 Which rubric criterion could a cheerful, confident reply still fail? Give a concrete example.
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L13: Similarity on a map
+
+Model Observatory · about 25 minutes · version 1
+
+### Your goal
+
+- Describe a vector as an ordered list of numeric features.
+- Compare directions with cosine and handle a zero vector honestly.
+- Distinguish authored features from learned language embeddings.
+
+### Predict first
+
+Apple has [7, 8, 3]. Would [3.5, 4, 1.5] have a different direction? What about [0, 0, 0]?
+
+### Learn
+
+Imagine each fruit has a fingerprint with three ratings: sweetness, crunch, sourness. Apple is [7, 8, 3]. The order matters: changing it changes what the numbers mean. This vector is a human-made representation, not a fruit identifier or a learned embedding.
+
+Cosine similarity compares the angle between two vectors using dot product divided by their magnitudes. Magnitude is sqrt(sum of squared features), not the number of list items. Same direction gives 1; perpendicular directions give 0; opposite directions give -1. Our nonnegative fruit ratings stay between 0 and 1.
+
+Halving all Apple features preserves its direction, so cosine stays 1. Raising only sourness rotates the direction toward Lemon in our tiny feature space. A zero vector has no direction: return None and show Undefined instead of inventing a similarity or a winner.
+
+Language-model embeddings are numeric representations learned from data. Our three fruit ratings only illustrate representation and comparison. Similarity depends on the representation and metric; a high score cannot prove two sentences mean the same thing, or that either is true.
+
+Open Fruit vectors in the Model Observatory. Change one slider at a time and predict the ranking. The browser sends three bounded numbers to app/labs.py. Python computes the comparison locally. Nothing is sent to Google, and no lesson credit is earned by moving sliders.
+
+**Interactive toy:** [Open the similarity experiment](http://127.0.0.1:8001/observatory?experiment=similarity) in the running local app. No Google request or XP is involved.
+
+**Where the analogy stops:** Fruit ratings are authored, low-dimensional features. They are not Gemini embeddings, semantic search, or evidence of truth. A numeric match is meaningful only relative to the chosen representation.
+
+### Run a tiny Python example
+
+```python
+from math import sqrt
+
+def cosine(a, b):
+    magnitude = sqrt(sum(x*x for x in a)) * sqrt(sum(x*x for x in b))
+    if magnitude == 0:
+        return None
+    return sum(x*y for x, y in zip(a, b)) / magnitude
+
+apple = [7, 8, 3]
+scaled = [3.5, 4, 1.5]
+print(f'Same direction: {cosine(apple, scaled):.4f}')
+print('Zero vector:', cosine(apple, [0, 0, 0]))
+```
+
+Expected output:
+
+```text
+Same direction: 1.0000
+Zero vector: None
+```
+
+- zip pairs corresponding feature positions.
+- The two square roots compute magnitudes.
+- The zero check prevents dividing by zero.
+- Scaling each feature equally changes magnitude but preserves direction.
+
+### Play: Fruit Fingerprint Match
+
+Predict the result, then read every explanation. Get two of three right.
+
+#### Round 1
+
+Apple [7, 8, 3] is scaled to [3.5, 4, 1.5]. Its cosine with Apple is…
+
+1. 1
+2. 0.5
+3. Undefined
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **1**.
+
+- **1**: Both vectors point in the same direction.
+- **0.5**: Half the magnitude does not mean half the cosine.
+- **Undefined**: Both magnitudes are nonzero.
+
+</details>
+
+#### Round 2
+
+Your imaginary fruit is [0, 0, 10]. Which authored fruit points closest?
+
+1. Banana [9, 2, 1]
+2. Lemon [2, 1, 10]
+3. Apple [7, 8, 3]
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Lemon [2, 1, 10]**.
+
+- **Banana [9, 2, 1]**: Banana mostly points along sweetness.
+- **Lemon [2, 1, 10]**: The sourness dimension dominates both directions.
+- **Apple [7, 8, 3]**: Apple has more sweetness and crunch than sourness.
+
+</details>
+
+#### Round 3
+
+All three sliders are zero. What should the app display?
+
+1. Apple wins by default
+2. Every cosine is exactly 0
+3. Undefined cosine; no direction
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Undefined cosine; no direction**.
+
+- **Apple wins by default**: A default order is not a mathematical winner.
+- **Every cosine is exactly 0**: Undefined is different from a perpendicular vector.
+- **Undefined cosine; no direction**: The denominator is zero, so no direction can be compared.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+What does vector [7, 8, 3] mean in this toy?
+
+1. Seven tokens, eight prompts, three replies
+2. Sweetness 7, crunch 8, sourness 3
+3. A secret Gemini embedding
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Sweetness 7, crunch 8, sourness 3**.
+
+- **Seven tokens, eight prompts, three replies**: These dimensions are fruit features.
+- **Sweetness 7, crunch 8, sourness 3**: Ordered feature meanings make the vector interpretable.
+- **A secret Gemini embedding**: The numbers were authored by humans.
+
+</details>
+
+#### Question 2
+
+What is length in the cosine denominator?
+
+1. Magnitude from squared features
+2. The list length, always 3
+3. The length of the fruit name
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Magnitude from squared features**.
+
+- **Magnitude from squared features**: sqrt(sum(x*x)) measures magnitude.
+- **The list length, always 3**: The feature count is not magnitude.
+- **The length of the fruit name**: String length is irrelevant to this formula.
+
+</details>
+
+#### Question 3
+
+Two sentences have high vector similarity. What can you conclude without other evidence?
+
+1. Both are true
+2. They are identical
+3. Their representations are close under that metric
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Their representations are close under that metric**.
+
+- **Both are true**: Similarity cannot verify factual truth.
+- **They are identical**: Different inputs can produce similar vectors.
+- **Their representations are close under that metric**: The representation and metric define what close means.
+
+</details>
+
+### Build mission: Invent a fruit and test a direction
+
+Open the Fruit vectors toy. Compare Apple, a sour fruit, and the zero vector. Run the Python example locally and change scaled to [7, 8, 6]. Write the two cosine results and explain why only changing sourness changes direction. Save your observation in the journal before marking this practice done.
+
+You are done when:
+
+- You record the scaled-Apple match and explain why the zero vector has no winner.
+- You describe your invented vector as authored features, without calling it a learned language embedding.
+
+<details>
+<summary>Hints</summary>
+
+1. First use [7, 8, 3], then [0, 0, 10], then [0, 0, 0].
+2. In Python, replace only the third scaled feature to change direction rather than uniformly scale.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+Scaled Apple has cosine 1.0000. [7, 8, 6] is about 0.9716 with Apple. An all-zero vector has undefined cosine. These claims concern the authored fruit features only.
+```
+
+</details>
+
+### Explain it back
+
+Why does scaling every feature preserve cosine while changing just sourness usually changes it?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L14: Attention Spotlight
+
+Model Observatory · about 25 minutes · version 1
+
+### Your goal
+
+- Turn manual scores into nonnegative weights with softmax.
+- Use a causal mask to prevent future positions contributing.
+- Compute a weighted value and explain why the toy is not model introspection.
+
+### Predict first
+
+If the query is the first word and future words are masked, can a very high score on the last word change the result?
+
+### Learn
+
+Think of a mixing desk: each visible position contributes a value with a different weight. Our sentence is The animal crossed because it was tired. These seven words are illustrative pieces; a real tokenizer may split text differently. You manually supply scores for one chosen query position.
+
+Softmax makes scores into positive weights whose sum is 1. Compute exp(score - largest allowed score), then divide each exponential by their total. Subtracting the largest score keeps the calculation stable without changing the normalized weights. Bigger allowed scores get larger weights, but a weight is not a proof of grammatical reference or importance.
+
+With the causal mask on, positions after the query receive exactly zero weight. The query can mix itself and earlier positions. Choose The: only itself is visible. Choose it: was and tired are masked, even if you give them score 3. Masking happens before normalization over the allowed scores.
+
+The toy output is sum(weight * value). Each value here is a human-chosen scalar. Score softness divides scores before softmax: lower softness sharpens the difference, higher softness spreads it. This setting affects only this toy; it is separate from your chatbot's output sampling temperature.
+
+Real transformer attention derives query, key, and value representations through learned projections. Our sliders replace that score-making process. Attention is one part of a model that also has embeddings, feed-forward transformations, position information, and other structure. The experiment cannot expose Gemini's attention or private reasoning. Research reference: Attention Is All You Need (https://arxiv.org/abs/1706.03762).
+
+**Interactive toy:** [Open the attention experiment](http://127.0.0.1:8001/observatory?experiment=attention) in the running local app. No Google request or XP is involved.
+
+**Where the analogy stops:** The spotlight is a weighted mixture of authored scalar values. Manual scores do not come from a model, and visible weights do not reveal private reasoning. One toy query is not a complete transformer.
+
+### Run a tiny Python example
+
+```python
+from math import exp
+
+scores = [0, 2, 3]
+values = [0.1, 0.9, 0.5]
+query = 1
+allowed = [i <= query for i in range(len(scores))]
+peak = max(s for s, keep in zip(scores, allowed) if keep)
+parts = [exp(s - peak) if keep else 0 for s, keep in zip(scores, allowed)]
+weights = [part / sum(parts) for part in parts]
+print('Weights:', ', '.join(f'{w:.4f}' for w in weights))
+print(f'Total: {sum(weights):.4f}')
+print(f'Output: {sum(w*v for w, v in zip(weights, values)):.4f}')
+```
+
+Expected output:
+
+```text
+Weights: 0.1192, 0.8808, 0.0000
+Total: 1.0000
+Output: 0.8046
+```
+
+- query=1 is the second position because Python indexes start at zero.
+- Only positions 0 and 1 enter normalization.
+- The masked score 3 contributes exactly zero.
+- Multiply each normalized weight by its corresponding authored value and add.
+
+### Play: The Context Mixing Desk
+
+Predict the result, then read every explanation. Get two of three right.
+
+#### Round 1
+
+The query is The, position 1, with the causal mask on. What contributes?
+
+1. Only The
+2. All seven positions
+3. Only the last position
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Only The**.
+
+- **Only The**: The query and earlier positions are allowed; there are no earlier ones.
+- **All seven positions**: Future positions are masked.
+- **Only the last position**: The last position is in the future.
+
+</details>
+
+#### Round 2
+
+All five allowed scores are equal. Each allowed weight is…
+
+1. 1
+2. 0.2
+3. 0
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **0.2**.
+
+- **1**: Five weights of 1 would sum to 5.
+- **0.2**: Equal scores share the total equally: 1/5.
+- **0**: At least one allowed value must contribute.
+
+</details>
+
+#### Round 3
+
+You increase the score of a masked future word. Its weight becomes…
+
+1. The largest weight
+2. A negative weight
+3. Exactly zero
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Exactly zero**.
+
+- **The largest weight**: Masked scores do not enter the normalization.
+- **A negative weight**: Softmax weights are never negative.
+- **Exactly zero**: The mask excludes future positions regardless of score.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+What is the sum of these normalized toy weights?
+
+1. 1
+2. The sum of input scores
+3. The number of words
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **1**.
+
+- **1**: Normalization divides each allowed exponential by their shared total.
+- **The sum of input scores**: Scores can include negative values and need not sum to 1.
+- **The number of words**: The total does not grow with word count.
+
+</details>
+
+#### Question 2
+
+Where did this toy get its attention scores?
+
+1. From Gemini private reasoning
+2. From your sliders
+3. From training on the chat database
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **From your sliders**.
+
+- **From Gemini private reasoning**: No model is called.
+- **From your sliders**: They are manual scores, separate from learned query/key projections.
+- **From training on the chat database**: Chat storage does not train the toy.
+
+</details>
+
+#### Question 3
+
+What does lowering Score softness change?
+
+1. The Google chat temperature
+2. The tokenizer
+3. The distribution of this toy’s allowed weights
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **The distribution of this toy’s allowed weights**.
+
+- **The Google chat temperature**: The observatory has no connection to chat generation settings.
+- **The tokenizer**: The seven illustrative positions remain fixed.
+- **The distribution of this toy’s allowed weights**: Dividing by a smaller positive number sharpens differences.
+
+</details>
+
+### Build mission: Mask a future word, then mix values
+
+Open Attention mixer. Select it, keep the causal mask on, and raise tired to 3. Record why its weight remains zero. Switch the mask off and compare. Run the Python example, change the masked score from 3 to -3, and verify the output stays the same. Record what was manual and what was calculated in the journal.
+
+You are done when:
+
+- You show a masked future position stays at zero regardless of its manual score.
+- You explain softmax normalization and weighted values without claiming to inspect a real model.
+
+<details>
+<summary>Hints</summary>
+
+1. Python query=1 permits indices 0 and 1 only.
+2. Compare the sum of weights and output before and after changing the excluded score.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+With query it and a causal mask, was and tired contribute zero. Without the mask, their weights can be positive. The three-position Python toy output stays 0.8046 when the excluded third score changes. The scores and values are authored inputs, not model internals.
+```
+
+</details>
+
+### Explain it back
+
+Which parts did you choose manually, and which parts did softmax calculate? Why is this different from explaining a model’s reasoning?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L15: Inside the training gym
+
+Model Observatory · about 25 minutes · version 1
+
+### Your goal
+
+- Separate inference from a parameter update using one weight.
+- Use squared loss and a gradient step to fit a training example.
+- Compare training improvement with a held-out check and learning-rate behavior.
+
+### Predict first
+
+Weight 1 predicts 1 for x=1 and 2 for x=2. Training wants x=1 → 3; the check wants x=2 → 4. Will every training improvement help both?
+
+### Learn
+
+Our entire model is prediction = weight * x. A parameter is a number used by the model; here there is exactly one. Inference uses the current weight to calculate a prediction. Training changes the weight according to a learning rule. Saving a chat or moving a prediction slider is not automatically hosted-model training.
+
+The training example is x=1, target=3. Its squared loss is (weight - 3)**2. The gradient is 2 * (weight - 3), indicating how loss changes with weight. Update with weight = weight - learning_rate * gradient. With weight 1 and rate 0.25, gradient -4 moves the weight to 2 and training loss from 4 to 1.
+
+A held-out check uses x=2, target=4, and does not influence the update. Weight 2 predicts 4, so its check loss is zero. Train again: weight 2.5 predicts 5 on the check, so check loss becomes 1 even as training loss falls to 0.25. Continued training approaches weight 3: excellent on training, but about 6 on the check.
+
+One weight cannot fit both authored examples exactly: the training pair wants weight 3, the check pair wants weight 2. This tiny misspecified model demonstrates why lower training loss alone does not guarantee performance elsewhere. One check example is not a full evaluation dataset, and this is not a general proof of overfitting.
+
+Learning rate controls step size. In this specific quadratic, rate 0.25 steadily approaches 3. Rate 1 from weight 1 bounces 1 → 5 → 1 without reducing training loss. These observations are about our toy, not a recommended optimizer setting for all neural networks.
+
+A transformer has many learned parameters, including embeddings and attention projections, plus feed-forward layers. Training our single weight illustrates an update rule without building a language model or altering Gemini. Open Training gym, predict first, then explicitly train. Only those Train buttons apply gradient updates.
+
+**Interactive toy:** [Open the training experiment](http://127.0.0.1:8001/observatory?experiment=training) in the running local app. No Google request or XP is involved.
+
+**Where the analogy stops:** The gym fits one authored numeric example with one parameter. It has no language ability, no transformer architecture, and cannot change a hosted model. A single held-out check illustrates a limitation rather than certifying generalization.
+
+### Run a tiny Python example
+
+```python
+weight = 1.0
+rate = 0.25
+for step in range(1, 4):
+    gradient = 2 * (weight - 3)
+    weight -= rate * gradient
+    train_loss = (weight - 3)**2
+    check_loss = (2*weight - 4)**2
+    print(f'{step}: weight={weight:.4f}, train={train_loss:.4f}, check={check_loss:.4f}')
+```
+
+Expected output:
+
+```text
+1: weight=2.0000, train=1.0000, check=0.0000
+2: weight=2.5000, train=0.2500, check=1.0000
+3: weight=2.7500, train=0.0625, check=2.2500
+```
+
+- Start with one explicit numeric parameter.
+- Compute the gradient using only the training target 3.
+- Subtract the rate-scaled gradient to update the weight.
+- The held-out loss is measured after the update but never used in the gradient.
+
+### Play: Coach One Number
+
+Predict the result, then read every explanation. Get two of three right.
+
+#### Round 1
+
+At weight 1, you click Predict only. What is the next weight?
+
+1. 1
+2. 2
+3. 3
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **1**.
+
+- **1**: Inference reads the parameter; it does not apply an update.
+- **2**: That would be one rate-0.25 training update.
+- **3**: That is the training optimum, not an inference result.
+
+</details>
+
+#### Round 2
+
+At weight 1 and rate 0.25, gradient -4 gives new weight…
+
+1. 0
+2. 2
+3. -3
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **2**.
+
+- **0**: Subtracting a negative update increases the weight.
+- **2**: 1 - 0.25*(-4) = 2.
+- **-3**: The gradient is scaled and subtracted, not added directly.
+
+</details>
+
+#### Round 3
+
+Training from weight 2 to 2.5 makes the held-out prediction…
+
+1. 4
+2. 2.5
+3. 5
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **5**.
+
+- **4**: That was the previous prediction at weight 2.
+- **2.5**: The held-out input is 2, not 1.
+- **5**: prediction = 2.5 * 2; the held-out target is still 4.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+Which example determines this toy’s gradient?
+
+1. Both examples
+2. Only x=1 → 3
+3. Every saved chat
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Only x=1 → 3**.
+
+- **Both examples**: The check is deliberately held out of the update.
+- **Only x=1 → 3**: The gradient comes from the training loss (weight - 3)**2.
+- **Every saved chat**: The numeric toy never reads saved chats.
+
+</details>
+
+#### Question 2
+
+Rate 1, starting at weight 1, produces…
+
+1. 1 → 5 → 1, bouncing
+2. 1 → 2 → 2.5, settling
+3. No parameter changes
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **1 → 5 → 1, bouncing**.
+
+- **1 → 5 → 1, bouncing**: Large steps cross the optimum without reducing this quadratic loss.
+- **1 → 2 → 2.5, settling**: That sequence uses rate 0.25.
+- **No parameter changes**: Train still updates the weight.
+
+</details>
+
+#### Question 3
+
+Training loss falls while held-out loss rises. What should you say?
+
+1. The model is universally better
+2. The check is training data
+3. Improvement on the training example did not transfer to this check
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Improvement on the training example did not transfer to this check**.
+
+- **The model is universally better**: One loss cannot establish general quality.
+- **The check is training data**: The check did not influence the update.
+- **Improvement on the training example did not transfer to this check**: This toy cannot fit both examples with one parameter.
+
+</details>
+
+### Build mission: Predict, train, then check
+
+Open Training gym at weight 1 and rate 0.25. Click Predict only and confirm weight stays 1. Train once, record both losses, then train again and compare. Try ten steps, then reset and use rate 1 for two steps. Run the Python example and save the observed weight and loss changes in the journal.
+
+You are done when:
+
+- You distinguish a prediction from a gradient update and record two concrete weight transitions.
+- You compare training and check loss, explaining why lower training loss alone is insufficient here.
+
+<details>
+<summary>Hints</summary>
+
+1. At weight 2 the check is exact; look at what happens after the next training update.
+2. Reset before trying rate 1 so the bounce starts at weight 1.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+Predict only preserves weight 1. Rate 0.25 training gives weight 2 (train loss 1, check 0), then 2.5 (train 0.25, check 1). More steps approach weight 3 while the check prediction approaches 6. Rate 1 bounces 1 → 5 → 1. The check is measured, not used to train.
+```
+
+</details>
+
+### Explain it back
+
+Use the two losses to explain why a good training score is not enough. Which exact operation changed the weight?
 
 **Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.

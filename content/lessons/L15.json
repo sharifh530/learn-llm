@@ -1,0 +1,212 @@
+{
+  "id": "L15",
+  "version": 1,
+  "status": "authored",
+  "title": "Inside the training gym",
+  "zone": "Model Observatory",
+  "minutes": 25,
+  "prerequisites": [
+    "L14"
+  ],
+  "objectives": [
+    "Separate inference from a parameter update using one weight.",
+    "Use squared loss and a gradient step to fit a training example.",
+    "Compare training improvement with a held-out check and learning-rate behavior."
+  ],
+  "prediction": "Weight 1 predicts 1 for x=1 and 2 for x=2. Training wants x=1 → 3; the check wants x=2 → 4. Will every training improvement help both?",
+  "explanation": [
+    "Our entire model is prediction = weight * x. A parameter is a number used by the model; here there is exactly one. Inference uses the current weight to calculate a prediction. Training changes the weight according to a learning rule. Saving a chat or moving a prediction slider is not automatically hosted-model training.",
+    "The training example is x=1, target=3. Its squared loss is (weight - 3)**2. The gradient is 2 * (weight - 3), indicating how loss changes with weight. Update with weight = weight - learning_rate * gradient. With weight 1 and rate 0.25, gradient -4 moves the weight to 2 and training loss from 4 to 1.",
+    "A held-out check uses x=2, target=4, and does not influence the update. Weight 2 predicts 4, so its check loss is zero. Train again: weight 2.5 predicts 5 on the check, so check loss becomes 1 even as training loss falls to 0.25. Continued training approaches weight 3: excellent on training, but about 6 on the check.",
+    "One weight cannot fit both authored examples exactly: the training pair wants weight 3, the check pair wants weight 2. This tiny misspecified model demonstrates why lower training loss alone does not guarantee performance elsewhere. One check example is not a full evaluation dataset, and this is not a general proof of overfitting.",
+    "Learning rate controls step size. In this specific quadratic, rate 0.25 steadily approaches 3. Rate 1 from weight 1 bounces 1 → 5 → 1 without reducing training loss. These observations are about our toy, not a recommended optimizer setting for all neural networks.",
+    "A transformer has many learned parameters, including embeddings and attention projections, plus feed-forward layers. Training our single weight illustrates an update rule without building a language model or altering Gemini. Open Training gym, predict first, then explicitly train. Only those Train buttons apply gradient updates."
+  ],
+  "analogy_limit": "The gym fits one authored numeric example with one parameter. It has no language ability, no transformer architecture, and cannot change a hosted model. A single held-out check illustrates a limitation rather than certifying generalization.",
+  "python_example": {
+    "code": "weight = 1.0\nrate = 0.25\nfor step in range(1, 4):\n    gradient = 2 * (weight - 3)\n    weight -= rate * gradient\n    train_loss = (weight - 3)**2\n    check_loss = (2*weight - 4)**2\n    print(f'{step}: weight={weight:.4f}, train={train_loss:.4f}, check={check_loss:.4f}')\n",
+    "expected_output": "1: weight=2.0000, train=1.0000, check=0.0000\n2: weight=2.5000, train=0.2500, check=1.0000\n3: weight=2.7500, train=0.0625, check=2.2500\n",
+    "walkthrough": [
+      "Start with one explicit numeric parameter.",
+      "Compute the gradient using only the training target 3.",
+      "Subtract the rate-scaled gradient to update the weight.",
+      "The held-out loss is measured after the update but never used in the gradient."
+    ]
+  },
+  "game": {
+    "id": "L15-game",
+    "type": "choice_rounds",
+    "title": "Coach One Number",
+    "instructions": "Predict the result, then read every explanation. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L15-game-r1",
+        "prompt": "At weight 1, you click Predict only. What is the next weight?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "2"
+          },
+          {
+            "id": "c",
+            "text": "3"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Inference reads the parameter; it does not apply an update.",
+          "b": "That would be one rate-0.25 training update.",
+          "c": "That is the training optimum, not an inference result."
+        }
+      },
+      {
+        "id": "L15-game-r2",
+        "prompt": "At weight 1 and rate 0.25, gradient -4 gives new weight…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "0"
+          },
+          {
+            "id": "b",
+            "text": "2"
+          },
+          {
+            "id": "c",
+            "text": "-3"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Subtracting a negative update increases the weight.",
+          "b": "1 - 0.25*(-4) = 2.",
+          "c": "The gradient is scaled and subtracted, not added directly."
+        }
+      },
+      {
+        "id": "L15-game-r3",
+        "prompt": "Training from weight 2 to 2.5 makes the held-out prediction…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "4"
+          },
+          {
+            "id": "b",
+            "text": "2.5"
+          },
+          {
+            "id": "c",
+            "text": "5"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "That was the previous prediction at weight 2.",
+          "b": "The held-out input is 2, not 1.",
+          "c": "prediction = 2.5 * 2; the held-out target is still 4."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L15-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L15-quiz-r1",
+        "prompt": "Which example determines this toy’s gradient?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Both examples"
+          },
+          {
+            "id": "b",
+            "text": "Only x=1 → 3"
+          },
+          {
+            "id": "c",
+            "text": "Every saved chat"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The check is deliberately held out of the update.",
+          "b": "The gradient comes from the training loss (weight - 3)**2.",
+          "c": "The numeric toy never reads saved chats."
+        }
+      },
+      {
+        "id": "L15-quiz-r2",
+        "prompt": "Rate 1, starting at weight 1, produces…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1 → 5 → 1, bouncing"
+          },
+          {
+            "id": "b",
+            "text": "1 → 2 → 2.5, settling"
+          },
+          {
+            "id": "c",
+            "text": "No parameter changes"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Large steps cross the optimum without reducing this quadratic loss.",
+          "b": "That sequence uses rate 0.25.",
+          "c": "Train still updates the weight."
+        }
+      },
+      {
+        "id": "L15-quiz-r3",
+        "prompt": "Training loss falls while held-out loss rises. What should you say?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The model is universally better"
+          },
+          {
+            "id": "b",
+            "text": "The check is training data"
+          },
+          {
+            "id": "c",
+            "text": "Improvement on the training example did not transfer to this check"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "One loss cannot establish general quality.",
+          "b": "The check did not influence the update.",
+          "c": "This toy cannot fit both examples with one parameter."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L15-build",
+    "title": "Predict, train, then check",
+    "instructions": "Open Training gym at weight 1 and rate 0.25. Click Predict only and confirm weight stays 1. Train once, record both losses, then train again and compare. Try ten steps, then reset and use rate 1 for two steps. Run the Python example and save the observed weight and loss changes in the journal.",
+    "criteria": [
+      "You distinguish a prediction from a gradient update and record two concrete weight transitions.",
+      "You compare training and check loss, explaining why lower training loss alone is insufficient here."
+    ],
+    "hints": [
+      "At weight 2 the check is exact; look at what happens after the next training update.",
+      "Reset before trying rate 1 so the bounce starts at weight 1."
+    ],
+    "reference_solution": "Predict only preserves weight 1. Rate 0.25 training gives weight 2 (train loss 1, check 0), then 2.5 (train 0.25, check 1). More steps approach weight 3 while the check prediction approaches 6. Rate 1 bounces 1 → 5 → 1. The check is measured, not used to train."
+  },
+  "reflection": "Use the two losses to explain why a good training score is not enough. Which exact operation changed the weight?",
+  "lab": "training",
+  "tutor_context": "Teach Inside the training gym using the authored local training toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+}

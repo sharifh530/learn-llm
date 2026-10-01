@@ -1,0 +1,211 @@
+{
+  "id": "L14",
+  "version": 1,
+  "status": "authored",
+  "title": "Attention Spotlight",
+  "zone": "Model Observatory",
+  "minutes": 25,
+  "prerequisites": [
+    "L13"
+  ],
+  "objectives": [
+    "Turn manual scores into nonnegative weights with softmax.",
+    "Use a causal mask to prevent future positions contributing.",
+    "Compute a weighted value and explain why the toy is not model introspection."
+  ],
+  "prediction": "If the query is the first word and future words are masked, can a very high score on the last word change the result?",
+  "explanation": [
+    "Think of a mixing desk: each visible position contributes a value with a different weight. Our sentence is The animal crossed because it was tired. These seven words are illustrative pieces; a real tokenizer may split text differently. You manually supply scores for one chosen query position.",
+    "Softmax makes scores into positive weights whose sum is 1. Compute exp(score - largest allowed score), then divide each exponential by their total. Subtracting the largest score keeps the calculation stable without changing the normalized weights. Bigger allowed scores get larger weights, but a weight is not a proof of grammatical reference or importance.",
+    "With the causal mask on, positions after the query receive exactly zero weight. The query can mix itself and earlier positions. Choose The: only itself is visible. Choose it: was and tired are masked, even if you give them score 3. Masking happens before normalization over the allowed scores.",
+    "The toy output is sum(weight * value). Each value here is a human-chosen scalar. Score softness divides scores before softmax: lower softness sharpens the difference, higher softness spreads it. This setting affects only this toy; it is separate from your chatbot's output sampling temperature.",
+    "Real transformer attention derives query, key, and value representations through learned projections. Our sliders replace that score-making process. Attention is one part of a model that also has embeddings, feed-forward transformations, position information, and other structure. The experiment cannot expose Gemini's attention or private reasoning. Research reference: Attention Is All You Need (https://arxiv.org/abs/1706.03762)."
+  ],
+  "analogy_limit": "The spotlight is a weighted mixture of authored scalar values. Manual scores do not come from a model, and visible weights do not reveal private reasoning. One toy query is not a complete transformer.",
+  "python_example": {
+    "code": "from math import exp\n\nscores = [0, 2, 3]\nvalues = [0.1, 0.9, 0.5]\nquery = 1\nallowed = [i <= query for i in range(len(scores))]\npeak = max(s for s, keep in zip(scores, allowed) if keep)\nparts = [exp(s - peak) if keep else 0 for s, keep in zip(scores, allowed)]\nweights = [part / sum(parts) for part in parts]\nprint('Weights:', ', '.join(f'{w:.4f}' for w in weights))\nprint(f'Total: {sum(weights):.4f}')\nprint(f'Output: {sum(w*v for w, v in zip(weights, values)):.4f}')\n",
+    "expected_output": "Weights: 0.1192, 0.8808, 0.0000\nTotal: 1.0000\nOutput: 0.8046\n",
+    "walkthrough": [
+      "query=1 is the second position because Python indexes start at zero.",
+      "Only positions 0 and 1 enter normalization.",
+      "The masked score 3 contributes exactly zero.",
+      "Multiply each normalized weight by its corresponding authored value and add."
+    ]
+  },
+  "game": {
+    "id": "L14-game",
+    "type": "choice_rounds",
+    "title": "The Context Mixing Desk",
+    "instructions": "Predict the result, then read every explanation. Get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L14-game-r1",
+        "prompt": "The query is The, position 1, with the causal mask on. What contributes?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Only The"
+          },
+          {
+            "id": "b",
+            "text": "All seven positions"
+          },
+          {
+            "id": "c",
+            "text": "Only the last position"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The query and earlier positions are allowed; there are no earlier ones.",
+          "b": "Future positions are masked.",
+          "c": "The last position is in the future."
+        }
+      },
+      {
+        "id": "L14-game-r2",
+        "prompt": "All five allowed scores are equal. Each allowed weight is…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "0.2"
+          },
+          {
+            "id": "c",
+            "text": "0"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Five weights of 1 would sum to 5.",
+          "b": "Equal scores share the total equally: 1/5.",
+          "c": "At least one allowed value must contribute."
+        }
+      },
+      {
+        "id": "L14-game-r3",
+        "prompt": "You increase the score of a masked future word. Its weight becomes…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The largest weight"
+          },
+          {
+            "id": "b",
+            "text": "A negative weight"
+          },
+          {
+            "id": "c",
+            "text": "Exactly zero"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Masked scores do not enter the normalization.",
+          "b": "Softmax weights are never negative.",
+          "c": "The mask excludes future positions regardless of score."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L14-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L14-quiz-r1",
+        "prompt": "What is the sum of these normalized toy weights?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "The sum of input scores"
+          },
+          {
+            "id": "c",
+            "text": "The number of words"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Normalization divides each allowed exponential by their shared total.",
+          "b": "Scores can include negative values and need not sum to 1.",
+          "c": "The total does not grow with word count."
+        }
+      },
+      {
+        "id": "L14-quiz-r2",
+        "prompt": "Where did this toy get its attention scores?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "From Gemini private reasoning"
+          },
+          {
+            "id": "b",
+            "text": "From your sliders"
+          },
+          {
+            "id": "c",
+            "text": "From training on the chat database"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "No model is called.",
+          "b": "They are manual scores, separate from learned query/key projections.",
+          "c": "Chat storage does not train the toy."
+        }
+      },
+      {
+        "id": "L14-quiz-r3",
+        "prompt": "What does lowering Score softness change?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The Google chat temperature"
+          },
+          {
+            "id": "b",
+            "text": "The tokenizer"
+          },
+          {
+            "id": "c",
+            "text": "The distribution of this toy’s allowed weights"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "The observatory has no connection to chat generation settings.",
+          "b": "The seven illustrative positions remain fixed.",
+          "c": "Dividing by a smaller positive number sharpens differences."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L14-build",
+    "title": "Mask a future word, then mix values",
+    "instructions": "Open Attention mixer. Select it, keep the causal mask on, and raise tired to 3. Record why its weight remains zero. Switch the mask off and compare. Run the Python example, change the masked score from 3 to -3, and verify the output stays the same. Record what was manual and what was calculated in the journal.",
+    "criteria": [
+      "You show a masked future position stays at zero regardless of its manual score.",
+      "You explain softmax normalization and weighted values without claiming to inspect a real model."
+    ],
+    "hints": [
+      "Python query=1 permits indices 0 and 1 only.",
+      "Compare the sum of weights and output before and after changing the excluded score."
+    ],
+    "reference_solution": "With query it and a causal mask, was and tired contribute zero. Without the mask, their weights can be positive. The three-position Python toy output stays 0.8046 when the excluded third score changes. The scores and values are authored inputs, not model internals."
+  },
+  "reflection": "Which parts did you choose manually, and which parts did softmax calculate? Why is this different from explaining a model’s reasoning?",
+  "lab": "attention",
+  "tutor_context": "Teach Attention Spotlight using the authored local attention toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+}

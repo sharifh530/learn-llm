@@ -4,7 +4,7 @@ Learn how LLMs work by playing short games and building your own small chatbot.
 
 This project is designed for someone who can read basic Python: variables, lists, dictionaries, loops, and functions. You do not need machine learning experience. The plan starts with familiar examples and introduces math only when it explains something useful.
 
-**Current deliverable: M3 software is implemented; live Google verification is pending your local credentials.** Twelve complete lessons, games, quizzes, progress, XP, and a journal work offline. My chatbot now saves conversations and personas, selects multi-turn context, streams replies, and supports Stop, recovery, reply variants, and context inspection. Ask AI remains a separate lesson tutor. Follow [the M3 walkthrough](docs/M3_WALKTHROUGH.md) to learn these features and [M2 setup](docs/M2_WALKTHROUGH.md) to connect Google; see [M3 verification](docs/M3_VALIDATION.md).
+**Current deliverable: M4 is implemented.** Fifteen complete lessons and three interactive Model Observatory toys work offline: fruit-vector similarity, masked attention mixing, and one-weight training. The saved chatbot, personas, streaming, Stop, variants, and lesson tutor from M3 remain available. Google live verification still needs local credentials. Start with [the M4 walkthrough](docs/M4_WALKTHROUGH.md) or [M2 Google setup](docs/M2_WALKTHROUGH.md); see [M4 verification](docs/M4_VALIDATION.md).
 
 ## Run the app
 
@@ -43,6 +43,8 @@ We will build an application around a pretrained model. We will also build tiny 
 | [M2 verification](docs/M2_VALIDATION.md) | What works, and what still needs a live account check? |
 | [M3 walkthrough](docs/M3_WALKTHROUGH.md) | How do saved context, personas, streams, Stop, and reply variants work? |
 | [M3 verification](docs/M3_VALIDATION.md) | What proves local behavior, and which live checks remain? |
+| [M4 walkthrough](docs/M4_WALKTHROUGH.md) | How do vectors, attention, and a training update work? |
+| [M4 verification](docs/M4_VALIDATION.md) | What proves the numeric toys and expanded learning flow? |
 | [Product requirements](docs/PRODUCT.md) | What must each screen and feature do? |
 | [Curriculum](docs/CURRICULUM.md) | What are the 24 lessons, games, and build tasks? |
 | [Starter lessons](docs/STARTER_LESSONS.md) | What can I learn right now? |
@@ -61,7 +63,7 @@ We will build an application around a pretrained model. We will also build tiny 
 ## Content and checks
 
 - `content/course.json`: the full learning path, with honest authored/outline statuses.
-- `content/lessons/*.json`: twelve complete lessons; the authoritative lesson text.
+- `content/lessons/*.json`: fifteen complete lessons; the authoritative lesson text.
 - `content/lesson.schema.json`: the planned validation contract for every published lesson.
 - `tools/verify_docs.py`: dependency-free checks for the starter content, document links, and Python examples.
 
@@ -90,7 +92,8 @@ The plan uses Google Cloud / Vertex AI because you selected it. Cloud express ke
 .\.venv\Scripts\python.exe tools/browser_check.py
 .\.venv\Scripts\python.exe tools/browser_ai_check.py
 .\.venv\Scripts\python.exe tools/browser_chat_check.py
+.\.venv\Scripts\python.exe tools/browser_labs_check.py
 .\.venv\Scripts\python.exe tools/design_check.py
 ```
 
-Browser checks use isolated databases and do not change your progress. The documentation check remains `python tools/verify_docs.py`. Twelve matching Python examples, a 72-round Chromium learning flow, separate FAKE-provider tutor/chat flows, and mocked SDK streaming verify software behavior. A real Google connection still needs credentials; see the M3 verification record.
+Browser checks use isolated databases and do not change your progress. The documentation check remains `python tools/verify_docs.py`. Fifteen matching Python examples, a 90-round Chromium learning flow, separate FAKE-provider tutor/chat flows, and mocked SDK streaming verify software behavior. A real Google connection still needs credentials; see the M3 verification record.

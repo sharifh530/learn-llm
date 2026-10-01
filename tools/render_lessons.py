@@ -26,7 +26,7 @@ def question_lines(question: dict) -> list[str]:
 def render() -> str:
     lines = [
         "# Authored lessons: Tiny Chat Lab", "",
-        "Start with L01. Predict before running code or revealing answers. The first twelve examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison.", "",
+        "Start with L01. Predict before running code or revealing answers. The first fifteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory.", "",
         "These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries locally.", "",
         "This reading copy is generated from `content/lessons/*.json`. Edit the JSON, then run `python tools/render_lessons.py`. Some Markdown viewers show the answer panels expanded; pause before looking at them.", "",
     ]
@@ -39,6 +39,8 @@ def render() -> str:
         lines += ["", "### Predict first", "", lesson["prediction"], "", "### Learn", ""]
         for paragraph in lesson["explanation"]:
             lines += [paragraph, ""]
+        if lesson.get("lab"):
+            lines += [f"**Interactive toy:** [Open the {lesson['lab']} experiment](http://127.0.0.1:8001/observatory?experiment={lesson['lab']}) in the running local app. No Google request or XP is involved.", ""]
         lines += [f"**Where the analogy stops:** {lesson['analogy_limit']}", "",
                   "### Run a tiny Python example", "", "```python", lesson["python_example"]["code"].rstrip(), "```", "",
                   "Expected output:", "", "```text", lesson["python_example"]["expected_output"].rstrip(), "```", ""]

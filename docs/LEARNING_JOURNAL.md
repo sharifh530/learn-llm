@@ -1,6 +1,12 @@
 # My Tiny Chat Lab journal
 
-Use one entry per learning/build session. This journal is optional; it is not automatically sent to Google. The app will later offer the same fields in the workshop.
+Use one entry per learning/build session. This journal is optional; it is not automatically sent to Google. The app offers the same fields in the workshop.
+
+## M4 build-session note
+
+The Model Observatory and L13–L15 are implemented. Local experiments let you compare authored fruit vectors, mask manual attention scores, and update one numeric parameter. Testing used isolated profiles; it does not claim learner completion or award learner XP.
+
+Your next reflection: start Training gym at weight 1 and rate 0.25. Predict, train once, then train again. Record the two losses and explain why the second step improves training but worsens the held-out check. Write your own observation before marking the build mission complete.
 
 ## M3 build-session note
 

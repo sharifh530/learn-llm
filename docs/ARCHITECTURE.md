@@ -123,3 +123,11 @@ Persist the user message and reservation before generation. Save accepted text c
 Bind the initial app to loopback. Render model/content text with escaping or a sanitizer and an allowed Markdown subset. Do not execute generated code. Use same-origin APIs, strict input sizes, and safe error messages. A hostile retrieved note cannot change permissions or authorize tools.
 
 Before public hosting: add authentication, ownership checks, CSRF protection for cookie-based mutations, persistent storage strategy, server-side secret management, rate limits, usage budgets, and backup recovery. Local SQLite inside an ephemeral hosted container is insufficient; pick durable storage at that stage.
+
+## Implemented M4 numeric path
+
+`app/labs.py` contains pure standard-library calculations for three bounded educational toys. `SimilarityToy`, `AttentionToy`, and `TrainingToy` in `app/models.py` reject wrong dimensions, nonfinite or out-of-range numbers, unknown operations, and extra fields. Routes `POST /api/labs/similarity`, `/attention`, and `/training` return deterministic JSON. They never call the provider or write SQLite state. No database migration or new dependency was needed.
+
+`GET /observatory` renders `observatory.html`; `labs.js` manages tabs, sliders, accessible meters, a loss plot/table, stale-response suppression, errors, and optional session storage. Explicit Train buttons apply updates; Predict reads the weight. Full-precision weight persists separately from the range input's rounded value. History resets on reload or manual weight changes and is bounded to 13 plotted states/12 table updates.
+
+The optional lesson `lab` enum names a registered toy. Content remains schema validated; existing lesson JSON without `lab` remains valid. Earlier lesson versions and scoring IDs are unchanged. No generated code is executed by these routes.

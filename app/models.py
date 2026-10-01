@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -78,3 +78,25 @@ class EmptyInput(Input):
 
 class ChatContext(Input):
     message: str = Field(default='', max_length=4000)
+
+
+Feature = Annotated[float, Field(ge=0, le=10, allow_inf_nan=False, strict=True)]
+ManualScore = Annotated[float, Field(ge=-3, le=3, allow_inf_nan=False, strict=True)]
+
+
+class SimilarityToy(Input):
+    vector: list[Feature] = Field(min_length=3,max_length=3)
+
+
+class AttentionToy(Input):
+    scores: list[ManualScore] = Field(min_length=7,max_length=7)
+    query_index: int = Field(ge=0,le=6,strict=True)
+    causal: bool = Field(default=True,strict=True)
+    temperature: float = Field(default=1, ge=.25, le=2, allow_inf_nan=False, strict=True)
+
+
+class TrainingToy(Input):
+    weight: float = Field(default=1, ge=0, le=6, allow_inf_nan=False, strict=True)
+    learning_rate: float = Field(default=.25, ge=.05, le=1, allow_inf_nan=False, strict=True)
+    steps: int = Field(default=1,ge=1,le=10,strict=True)
+    operation: Literal['predict','train'] = 'predict'

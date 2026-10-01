@@ -49,16 +49,16 @@ def complete(client, identity="L01"):
 
 def test_pages_and_availability(setup):
     client, *_ = setup
-    for path in ("/", "/workshop", "/chat", "/settings", *(f"/lessons/L{i:02}" for i in range(1, 13))):
+    for path in ("/", "/workshop", "/chat", "/settings", *(f"/lessons/L{i:02}" for i in range(1, 16))):
         response = client.get(path)
         assert response.status_code == 200, path
         assert "Tiny Chat" in response.text
-    assert "Coming in a later session" in client.get("/lessons/L13").text
-    assert client.get("/api/lessons/L13").status_code == 404
+    assert "Coming in a later session" in client.get("/lessons/L16").text
+    assert client.get("/api/lessons/L16").status_code == 404
     assert len(client.get("/api/course").json()["lessons"]) == 24
 
 
-@pytest.mark.parametrize("identity", [f"L{i:02}" for i in range(1, 13)])
+@pytest.mark.parametrize("identity", [f"L{i:02}" for i in range(1, 16)])
 def test_all_lessons_score_choices_and_feedback(setup, identity):
     client, *_ = setup
     lesson = client.get(f"/api/lessons/{identity}").json()

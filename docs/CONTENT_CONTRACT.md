@@ -6,6 +6,8 @@ Author lesson JSON under `content/lessons/`. The schema is `content/lesson.schem
 
 Lesson fields: stable `id`, integer `version`, `status`, `title`, `zone`, `minutes`, `prerequisites`, `objectives`, `prediction`, `explanation`, `analogy_limit`, `python_example`, `game`, `quiz`, `build`, `reflection`, and `tutor_context`.
 
+M4 adds optional `lab`, restricted to `similarity`, `attention`, or `training`. It links to a registered local numeric toy in the Model Observatory. It is not another scoring activity, an executable-code payload, or an XP award. Existing lessons remain valid without it.
+
 The six starter games deliberately share `choice_rounds`. Richer game types require a schema extension and a registered renderer before they can be published. A renderer registry rejects unknown types instead of silently substituting another game.
 
 Each game and quiz has exactly three starter rounds with stable IDs, a correct choice ID, and a feedback string for every choice. `pass_correct` is two. The answer keys stay out of tutor prompts unless the learner explicitly requests the solution. This is learning software, so client-readable answer keys are acceptable; do not present them as protected examinations.

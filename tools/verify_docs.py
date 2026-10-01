@@ -1,6 +1,6 @@
 """Verify this planning package; never use this to execute imported AI drafts.
 
-Only the six reviewed initial lesson examples are executed, in fresh Python
+Only explicitly reviewed lesson examples are executed, in fresh Python
 processes with a short timeout. This is not a sandbox for untrusted code.
 """
 
@@ -31,6 +31,8 @@ def schema_check(value, schema: dict, root_schema: dict, location: str) -> None:
         return
     if "const" in schema:
         require(value == schema["const"], f"{location}: incorrect constant")
+    if "enum" in schema:
+        require(value in schema["enum"], f"{location}: unsupported value")
     kind = schema.get("type")
     valid = {
         "object": isinstance(value, dict),
@@ -103,7 +105,7 @@ def main() -> None:
     authored = [entry for entry in entries.values() if entry["status"] == "authored"]
     seed_ids = {f"L{i:02}" for i in range(1, 7)}
     # Explicitly reviewed, offline-only examples; do not execute arbitrary future content.
-    trusted_examples = seed_ids | {"L07", "L08", "L09", "L10", "L11", "L12"}
+    trusted_examples = seed_ids | {"L07", "L08", "L09", "L10", "L11", "L12", "L13", "L14", "L15"}
     require(seed_ids <= {entry["id"] for entry in authored}, "Initial six lessons missing")
     for entry in entries.values():
         require(entry["status"] in {"authored", "outline"}, "Unknown content status")
