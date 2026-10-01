@@ -22,7 +22,7 @@ Verify actual contrast in the implemented combinations, including muted text, di
 
 ### Home
 
-Top: brand, Learn, Build, My Chatbot, Settings. Main: “Ready for your next experiment?” and one large Continue action. Below: eight zones in an ordered learning path; nine authored lessons are available, future zones have descriptive outlines. A small workshop summary shows which chatbot features already work.
+Top: brand, Learn, Build, My Chatbot, Settings. Main: “Ready for your next experiment?” and one large Continue action. Below: eight zones in an ordered learning path; twelve authored lessons are available, future zones have descriptive outlines. A small workshop summary shows which chatbot features already work.
 
 No invented achievements or usage numbers. The first-time state says “Your first experiment is ready.”
 

@@ -79,6 +79,7 @@ def run():
                 page.locator('#chat-input').fill('<script>window.injected=true</script>')
                 page.locator('#chat-send').click()
                 expect(page.locator('#chat-messages')).to_contain_text('TEST FAKE')
+                expect(page.locator('#chat-status')).to_contain_text('Google reply received')
                 assert page.evaluate('window.injected === undefined')
                 page.locator('#chat-mode').select_option('demo')
                 expect(page.locator('#chat-messages')).not_to_contain_text('TEST FAKE')
@@ -87,6 +88,8 @@ def run():
                 page.locator('#chat-send').click()
                 expect(page.locator('#chat-status')).to_contain_text('simulated failure')
                 expect(page.locator('#chat-input')).to_have_value('simulate error')
+                page.locator('#clear-chat').click()
+                expect(page.locator('#chat-messages')).not_to_contain_text('simulate error')
 
                 # Lose the browser response after the server already completed.
                 lost, ids = [], []
@@ -98,19 +101,18 @@ def run():
                         route.abort()
                     else:
                         route.fulfill(response=response)
-                page.route('**/api/ai/messages', lose_response)
+                page.route('**/api/chats/*/messages', lose_response)
                 page.locator('#chat-input').fill('Response recovery experiment')
                 page.locator('#chat-send').click()
                 expect(page.locator('#chat-status')).to_contain_text('could not be reached')
                 attempts = usage()['attempts']
-                page.reload()
-                page.locator('#chat-mode').select_option('google_cloud')
+                # Same request ID recovers the accepted attempt; no second generation.
                 expect(page.locator('#chat-input')).to_have_value('Response recovery experiment')
                 page.locator('#chat-send').click()
                 expect(page.locator('#chat-status')).to_contain_text('Google reply received')
                 assert len(ids) == 2 and ids[0] == ids[1]
                 assert usage()['attempts'] == attempts
-                page.unroute('**/api/ai/messages', lose_response)
+                page.unroute('**/api/chats/*/messages', lose_response)
                 assert context.request.get(base + '/api/progress').json()['xp'] == 0
 
                 goto('/lessons/L07')

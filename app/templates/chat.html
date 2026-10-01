@@ -2,18 +2,22 @@
 {% block scripts %}<script type="module" src="/static/js/chat.js"></script>{% endblock %}
 {% block content %}
 <div class="chat-layout">
-  <aside class="chat-aside"><span class="tag">My chatbot</span><div class="chat-pip" aria-hidden="true"><img src="/static/pip.svg" alt=""><span class="pip-caption">Small bot. Big curiosity.</span></div><h1>Meet your<br>first little bot.</h1><p>Try Python rules, then compare a real Google reply.</p>
-    <label for="chat-mode">Choose your experiment</label>
-    <select id="chat-mode"><option value="demo">Demo · Python rules</option><option value="google_cloud">Google Cloud AI</option></select>
-    <div class="notice"><strong id="chat-mode-label">Demo: no model connected</strong><p id="chat-mode-help">Hand-written replies. No Google calls. It doesn’t remember earlier messages.</p></div>
-    <a class="text-link" href="/settings">Connect Google AI →</a><button class="button secondary" id="clear-chat">Start fresh</button>
-    <p class="small muted">Conversation display stays in this browser tab. Each request sends only the current message. Conversation memory arrives in M3.</p>
+  <aside class="chat-aside"><span class="tag">Your small chatbot · M3</span><div class="chat-pip" aria-hidden="true"><img src="/static/pip.svg" alt=""><span class="pip-caption">A conversation worth keeping.</span></div><h1>Make it <br>remember.</h1><p>Keep a conversation, give it a personality, and inspect what goes into the next reply.</p>
+    <label for="chat-mode">Choose your experiment</label><select id="chat-mode"><option value="demo">Demo · Python rules</option><option value="google_cloud">Google Cloud AI</option></select>
+    <div class="notice"><strong id="chat-mode-label">Demo: no model connected</strong><p id="chat-mode-help">Local rules. No Google calls.</p></div><a class="text-link" href="/settings">Connect Google AI →</a>
+    <details class="chat-library" open><summary>Your chats &amp; persona</summary><div class="saved-chat-controls"><label for="saved-chats">Saved experiments</label><select id="saved-chats" aria-label="Saved experiments"></select><label class="archive-filter"><input id="show-archived" type="checkbox"> Show archived chats</label><button class="button secondary" id="clear-chat">New conversation</button></div>
+    <form id="chat-settings" class="chat-settings"><label for="chat-title">Conversation title</label><input id="chat-title" type="text" required maxlength="80"><label for="chat-persona">Persona for new replies</label><select id="chat-persona">{% for id, persona in personas.items() %}<option value="{{ id }}">{{ persona[0] }}</option>{% endfor %}</select><button class="button secondary" id="save-chat-settings" type="submit">Save title &amp; persona</button></form>
+    <button class="link-button" id="archive-chat">Archive this chat</button></details><p class="small muted">Saved in local SQLite. Demo and Google chats stay separate. Ask AI keeps its own lesson context.</p>
   </aside>
-  <section class="chat-surface" aria-labelledby="chat-heading"><header class="chat-header"><div><span class="bot-avatar" aria-hidden="true"><img src="/static/pip.svg" alt=""></span><div><h2 id="chat-heading">Tiny demo bot</h2><p id="chat-subtitle">Rule-based · Ready to experiment</p></div></div><span class="tag neutral">M2</span></header>
-    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
-    <div class="chat-suggestions" role="group" aria-label="Example messages"><button data-chat-prompt="What is a token?">What is a token?</button><button data-chat-prompt="Training versus inference?">Training vs inference</button><button data-chat-prompt="How does context work?">How does context work?</button></div>
-    <form id="chat-form" class="chat-composer"><label class="sr-only" for="chat-input">Your message</label><textarea id="chat-input" rows="2" maxlength="2000" placeholder="Try asking about tokens, training, or context…" required></textarea><button class="button" type="submit" id="chat-send">Send <span aria-hidden="true">↑</span></button></form>
-    <p class="chat-status small muted" id="chat-status" role="status">Enter to send · Shift + Enter for a new line</p>
-  </section>
+  <div class="chat-workspace">
+    <section class="chat-surface" aria-labelledby="chat-heading"><header class="chat-header"><div><span class="bot-avatar" aria-hidden="true"><img src="/static/pip.svg" alt=""></span><div><h2 id="chat-heading">Your conversation</h2><p id="chat-subtitle">Saved locally</p></div></div><span class="tag neutral">M3</span></header>
+      <div id="chat-messages" class="chat-messages" role="log" aria-live="off" aria-label="Saved messages; streaming completion announced below"></div>
+      <div class="chat-suggestions" role="group" aria-label="Example messages"><button data-chat-prompt="What is a token?">What is a token?</button><button data-chat-prompt="My favorite fruit is mango.">Remember a mango</button><button data-chat-prompt="What was my favorite fruit earlier?">Try a follow-up</button></div>
+      <form id="chat-form" class="chat-composer"><label class="sr-only" for="chat-input">Your message</label><textarea id="chat-input" rows="2" maxlength="4000" placeholder="Make a small experiment…" required></textarea><div class="composer-actions"><button class="button" type="submit" id="chat-send">Send ↑</button><button class="button secondary" type="button" id="chat-stop" hidden>Stop reply</button></div></form>
+      <p class="chat-status small muted" id="chat-status" role="status">Loading saved experiments…</p><button class="link-button" id="recover-stream" hidden>Recover saved reply</button>
+    </section>
+    <details class="context-inspector" id="context-inspector"><summary>Open the conversation backpack</summary><p>Saving messages changes this app’s database. Including them in a request gives the model context. Neither action trains it.</p><button class="button secondary" type="button" id="preview-context">Preview next request</button><p class="small muted" id="context-caption">Preview your draft or inspect a reply’s saved context.</p><div id="context-messages"></div></details>
+    <p class="small muted">Stopped and failed replies stay saved. They enter the next request only when you explicitly select “Use partial reply”. Alternatives do not replace a selected complete reply automatically.</p>
+  </div>
 </div>
 {% endblock %}

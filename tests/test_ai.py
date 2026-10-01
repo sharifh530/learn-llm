@@ -71,7 +71,7 @@ def test_tutor_context_separation_mode_and_stale_version(live_fixture):
     assert fake.calls[-1][1] == 'chat-only-marker' and 'Prompt Kitchen' not in fake.calls[-1][0]
     assert client.post('/api/tutor/messages', json=body(lesson_id='L07', version=99)).status_code == 409
     assert len(fake.calls) == 3
-    assert client.post('/api/tutor/messages', json=body(lesson_id='L10', version=1)).status_code == 404
+    assert client.post('/api/tutor/messages', json=body(lesson_id='L13', version=1)).status_code == 404
     assert app.state.progress.summary()['xp'] == 0
 
 
@@ -243,5 +243,5 @@ def test_append_only_schema_preserves_progress(tmp_path):
     updated = Database(path)
     with updated.connection() as connection:
         assert connection.execute('SELECT SUM(amount) FROM xp_awards').fetchone()[0] == 30
-        assert connection.execute('PRAGMA user_version').fetchone()[0] == 2
+        assert connection.execute('PRAGMA user_version').fetchone()[0] == 3
         assert connection.execute('SELECT COUNT(*) FROM ai_requests').fetchone()[0] == 0

@@ -1,0 +1,210 @@
+{
+  "id": "L11",
+  "version": 1,
+  "status": "authored",
+  "title": "Catch a streaming reply",
+  "zone": "Chat Workshop",
+  "minutes": 25,
+  "prerequisites": [
+    "L10"
+  ],
+  "objectives": [
+    "Assemble streamed chunks without assuming one chunk equals one token.",
+    "Distinguish running, complete, stopped, interrupted, and failed replies.",
+    "Stop a reply and recover saved partial text without an automatic new request."
+  ],
+  "prediction": "A response arrives as “man” then “go”. Did the model necessarily create exactly two tokens?",
+  "explanation": [
+    "Streaming lets the browser display text while a reply is still being produced. Picture a postcard written in several deliveries. Transport chunks can split or group text differently from model tokens. Our browser uses a streaming UTF-8 decoder so multibyte characters survive transport boundaries, then reads complete event frames.",
+    "The browser first posts one message with a stable request ID. Python saves the user turn, reserves the live attempt, and starts a worker. A separate read stream carries full snapshots of the same generation. Each snapshot replaces the visible text; it does not append duplicate text after reconnecting. Opening or recovering that stream makes no new generation call.",
+    "Stop asks the server to stop consuming and immediately saves the last durable partial reply with a stopped status. A chunk already in flight cannot overwrite the stopped record. Google may have produced or billed work already, and an in-flight network read can take time to close. Stop is not a guarantee of zero cost.",
+    "A browser refresh can reconnect to a still-running worker. A server restart turns unfinished attempts into interrupted records and preserves their last committed text. Failed, stopped, interrupted, and output-limited replies remain visible. Choose a partial reply explicitly if you want it in the next context; it can still be incomplete or incorrect.",
+    "Try another reply is an explicit new attempt and may incur new Google charges. It is different from recovering an existing stream or resending a lost HTTP response with its original request ID. The app does not automatically retry Google failures. If the app says cancellation is still unwinding, wait before a new live attempt."
+  ],
+  "analogy_limit": "The postcard metaphor describes text delivery. It does not expose model reasoning or guarantee a token-to-chunk relationship. Stop cannot cancel work already completed upstream.",
+  "python_example": {
+    "code": "chunks = ['A ', 'token ', 'is text.']\nreply = ''\nfor index, chunk in enumerate(chunks):\n    if index == 2:\n        break\n    reply += chunk\n    print('Saved:', repr(reply))\nprint('Status: stopped')\nprint('Partial:', repr(reply))\n",
+    "expected_output": "Saved: 'A '\nSaved: 'A token '\nStatus: stopped\nPartial: 'A token '\n",
+    "walkthrough": [
+      "reply accumulates visible chunks.",
+      "break stops before the third delivery.",
+      "The last saved text remains available.",
+      "This loop is an offline simulation, not Google streaming or a tokenizer."
+    ]
+  },
+  "game": {
+    "id": "L11-game",
+    "type": "choice_rounds",
+    "title": "Catch the Text Parcels",
+    "instructions": "Choose what belongs in this experiment. Read each explanation; get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L11-game-r1",
+        "prompt": "Two chunks are “man” and “go”. What should the UI display?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "mango"
+          },
+          {
+            "id": "b",
+            "text": "man go, adding a space"
+          },
+          {
+            "id": "c",
+            "text": "Only go"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Concatenate the text exactly as delivered.",
+          "b": "Adding spaces can corrupt a word.",
+          "c": "Discarding earlier chunks loses content."
+        }
+      },
+      {
+        "id": "L11-game-r2",
+        "prompt": "A reply has partial text when you press Stop. What should persist?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A complete success label"
+          },
+          {
+            "id": "b",
+            "text": "Partial text with stopped status"
+          },
+          {
+            "id": "c",
+            "text": "A fresh automatically billed retry"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Stopping is not completion.",
+          "b": "The UI saves both text and its truthful status.",
+          "c": "A new attempt requires an explicit action."
+        }
+      },
+      {
+        "id": "L11-game-r3",
+        "prompt": "The browser reconnects to the same saved generation. What should happen?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Start a new Google generation"
+          },
+          {
+            "id": "b",
+            "text": "Append the full snapshot twice"
+          },
+          {
+            "id": "c",
+            "text": "Recover the snapshot without a new model request"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Reading saved state is not generation.",
+          "b": "Full snapshots replace visible text to avoid duplicates.",
+          "c": "Recovery uses the same generation ID."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L11-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L11-quiz-r1",
+        "prompt": "Does one network chunk always equal one token?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes"
+          },
+          {
+            "id": "b",
+            "text": "No; transport and tokenization differ"
+          },
+          {
+            "id": "c",
+            "text": "Only when it contains Python"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Network framing is separate from tokenization.",
+          "b": "Chunks can split or group visible text independently.",
+          "c": "The programming language does not force token boundaries."
+        }
+      },
+      {
+        "id": "L11-quiz-r2",
+        "prompt": "What does a server restart do to an unfinished attempt?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Marks it interrupted and keeps committed text"
+          },
+          {
+            "id": "b",
+            "text": "Automatically pays for a replacement"
+          },
+          {
+            "id": "c",
+            "text": "Trains the model on the partial reply"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The startup recovery preserves data without rerunning.",
+          "b": "No automatic generation retry occurs.",
+          "c": "Persisting text does not train weights."
+        }
+      },
+      {
+        "id": "L11-quiz-r3",
+        "prompt": "Can Stop prove that no Google charge occurred?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes, always"
+          },
+          {
+            "id": "b",
+            "text": "Only if the UI closes"
+          },
+          {
+            "id": "c",
+            "text": "No; upstream work may already have occurred"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "The provider can already have processed work.",
+          "b": "Closing a view is not a billing guarantee.",
+          "c": "Usage may remain unknown after cancellation."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L11-build",
+    "title": "Stop, recover, and choose a partial reply",
+    "instructions": "In Demo mode ask about tokens, press Stop after some text appears, and refresh. Inspect the stopped reply and its saved context. Choose Use partial reply, or explicitly try another demo reply. Repeat the normal completion flow and compare the statuses. Record that the demo simulates deliveries and incurs zero Google calls.",
+    "criteria": [
+      "A nonempty stopped partial reply survives refresh with its status.",
+      "Your journal distinguishes stream recovery from an explicit new generation and notes the billing limit of Stop."
+    ],
+    "hints": [
+      "Demo replies are short. Start a fresh conversation and press Stop as soon as text appears.",
+      "Stopped text is excluded from later context until Use partial reply is selected."
+    ],
+    "reference_solution": "A successful rehearsal retains partial text marked stopped after refresh. Recovery reads the same record. Try another demo reply creates a new variant; Use partial reply explicitly selects the existing text. Real Google cancellation can still have unknown billed usage."
+  },
+  "reflection": "What should the app do if your browser loses the reply after Python has already saved it?",
+  "tutor_context": "Teach Assemble streamed chunks without assuming one chunk equals one token., Distinguish running, complete, stopped, interrupted, and failed replies., Stop a reply and recover saved partial text without an automatic new request. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+}

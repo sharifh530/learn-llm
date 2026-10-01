@@ -107,7 +107,7 @@ def run():
                 page.locator("[data-ack=reading]").click()
                 expect(page.locator("[data-total-xp]")).to_have_text("10")
                 page.screenshot(path=str(screenshots / "lesson-play-desktop.png"), full_page=True)
-                for number in range(1, 10):
+                for number in range(1, 13):
                     identity = f"L{number:02}"
                     lesson = context.request.get(base + f"/api/lessons/{identity}").json()
                     if number > 1:
@@ -126,12 +126,12 @@ def run():
                     page.locator("[data-step=build]").click()
                     page.locator("[data-ack=build]").click()
                     expect(page.locator("#lesson-completion")).to_be_visible()
-                assert progress()["xp"] == 720 and progress()["completed"] == 9
+                assert progress()["xp"] == 960 and progress()["completed"] == 12
                 assert len(progress()["badges"]) == 2
                 goto("/lessons/L01?step=play")
                 lesson = context.request.get(base + "/api/lessons/L01").json()
                 exercise(lesson, "game")
-                assert progress()["xp"] == 720
+                assert progress()["xp"] == 960
                 page.locator("[data-step=build]").click()
                 form = page.locator("[data-journal]")
                 form.locator("[name=changed]").fill("Added a robot prediction")
@@ -145,9 +145,11 @@ def run():
                 expect(page.locator(".chat-aside .notice")).to_contain_text("Demo: no model connected")
                 page.get_by_role("button", name="What is a token?", exact=True).click()
                 expect(page.locator(".chat-message").last).to_contain_text("A token is a piece of text")
+                expect(page.locator('#chat-status')).to_contain_text('Demo reply received')
                 page.locator("#chat-input").fill("<script>window.injected=true</script>")
                 page.locator("#chat-send").click()
                 expect(page.locator(".chat-message").last).to_contain_text("I do not have a rule")
+                expect(page.locator('#chat-status')).to_contain_text('Demo reply received')
                 assert page.evaluate("window.injected === undefined")
                 page.reload()
                 expect(page.locator("#chat-messages")).to_contain_text("<script>window.injected=true</script>")
@@ -162,11 +164,11 @@ def run():
                 page.screenshot(path=str(screenshots / "chat-desktop.png"), full_page=True)
                 goto("/settings")
                 page.locator("#reload-content").click()
-                expect(page.locator("#reload-status")).to_contain_text("9 lessons reloaded")
+                expect(page.locator("#reload-status")).to_contain_text("12 lessons reloaded")
                 page.locator("#test-provider").click()
                 expect(page.locator("#provider-test-status")).to_contain_text("AI is disabled")
-                assert progress()["xp"] == 720
-                goto("/lessons/L10")
+                assert progress()["xp"] == 960
+                goto("/lessons/L13")
                 expect(page.locator(".unavailable")).to_contain_text("Coming in a later session")
 
                 for width in (390, 640, 1280):
@@ -179,8 +181,8 @@ def run():
                             page.screenshot(path=str(screenshots / name), full_page=True)
                 assert not errors, errors
                 assert not external, external
-                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 54,
-                          "completed_lessons": 9, "xp": 720, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability", "disabled AI preserves questions", "demo and AI display isolation"],
+                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 72,
+                          "completed_lessons": 12, "xp": 960, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability", "disabled AI preserves questions", "demo and AI display isolation"],
                           "viewport_widths": [390, 640, 1280, 1440], "reduced_motion": True,
                           "external_requests": external, "javascript_errors": errors,
                           "database": "isolated test database; learner progress untouched"}

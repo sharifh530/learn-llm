@@ -1,0 +1,210 @@
+{
+  "id": "L10",
+  "version": 1,
+  "status": "authored",
+  "title": "Chats that remember the conversation",
+  "zone": "Chat Workshop",
+  "minutes": 25,
+  "prerequisites": [
+    "L09"
+  ],
+  "objectives": [
+    "Distinguish saved messages from request context and model training.",
+    "Select complete recent user/reply pairs within a bounded conversation.",
+    "Save a persona and test a follow-up in your chatbot."
+  ],
+  "prediction": "You tell a model your favorite fruit is mango, then send only “What was my fruit?” in a new request. Can it reliably recover mango?",
+  "explanation": [
+    "A chat app creates continuity by sending earlier messages with the new question. Think of a waiter carrying an order slip. The model sees the slip we send now; it does not automatically open our SQLite database or other chats. Saving messages keeps a record in this app. Training changes model weights. These are three different actions.",
+    "Our conversation has turns: one user message and its chosen assistant reply. The context builder selects recent whole pairs, then appends the current user message. It keeps at most ten pairs and uses a conservative UTF-8 byte heuristic for selection. Google performs an actual token count before live generation. A byte count is not a tokenizer, especially for emoji or Bangla.",
+    "Complete replies are selected automatically when there is no earlier selected reply for that turn. Stopped, interrupted, failed, and output-limited text is excluded until you explicitly choose “Use partial reply”. Trying another reply creates a variant; a complete existing selection stays selected. Older turns cannot be changed after a follow-up in this version, because that would silently change the conversation branch.",
+    "Personas are saved style instructions: Curious guide, Python coach, or Pocket explainer. Change the persona and save it before the next request. An attempt keeps a snapshot of the instructions and messages it actually sent. A persona is not a guarantee of truth, safety, or memory.",
+    "In My chatbot, use Demo mode for a zero-Google-call rehearsal: say “My favorite fruit is mango”, then “What was my favorite fruit earlier?”. The Python demo quotes an earlier user message with a lookup rule. Inspect the context to see both turns. Google mode uses the same conversation selection but calls a real pretrained model when configured."
+  ],
+  "analogy_limit": "The order slip explains app-provided context, not human memory. The demo is a Python lookup, not an LLM. Old turns omitted from context remain saved but are unavailable to that request.",
+  "python_example": {
+    "code": "turns = [('My fruit is mango', 'Noted.'),\n         ('I like it sliced', 'Nice snack.')]\nmessages = []\nfor user, assistant in turns[-1:]:\n    messages.append(('user', user))\n    messages.append(('assistant', assistant))\nmessages.append(('user', 'What do I like?'))\nfor role, text in messages:\n    print(f'{role}: {text}')\nprint('Saved turns:', len(turns))\nprint('Sent pairs:', len(messages) // 2)\n",
+    "expected_output": "user: I like it sliced\nassistant: Nice snack.\nuser: What do I like?\nSaved turns: 2\nSent pairs: 1\n",
+    "walkthrough": [
+      "turns stores two complete pairs.",
+      "The slice [-1:] selects only the latest pair, leaving mango out.",
+      "append adds the new user message last.",
+      "The older pair still exists in the list; it was not sent."
+    ]
+  },
+  "game": {
+    "id": "L10-game",
+    "type": "choice_rounds",
+    "title": "Pack the Conversation Backpack",
+    "instructions": "Choose what belongs in this experiment. Read each explanation; get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L10-game-r1",
+        "prompt": "Which item belongs after a selected earlier user message?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Its selected assistant reply"
+          },
+          {
+            "id": "b",
+            "text": "Every answer from other chats"
+          },
+          {
+            "id": "c",
+            "text": "A pretend system answer"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "A whole pair preserves the turn relationship.",
+          "b": "Other chats are isolated.",
+          "c": "An assistant reply must not be relabeled as a system instruction."
+        }
+      },
+      {
+        "id": "L10-game-r2",
+        "prompt": "A stopped reply says “The answer is…”. What is the default?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Always include it as complete"
+          },
+          {
+            "id": "b",
+            "text": "Exclude it until the learner selects partial text"
+          },
+          {
+            "id": "c",
+            "text": "Delete the whole chat"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "It may be incomplete or wrong.",
+          "b": "The app keeps it visible while requiring an explicit context choice.",
+          "c": "Stopping keeps the user message and partial reply."
+        }
+      },
+      {
+        "id": "L10-game-r3",
+        "prompt": "You save 50 turns but send the latest ten pairs. Which can the model use now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "All 50 automatically"
+          },
+          {
+            "id": "b",
+            "text": "Only the saved title"
+          },
+          {
+            "id": "c",
+            "text": "The supplied ten pairs and current question"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Database storage does not automatically enter model context.",
+          "b": "The title is display metadata, not a substitute for conversation.",
+          "c": "The request controls what the model receives."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L10-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L10-quiz-r1",
+        "prompt": "What changes when this app saves a chat?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Model weights"
+          },
+          {
+            "id": "b",
+            "text": "The local SQLite record"
+          },
+          {
+            "id": "c",
+            "text": "All Google models"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Saving is not training.",
+          "b": "SQLite persists the app’s conversation.",
+          "c": "A local write does not update hosted models."
+        }
+      },
+      {
+        "id": "L10-quiz-r2",
+        "prompt": "What does a persona change?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Requested response style"
+          },
+          {
+            "id": "b",
+            "text": "The factual truth of every answer"
+          },
+          {
+            "id": "c",
+            "text": "The token count to exactly zero"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Instructions can request tone or structure.",
+          "b": "Style instructions cannot guarantee correctness.",
+          "c": "System instructions also consume input context."
+        }
+      },
+      {
+        "id": "L10-quiz-r3",
+        "prompt": "What does the context inspector show?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Private model reasoning"
+          },
+          {
+            "id": "b",
+            "text": "Every chat on your machine"
+          },
+          {
+            "id": "c",
+            "text": "The instruction and selected messages for a request"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Private reasoning is not shown.",
+          "b": "Each chat stays separate.",
+          "c": "Inspect the preview or a saved attempt snapshot."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L10-build",
+    "title": "Give your bot a conversation backpack",
+    "instructions": "In My chatbot, choose Demo, start a new conversation, save a title and persona, send a mango message, and ask the follow-up. Inspect both the sent context and the preview. Refresh and reopen the saved chat. If Google is configured, repeat in a separate Google chat and record the actual response; do not count the demo as live proof.",
+    "criteria": [
+      "The saved title, persona, and two turns survive refresh.",
+      "Your journal explains that the demo uses a lookup and a live model uses supplied context, without changing weights."
+    ],
+    "hints": [
+      "Click Save title & persona before the next request.",
+      "Inspect sent context on the follow-up; find user → assistant → user."
+    ],
+    "reference_solution": "The follow-up snapshot contains the mango user message, its selected reply, and the new question. Demo labels identify the Python rule. The chat survives refresh through SQLite. A Google comparison is only live proof if an actual Google response is obtained."
+  },
+  "reflection": "Which message would you remove from the backpack to make the fruit follow-up ambiguous? Why does it remain saved?",
+  "tutor_context": "Teach Distinguish saved messages from request context and model training., Select complete recent user/reply pairs within a bounded conversation., Save a persona and test a follow-up in your chatbot. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+}

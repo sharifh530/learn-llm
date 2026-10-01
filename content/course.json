@@ -1,7 +1,7 @@
 {
   "id": "tiny-chat-lab",
   "title": "Tiny Chat Lab",
-  "version": 2,
+  "version": 3,
   "learner_level": "Basic Python; no machine learning prerequisites",
   "provider": "google_cloud_vertex",
   "xp": {
@@ -176,26 +176,29 @@
     {
       "id": "L10",
       "title": "Chats that remember the conversation",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L09"
-      ]
+      ],
+      "path": "lessons/L10.json"
     },
     {
       "id": "L11",
       "title": "Catch a streaming reply",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L10"
-      ]
+      ],
+      "path": "lessons/L11.json"
     },
     {
       "id": "L12",
       "title": "Judge a helpful response",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L11"
-      ]
+      ],
+      "path": "lessons/L12.json"
     },
     {
       "id": "L13",

@@ -4,6 +4,8 @@ Created: 1 October 2026. Working name: **Tiny Chat Lab**.
 
 Current status: **M0 and M1 complete.** The local learning app is implemented and verified. See [the M1 walkthrough](M1_WALKTHROUGH.md) and [verification record](M1_VALIDATION.md). M2 software is implemented and locally tested; its actual-credential connection gate remains open. See [M2 walkthrough](M2_WALKTHROUGH.md) and [M2 verification](M2_VALIDATION.md).
 
+M3 software is now implemented with saved chats, personas, multi-turn context, streaming, Stop, retry variants, and L10–L12. See [M3 walkthrough](M3_WALKTHROUGH.md) and [M3 verification](M3_VALIDATION.md). The requested next implementation proceeded using local demo/mock proof; real Google gates for M2/M3 remain open.
+
 ## Outcome
 
 Build a playful web app that teaches LLMs and helps you construct a small ChatGPT-style assistant. Every session should end with a concept you can explain and an artifact you can show: a Python function, a better prompt, a saved chat, or a working feature.
@@ -16,7 +18,7 @@ The app has two personalities: a patient tutor that helps you learn, and your ow
 - Short sessions: about 20–35 minutes for a lesson, with longer build sessions when needed.
 - Python drives the backend. HTML/CSS and a little JavaScript are introduced gradually.
 - Google Cloud / Vertex AI is the selected provider. Credentials stay on the server.
-- Six complete lessons are available now; the remaining 18 have planned objectives and activities.
+- Twelve complete lessons are available now; the remaining twelve have planned objectives and activities.
 - Progress persists between sessions. Content grows when you ask for additions or changes.
 - No calendar pressure: use session numbers, not deadlines. Roughly 20–35 hours for the full core path including builds, depending on practice and debugging.
 

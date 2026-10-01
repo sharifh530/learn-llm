@@ -47,6 +47,24 @@ class AIService:
                 "unknown_usage_attempts": sum(row["total_tokens"] is None for row in rows),
                 "cost": None, "label": "Reported tokens only; failed or missing usage may also incur charges. Cost unknown."}
 
+    def reserve(self, connection, request_id, digest, purpose, lesson_id=None):
+        """Called inside the owner's transaction, shared by single replies and streams."""
+        previous = connection.execute("SELECT * FROM ai_requests WHERE request_id=?", (request_id,)).fetchone()
+        if previous:
+            if previous['payload_hash'] != digest:
+                raise AIError('conflict', 'That request ID belongs to a different question.', 409)
+            return previous
+        now = time.time()
+        if connection.execute("SELECT COUNT(*) FROM ai_requests WHERE status='running'").fetchone()[0]:
+            raise AIError('busy', 'One AI request is already running. Wait for its reply or cancellation to finish.', 429)
+        minute = connection.execute('SELECT COUNT(*) FROM ai_requests WHERE created_at>?', (now-60,)).fetchone()[0]
+        day = connection.execute('SELECT COUNT(*) FROM ai_requests WHERE created_at>=?', (int(now//86400)*86400,)).fetchone()[0]
+        if minute >= 8 or day >= 50:
+            raise AIError('limit', "This app's request limit is reached (8/minute, 50/UTC day). Wait before trying again.", 429)
+        connection.execute('INSERT INTO ai_requests(request_id,payload_hash,purpose,lesson_id,status,created_at) VALUES(?,?,?,?,?,?)',
+                           (request_id, digest, purpose, lesson_id, 'running', now))
+        return None
+
     def request(self, purpose, body):
         lesson = None
         instruction, message = CHAT, body.message if purpose != "connection" else "Say hello in one short sentence."
@@ -69,26 +87,15 @@ class AIService:
         payload = {"purpose": purpose, "body": body.model_dump(), "model": self.settings.model,
                    "context": instruction + message}
         digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-        now = time.time()
         with self.database.connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            previous = connection.execute("SELECT * FROM ai_requests WHERE request_id=?", (body.request_id,)).fetchone()
+            previous = self.reserve(connection, body.request_id, digest, purpose, lesson['id'] if lesson else None)
             if previous:
-                if previous["payload_hash"] != digest:
-                    raise AIError("conflict", "That request ID belongs to a different question.", 409)
                 if previous["status"] == "succeeded":
                     return {**json.loads(previous["response"]), "cached": True}
                 if previous["status"] == "running":
                     raise AIError("in_progress", "This attempt is still running. Wait, then retry the unchanged question to recover it.", 409)
                 raise AIError("used", "That attempt is already running, failed, or interrupted. Check usage before making a new attempt.", 409)
-            if connection.execute("SELECT COUNT(*) FROM ai_requests WHERE status='running'").fetchone()[0]:
-                raise AIError("busy", "One AI request is already running. Wait for its reply.", 429)
-            minute = connection.execute("SELECT COUNT(*) FROM ai_requests WHERE created_at>?", (now - 60,)).fetchone()[0]
-            day = connection.execute("SELECT COUNT(*) FROM ai_requests WHERE created_at>=?", (int(now // 86400) * 86400,)).fetchone()[0]
-            if minute >= 8 or day >= 50:
-                raise AIError("limit", "This app's request limit is reached (8/minute, 50/UTC day). Wait before trying again.", 429)
-            connection.execute("INSERT INTO ai_requests(request_id,payload_hash,purpose,lesson_id,status,created_at) VALUES(?,?,?,?,?,?)",
-                               (body.request_id, digest, purpose, lesson["id"] if lesson else None, "running", now))
 
         def on_call():
             with self.database.connection() as connection:

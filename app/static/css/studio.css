@@ -235,6 +235,30 @@ button:disabled {box-shadow:none;transform:none;}
 .unavailable {padding-block:60px;}
 
 /* Only decoration loops; text, reading sheets, and inputs stay still. */
+.chat-workspace {min-width:0;}
+.chat-library {margin-top:24px;}
+.chat-library>summary {min-height:44px;cursor:pointer;font-weight:700;color:var(--blue);}
+.saved-chat-controls,.chat-settings {display:grid;gap:10px;margin:24px 0;}
+.chat-settings input {width:100%;min-height:46px;padding:10px 12px;border:1px solid #a7b9a9;border-radius:12px;background:var(--paper);color:var(--ink);font:inherit;}
+.archive-filter {display:flex;align-items:center;gap:10px;font-size:.85rem;min-height:44px;}
+.archive-filter input {width:19px;height:19px;accent-color:var(--blue);}
+.chat-messages {height:510px;}
+.chat-message {max-width:100%;min-width:0;}
+.chat-message p {overflow-wrap:anywhere;}
+.variant-state,.variant-error {display:block;font-size:.75rem;padding:8px 2px;}
+.variant-error {color:var(--error);}
+.variant-actions {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.variant-button {border:1px solid #c8d4bd;background:#f6f5e6;color:var(--ink);min-height:44px;padding:9px 12px;border-radius:10px;font:inherit;font-size:.75rem;cursor:pointer;}
+.variant-button:hover {background:#e3ecd0;}
+.composer-actions {display:grid;gap:10px;align-content:center;}
+.context-inspector {margin:24px 0;background:#edf2df;border:1px solid #d1ddc4;padding:24px;border-radius:22px;}
+.context-inspector>summary {font-family:var(--display);font-size:1.2rem;font-weight:700;cursor:pointer;min-height:44px;}
+.context-inspector>p {font-size:.9rem;line-height:1.7;margin:14px 0;}
+.context-entry {margin:16px 0;padding:16px;background:var(--paper);border:1px solid #d8dfd2;border-radius:13px;}
+.context-entry strong {font-size:.8rem;text-transform:capitalize;}
+.context-entry pre {white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.7;margin-top:10px;}
+@media(max-width:760px) {.chat-messages {height:440px;}.context-inspector {padding:20px;}.chat-settings {gap:8px;}.composer-actions .button {padding:10px;}.chat-aside .chat-pip {display:none;}.chat-aside h1 {font-size:2rem;margin:14px 0;}.chat-library {background:#e9edda;padding:13px 16px;border:1px solid #d3ddc6;border-radius:13px;}.chat-aside>p:last-child {margin-top:14px;}}
+
 html:not(.motion-off) .hero-pip {animation:pip-float 5s ease-in-out infinite;}
 html:not(.motion-off) .word-chip {animation:chip-float 6s ease-in-out infinite;}
 html:not(.motion-off) .word-chip.offset {animation-delay:-3s;}

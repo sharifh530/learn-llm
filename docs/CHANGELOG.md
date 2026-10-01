@@ -1,5 +1,12 @@
 # Course and project changelog
 
+## 1 October 2026: M3 software
+
+- Added schema-v3 saved conversations/personas, selected multi-turn context, streaming snapshots, Stop, recovery, explicit reply variants, and reversible archive/restore.
+- Shared Google reservation/rate limits across tutor, single-turn, and saved-chat paths. Added structured SDK streaming with visible-text filtering and actual input counting.
+- Authored L10, L11, and L12 version 1 with stable game/quiz/build IDs; course version 3 now has twelve lessons and 72 rounds. Earlier lesson versions and awards are unchanged.
+- Added an M3 teaching walkthrough and backend/browser proof. Live Google acceptance remains pending actual credentials; see [M3 verification](M3_VALIDATION.md).
+
 ## 1 October 2026: studio redesign
 
 - Added a cream/sage/teal palette with citrus and coral accents, self-hosted fonts, a custom robot, and illustrated learning zones.

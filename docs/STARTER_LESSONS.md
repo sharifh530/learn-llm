@@ -1,6 +1,6 @@
 # Authored lessons: Tiny Chat Lab
 
-Start with L01. Predict before running code or revealing answers. The first nine examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. Later authored lessons may introduce dependencies or live model calls explicitly.
+Start with L01. Predict before running code or revealing answers. The first twelve examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison.
 
 These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries locally.
 
@@ -1898,5 +1898,635 @@ A successful experiment shows a Google connection-test reply and a separate Goog
 ### Explain it back
 
 Point to every step where a key, request limit, response, or usage record belongs. Which parts ran locally and which crossed the network?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L10: Chats that remember the conversation
+
+Chat Workshop · about 25 minutes · version 1
+
+### Your goal
+
+- Distinguish saved messages from request context and model training.
+- Select complete recent user/reply pairs within a bounded conversation.
+- Save a persona and test a follow-up in your chatbot.
+
+### Predict first
+
+You tell a model your favorite fruit is mango, then send only “What was my fruit?” in a new request. Can it reliably recover mango?
+
+### Learn
+
+A chat app creates continuity by sending earlier messages with the new question. Think of a waiter carrying an order slip. The model sees the slip we send now; it does not automatically open our SQLite database or other chats. Saving messages keeps a record in this app. Training changes model weights. These are three different actions.
+
+Our conversation has turns: one user message and its chosen assistant reply. The context builder selects recent whole pairs, then appends the current user message. It keeps at most ten pairs and uses a conservative UTF-8 byte heuristic for selection. Google performs an actual token count before live generation. A byte count is not a tokenizer, especially for emoji or Bangla.
+
+Complete replies are selected automatically when there is no earlier selected reply for that turn. Stopped, interrupted, failed, and output-limited text is excluded until you explicitly choose “Use partial reply”. Trying another reply creates a variant; a complete existing selection stays selected. Older turns cannot be changed after a follow-up in this version, because that would silently change the conversation branch.
+
+Personas are saved style instructions: Curious guide, Python coach, or Pocket explainer. Change the persona and save it before the next request. An attempt keeps a snapshot of the instructions and messages it actually sent. A persona is not a guarantee of truth, safety, or memory.
+
+In My chatbot, use Demo mode for a zero-Google-call rehearsal: say “My favorite fruit is mango”, then “What was my favorite fruit earlier?”. The Python demo quotes an earlier user message with a lookup rule. Inspect the context to see both turns. Google mode uses the same conversation selection but calls a real pretrained model when configured.
+
+**Where the analogy stops:** The order slip explains app-provided context, not human memory. The demo is a Python lookup, not an LLM. Old turns omitted from context remain saved but are unavailable to that request.
+
+### Run a tiny Python example
+
+```python
+turns = [('My fruit is mango', 'Noted.'),
+         ('I like it sliced', 'Nice snack.')]
+messages = []
+for user, assistant in turns[-1:]:
+    messages.append(('user', user))
+    messages.append(('assistant', assistant))
+messages.append(('user', 'What do I like?'))
+for role, text in messages:
+    print(f'{role}: {text}')
+print('Saved turns:', len(turns))
+print('Sent pairs:', len(messages) // 2)
+```
+
+Expected output:
+
+```text
+user: I like it sliced
+assistant: Nice snack.
+user: What do I like?
+Saved turns: 2
+Sent pairs: 1
+```
+
+- turns stores two complete pairs.
+- The slice [-1:] selects only the latest pair, leaving mango out.
+- append adds the new user message last.
+- The older pair still exists in the list; it was not sent.
+
+### Play: Pack the Conversation Backpack
+
+Choose what belongs in this experiment. Read each explanation; get two of three right.
+
+#### Round 1
+
+Which item belongs after a selected earlier user message?
+
+1. Its selected assistant reply
+2. Every answer from other chats
+3. A pretend system answer
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Its selected assistant reply**.
+
+- **Its selected assistant reply**: A whole pair preserves the turn relationship.
+- **Every answer from other chats**: Other chats are isolated.
+- **A pretend system answer**: An assistant reply must not be relabeled as a system instruction.
+
+</details>
+
+#### Round 2
+
+A stopped reply says “The answer is…”. What is the default?
+
+1. Always include it as complete
+2. Exclude it until the learner selects partial text
+3. Delete the whole chat
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Exclude it until the learner selects partial text**.
+
+- **Always include it as complete**: It may be incomplete or wrong.
+- **Exclude it until the learner selects partial text**: The app keeps it visible while requiring an explicit context choice.
+- **Delete the whole chat**: Stopping keeps the user message and partial reply.
+
+</details>
+
+#### Round 3
+
+You save 50 turns but send the latest ten pairs. Which can the model use now?
+
+1. All 50 automatically
+2. Only the saved title
+3. The supplied ten pairs and current question
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **The supplied ten pairs and current question**.
+
+- **All 50 automatically**: Database storage does not automatically enter model context.
+- **Only the saved title**: The title is display metadata, not a substitute for conversation.
+- **The supplied ten pairs and current question**: The request controls what the model receives.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+What changes when this app saves a chat?
+
+1. Model weights
+2. The local SQLite record
+3. All Google models
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **The local SQLite record**.
+
+- **Model weights**: Saving is not training.
+- **The local SQLite record**: SQLite persists the app’s conversation.
+- **All Google models**: A local write does not update hosted models.
+
+</details>
+
+#### Question 2
+
+What does a persona change?
+
+1. Requested response style
+2. The factual truth of every answer
+3. The token count to exactly zero
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Requested response style**.
+
+- **Requested response style**: Instructions can request tone or structure.
+- **The factual truth of every answer**: Style instructions cannot guarantee correctness.
+- **The token count to exactly zero**: System instructions also consume input context.
+
+</details>
+
+#### Question 3
+
+What does the context inspector show?
+
+1. Private model reasoning
+2. Every chat on your machine
+3. The instruction and selected messages for a request
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **The instruction and selected messages for a request**.
+
+- **Private model reasoning**: Private reasoning is not shown.
+- **Every chat on your machine**: Each chat stays separate.
+- **The instruction and selected messages for a request**: Inspect the preview or a saved attempt snapshot.
+
+</details>
+
+### Build mission: Give your bot a conversation backpack
+
+In My chatbot, choose Demo, start a new conversation, save a title and persona, send a mango message, and ask the follow-up. Inspect both the sent context and the preview. Refresh and reopen the saved chat. If Google is configured, repeat in a separate Google chat and record the actual response; do not count the demo as live proof.
+
+You are done when:
+
+- The saved title, persona, and two turns survive refresh.
+- Your journal explains that the demo uses a lookup and a live model uses supplied context, without changing weights.
+
+<details>
+<summary>Hints</summary>
+
+1. Click Save title & persona before the next request.
+2. Inspect sent context on the follow-up; find user → assistant → user.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+The follow-up snapshot contains the mango user message, its selected reply, and the new question. Demo labels identify the Python rule. The chat survives refresh through SQLite. A Google comparison is only live proof if an actual Google response is obtained.
+```
+
+</details>
+
+### Explain it back
+
+Which message would you remove from the backpack to make the fruit follow-up ambiguous? Why does it remain saved?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L11: Catch a streaming reply
+
+Chat Workshop · about 25 minutes · version 1
+
+### Your goal
+
+- Assemble streamed chunks without assuming one chunk equals one token.
+- Distinguish running, complete, stopped, interrupted, and failed replies.
+- Stop a reply and recover saved partial text without an automatic new request.
+
+### Predict first
+
+A response arrives as “man” then “go”. Did the model necessarily create exactly two tokens?
+
+### Learn
+
+Streaming lets the browser display text while a reply is still being produced. Picture a postcard written in several deliveries. Transport chunks can split or group text differently from model tokens. Our browser uses a streaming UTF-8 decoder so multibyte characters survive transport boundaries, then reads complete event frames.
+
+The browser first posts one message with a stable request ID. Python saves the user turn, reserves the live attempt, and starts a worker. A separate read stream carries full snapshots of the same generation. Each snapshot replaces the visible text; it does not append duplicate text after reconnecting. Opening or recovering that stream makes no new generation call.
+
+Stop asks the server to stop consuming and immediately saves the last durable partial reply with a stopped status. A chunk already in flight cannot overwrite the stopped record. Google may have produced or billed work already, and an in-flight network read can take time to close. Stop is not a guarantee of zero cost.
+
+A browser refresh can reconnect to a still-running worker. A server restart turns unfinished attempts into interrupted records and preserves their last committed text. Failed, stopped, interrupted, and output-limited replies remain visible. Choose a partial reply explicitly if you want it in the next context; it can still be incomplete or incorrect.
+
+Try another reply is an explicit new attempt and may incur new Google charges. It is different from recovering an existing stream or resending a lost HTTP response with its original request ID. The app does not automatically retry Google failures. If the app says cancellation is still unwinding, wait before a new live attempt.
+
+**Where the analogy stops:** The postcard metaphor describes text delivery. It does not expose model reasoning or guarantee a token-to-chunk relationship. Stop cannot cancel work already completed upstream.
+
+### Run a tiny Python example
+
+```python
+chunks = ['A ', 'token ', 'is text.']
+reply = ''
+for index, chunk in enumerate(chunks):
+    if index == 2:
+        break
+    reply += chunk
+    print('Saved:', repr(reply))
+print('Status: stopped')
+print('Partial:', repr(reply))
+```
+
+Expected output:
+
+```text
+Saved: 'A '
+Saved: 'A token '
+Status: stopped
+Partial: 'A token '
+```
+
+- reply accumulates visible chunks.
+- break stops before the third delivery.
+- The last saved text remains available.
+- This loop is an offline simulation, not Google streaming or a tokenizer.
+
+### Play: Catch the Text Parcels
+
+Choose what belongs in this experiment. Read each explanation; get two of three right.
+
+#### Round 1
+
+Two chunks are “man” and “go”. What should the UI display?
+
+1. mango
+2. man go, adding a space
+3. Only go
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **mango**.
+
+- **mango**: Concatenate the text exactly as delivered.
+- **man go, adding a space**: Adding spaces can corrupt a word.
+- **Only go**: Discarding earlier chunks loses content.
+
+</details>
+
+#### Round 2
+
+A reply has partial text when you press Stop. What should persist?
+
+1. A complete success label
+2. Partial text with stopped status
+3. A fresh automatically billed retry
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Partial text with stopped status**.
+
+- **A complete success label**: Stopping is not completion.
+- **Partial text with stopped status**: The UI saves both text and its truthful status.
+- **A fresh automatically billed retry**: A new attempt requires an explicit action.
+
+</details>
+
+#### Round 3
+
+The browser reconnects to the same saved generation. What should happen?
+
+1. Start a new Google generation
+2. Append the full snapshot twice
+3. Recover the snapshot without a new model request
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Recover the snapshot without a new model request**.
+
+- **Start a new Google generation**: Reading saved state is not generation.
+- **Append the full snapshot twice**: Full snapshots replace visible text to avoid duplicates.
+- **Recover the snapshot without a new model request**: Recovery uses the same generation ID.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+Does one network chunk always equal one token?
+
+1. Yes
+2. No; transport and tokenization differ
+3. Only when it contains Python
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **No; transport and tokenization differ**.
+
+- **Yes**: Network framing is separate from tokenization.
+- **No; transport and tokenization differ**: Chunks can split or group visible text independently.
+- **Only when it contains Python**: The programming language does not force token boundaries.
+
+</details>
+
+#### Question 2
+
+What does a server restart do to an unfinished attempt?
+
+1. Marks it interrupted and keeps committed text
+2. Automatically pays for a replacement
+3. Trains the model on the partial reply
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Marks it interrupted and keeps committed text**.
+
+- **Marks it interrupted and keeps committed text**: The startup recovery preserves data without rerunning.
+- **Automatically pays for a replacement**: No automatic generation retry occurs.
+- **Trains the model on the partial reply**: Persisting text does not train weights.
+
+</details>
+
+#### Question 3
+
+Can Stop prove that no Google charge occurred?
+
+1. Yes, always
+2. Only if the UI closes
+3. No; upstream work may already have occurred
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **No; upstream work may already have occurred**.
+
+- **Yes, always**: The provider can already have processed work.
+- **Only if the UI closes**: Closing a view is not a billing guarantee.
+- **No; upstream work may already have occurred**: Usage may remain unknown after cancellation.
+
+</details>
+
+### Build mission: Stop, recover, and choose a partial reply
+
+In Demo mode ask about tokens, press Stop after some text appears, and refresh. Inspect the stopped reply and its saved context. Choose Use partial reply, or explicitly try another demo reply. Repeat the normal completion flow and compare the statuses. Record that the demo simulates deliveries and incurs zero Google calls.
+
+You are done when:
+
+- A nonempty stopped partial reply survives refresh with its status.
+- Your journal distinguishes stream recovery from an explicit new generation and notes the billing limit of Stop.
+
+<details>
+<summary>Hints</summary>
+
+1. Demo replies are short. Start a fresh conversation and press Stop as soon as text appears.
+2. Stopped text is excluded from later context until Use partial reply is selected.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+A successful rehearsal retains partial text marked stopped after refresh. Recovery reads the same record. Try another demo reply creates a new variant; Use partial reply explicitly selects the existing text. Real Google cancellation can still have unknown billed usage.
+```
+
+</details>
+
+### Explain it back
+
+What should the app do if your browser loses the reply after Python has already saved it?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L12: Judge a helpful response
+
+Chat Workshop · about 25 minutes · version 1
+
+### Your goal
+
+- Evaluate a reply using a small rubric instead of trusting confident wording.
+- Compare variants without silently mixing conversation branches.
+- Separate style, factual accuracy, uncertainty, and context use.
+
+### Predict first
+
+Reply A is very confident but calls saving a chat “training”. Reply B is shorter and says saving is database storage. Which is more helpful?
+
+### Learn
+
+A helpful reply answers the actual question, uses the available context, states accurate facts, and signals uncertainty when needed. Long text and friendly tone alone do not prove correctness. A persona can improve presentation while leaving a factual mistake untouched.
+
+Use a tiny rubric: did it follow the task, was it accurate, did it use context appropriately, and did it handle uncertainty? Give one point for each criterion you can justify. A rubric score is your evaluation, not an official proof that a model is safe or correct.
+
+Compare two replies to the same question. In My chatbot, Try another reply creates a variant with its own context snapshot and usage. The existing selected complete reply stays selected until you click Use this reply. Only the latest turn can change selection in this version; older turns with follow-ups need a new chat to explore another branch.
+
+Check context when a reply forgets a detail. The turn might remain saved but be omitted by the input budget. Check the instructions when a reply ignores the persona. Check external evidence or run Python yourself for factual or executable claims; this chatbot does not execute code for you.
+
+The example below scores two fixed authored replies using supplied judgments. It does not automatically verify facts and does not call an LLM. Demo variants may repeat because the rules are deterministic; that is useful evidence about the demo, not proof of model quality. Actual Google outputs vary.
+
+**Where the analogy stops:** The rubric is a checklist for a small experiment, not a formal safety certification. Boolean judgments are supplied by a person; the toy code cannot discover truth.
+
+### Run a tiny Python example
+
+```python
+rubric = {
+    'confident_but_wrong': [True, False, True, False],
+    'clear_and_careful': [True, True, True, True],
+}
+for name, judgments in rubric.items():
+    print(f'{name}: {sum(judgments)}/4')
+print('Judgments supplied by a person, not verified by code.')
+```
+
+Expected output:
+
+```text
+confident_but_wrong: 2/4
+clear_and_careful: 4/4
+Judgments supplied by a person, not verified by code.
+```
+
+- The dictionary maps a reply name to four judgments.
+- True adds one and False adds zero in sum.
+- The loop prints an interpretable checklist total.
+- Human review supplies the judgments; the code does not fact-check.
+
+### Play: The Reply Taste Test
+
+Choose what belongs in this experiment. Read each explanation; get two of three right.
+
+#### Round 1
+
+A says “Saving chat trains my weights”. B says “Saving writes to SQLite”. Which wins accuracy?
+
+1. B
+2. A because it is confident
+3. Both statements are identical
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **B**.
+
+- **B**: The local record changes; model weights do not.
+- **A because it is confident**: Confidence cannot fix a factual mistake.
+- **Both statements are identical**: Storage and training are different operations.
+
+</details>
+
+#### Round 2
+
+A reply follows a pirate persona but invents a Python function. What should you score?
+
+1. Perfect because the style worked
+2. Style succeeded; factual accuracy failed
+3. Ignore the factual claim
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Style succeeded; factual accuracy failed**.
+
+- **Perfect because the style worked**: Tone is only one property.
+- **Style succeeded; factual accuracy failed**: Evaluate presentation and correctness separately.
+- **Ignore the factual claim**: Wrong code can mislead a learner.
+
+</details>
+
+#### Round 3
+
+You generate a second complete variant. Which enters the next request by default?
+
+1. Both variants concatenated
+2. The newer one always
+3. The existing selected reply until you change it
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **The existing selected reply until you change it**.
+
+- **Both variants concatenated**: Mixing alternatives would create ambiguous history.
+- **The newer one always**: Trying a variant does not silently replace an existing selection.
+- **The existing selected reply until you change it**: Use this reply makes the choice explicit.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+What does the toy rubric verify automatically?
+
+1. All factual claims
+2. Nothing factual; it totals supplied judgments
+3. Google billing
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Nothing factual; it totals supplied judgments**.
+
+- **All factual claims**: It only adds boolean judgments.
+- **Nothing factual; it totals supplied judgments**: Human evidence is still needed.
+- **Google billing**: The toy has no provider usage data.
+
+</details>
+
+#### Question 2
+
+An earlier fruit detail is missing from the response. What is a useful first check?
+
+1. Inspect the selected request context
+2. Assume the model was trained incorrectly
+3. Change the website background
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Inspect the selected request context**.
+
+- **Inspect the selected request context**: The detail may not have been sent.
+- **Assume the model was trained incorrectly**: Context omission is different from training failure.
+- **Change the website background**: Color does not change model input.
+
+</details>
+
+#### Question 3
+
+How do you explore a different reply to an older turn that already has follow-ups?
+
+1. Silently replace its reply
+2. Treat every branch as the same
+3. Start a new chat for that branch
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Start a new chat for that branch**.
+
+- **Silently replace its reply**: That would alter the meaning of subsequent turns.
+- **Treat every branch as the same**: Branches can lead to different conversations.
+- **Start a new chat for that branch**: M3 keeps older selections stable rather than silently rebasing history.
+
+</details>
+
+### Build mission: Run a two-reply taste test
+
+Ask Demo “What is a token?”, try another demo reply, and inspect both snapshots. Explain why deterministic rules may repeat. Select a variant explicitly. If Google is configured, ask for a two-sentence explanation of training versus inference and compare two real variants with the four-point rubric. Save your judgments and evidence in the journal; label offline rehearsal separately.
+
+You are done when:
+
+- You identify the selected variant and explain what goes into a follow-up.
+- Your journal records task, accuracy, context, and uncertainty judgments with specific evidence; it does not call the toy a fact-checker.
+
+<details>
+<summary>Hints</summary>
+
+1. Inspect sent context for each variant before comparing answers.
+2. For accuracy, compare training/storage claims against the authored lessons; run Python code locally if needed.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+Demo variants can be identical because the same rule receives the same input. The selected_id determines the reply included in later context. A careful evaluation names each rubric criterion and provides evidence; a 4/4 score is still a limited judgment, not a universal guarantee.
+```
+
+</details>
+
+### Explain it back
+
+Which rubric criterion could a cheerful, confident reply still fail? Give a concrete example.
 
 **Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.

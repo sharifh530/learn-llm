@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -17,6 +17,8 @@ from app.models import Acknowledgment, Attempt, DemoMessage, Journal, AIMessage,
 from app.ai import AIService
 from app.providers import AIError
 from app.progress import ProgressError, ProgressService
+from app.chat import ChatService, PERSONAS
+from app.models import ChatCreate, ChatUpdate, ChatRetry, ChatSelection, ChatContext, EmptyInput
 
 
 def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None):
@@ -24,9 +26,11 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     database = Database(database_path or config.DATABASE_PATH)
     progress = ProgressService(database, content)
     ai = AIService(ai_settings or config.AISettings.load(), database, content, provider)
+    chats = ChatService(database, ai)
     app = FastAPI(title="Tiny Chat Lab", docs_url=None, redoc_url=None)
     app.state.content, app.state.progress, app.state.database = content, progress, database
     app.state.ai = ai
+    app.state.chats = chats
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
     app.mount("/static", StaticFiles(directory=config.APP_DIR / "static"), name="static")
     templates = Jinja2Templates(directory=config.APP_DIR / "templates")
@@ -92,7 +96,7 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/chat", response_class=HTMLResponse)
     def chat(request: Request):
-        return render(request, "chat.html")
+        return render(request, "chat.html", personas=PERSONAS)
 
     @app.get("/settings", response_class=HTMLResponse)
     def settings(request: Request):
@@ -147,6 +151,61 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     def demo_message(body: DemoMessage):
         return {"reply": reply(body.message), "mode": "demo", "network_calls": 0}
 
+    @app.get('/api/chats')
+    def saved_chats(mode: str = 'demo', archived: bool = False):
+        if mode not in ('demo','google_cloud'):
+            raise HTTPException(422,'Choose Demo or Google mode.')
+        return chats.list(mode,archived)
+
+    @app.post('/api/chats')
+    def create_chat(body: ChatCreate):
+        return chats.create(body)
+
+    @app.get('/api/chats/{chat_id}')
+    def saved_chat(chat_id: str):
+        return chats.get(chat_id)
+
+    @app.post('/api/chats/{chat_id}/settings')
+    def update_chat(chat_id: str, body: ChatUpdate):
+        return chats.update(chat_id,body)
+
+    @app.post('/api/chats/{chat_id}/archive')
+    def archive_chat(chat_id: str, body: EmptyInput):
+        return chats.archive(chat_id,True)
+
+    @app.post('/api/chats/{chat_id}/restore')
+    def restore_chat(chat_id: str, body: EmptyInput):
+        return chats.archive(chat_id,False)
+
+    @app.post('/api/chats/{chat_id}/context')
+    def chat_context(chat_id: str, body: ChatContext):
+        return chats.context(chat_id,body.message)
+
+    @app.post('/api/chats/{chat_id}/messages')
+    def chat_message(chat_id: str, body: AIMessage):
+        return chats.start(chat_id,body)
+
+    @app.post('/api/chats/{chat_id}/turns/{turn_id}/retry')
+    def chat_retry(chat_id: str, turn_id: str, body: ChatRetry):
+        return chats.start(chat_id,body,turn_id)
+
+    @app.post('/api/chats/{chat_id}/turns/{turn_id}/select')
+    def chat_select(chat_id: str, turn_id: str, body: ChatSelection):
+        return chats.select(chat_id,turn_id,body)
+
+    @app.get('/api/generations/{identity}')
+    def generation(identity: str):
+        return chats.generation(identity)
+
+    @app.get('/api/generations/{identity}/events')
+    def chat_events(identity: str):
+        chats.generation(identity)
+        return StreamingResponse(chats.events(identity),media_type='text/event-stream',headers={'X-Accel-Buffering':'no'})
+
+    @app.post('/api/generations/{identity}/cancel')
+    def chat_cancel(identity: str, body: EmptyInput):
+        return chats.cancel(identity)
+
     @app.post("/api/content/reload")
     def reload_content():
         try:
@@ -156,6 +215,6 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "milestone": "M2", "mode": ai.status()["mode"]}
+        return {"status": "ok", "milestone": "M3", "mode": ai.status()["mode"]}
 
     return app

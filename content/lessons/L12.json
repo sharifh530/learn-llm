@@ -1,0 +1,210 @@
+{
+  "id": "L12",
+  "version": 1,
+  "status": "authored",
+  "title": "Judge a helpful response",
+  "zone": "Chat Workshop",
+  "minutes": 25,
+  "prerequisites": [
+    "L11"
+  ],
+  "objectives": [
+    "Evaluate a reply using a small rubric instead of trusting confident wording.",
+    "Compare variants without silently mixing conversation branches.",
+    "Separate style, factual accuracy, uncertainty, and context use."
+  ],
+  "prediction": "Reply A is very confident but calls saving a chat “training”. Reply B is shorter and says saving is database storage. Which is more helpful?",
+  "explanation": [
+    "A helpful reply answers the actual question, uses the available context, states accurate facts, and signals uncertainty when needed. Long text and friendly tone alone do not prove correctness. A persona can improve presentation while leaving a factual mistake untouched.",
+    "Use a tiny rubric: did it follow the task, was it accurate, did it use context appropriately, and did it handle uncertainty? Give one point for each criterion you can justify. A rubric score is your evaluation, not an official proof that a model is safe or correct.",
+    "Compare two replies to the same question. In My chatbot, Try another reply creates a variant with its own context snapshot and usage. The existing selected complete reply stays selected until you click Use this reply. Only the latest turn can change selection in this version; older turns with follow-ups need a new chat to explore another branch.",
+    "Check context when a reply forgets a detail. The turn might remain saved but be omitted by the input budget. Check the instructions when a reply ignores the persona. Check external evidence or run Python yourself for factual or executable claims; this chatbot does not execute code for you.",
+    "The example below scores two fixed authored replies using supplied judgments. It does not automatically verify facts and does not call an LLM. Demo variants may repeat because the rules are deterministic; that is useful evidence about the demo, not proof of model quality. Actual Google outputs vary."
+  ],
+  "analogy_limit": "The rubric is a checklist for a small experiment, not a formal safety certification. Boolean judgments are supplied by a person; the toy code cannot discover truth.",
+  "python_example": {
+    "code": "rubric = {\n    'confident_but_wrong': [True, False, True, False],\n    'clear_and_careful': [True, True, True, True],\n}\nfor name, judgments in rubric.items():\n    print(f'{name}: {sum(judgments)}/4')\nprint('Judgments supplied by a person, not verified by code.')\n",
+    "expected_output": "confident_but_wrong: 2/4\nclear_and_careful: 4/4\nJudgments supplied by a person, not verified by code.\n",
+    "walkthrough": [
+      "The dictionary maps a reply name to four judgments.",
+      "True adds one and False adds zero in sum.",
+      "The loop prints an interpretable checklist total.",
+      "Human review supplies the judgments; the code does not fact-check."
+    ]
+  },
+  "game": {
+    "id": "L12-game",
+    "type": "choice_rounds",
+    "title": "The Reply Taste Test",
+    "instructions": "Choose what belongs in this experiment. Read each explanation; get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L12-game-r1",
+        "prompt": "A says “Saving chat trains my weights”. B says “Saving writes to SQLite”. Which wins accuracy?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "B"
+          },
+          {
+            "id": "b",
+            "text": "A because it is confident"
+          },
+          {
+            "id": "c",
+            "text": "Both statements are identical"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The local record changes; model weights do not.",
+          "b": "Confidence cannot fix a factual mistake.",
+          "c": "Storage and training are different operations."
+        }
+      },
+      {
+        "id": "L12-game-r2",
+        "prompt": "A reply follows a pirate persona but invents a Python function. What should you score?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Perfect because the style worked"
+          },
+          {
+            "id": "b",
+            "text": "Style succeeded; factual accuracy failed"
+          },
+          {
+            "id": "c",
+            "text": "Ignore the factual claim"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Tone is only one property.",
+          "b": "Evaluate presentation and correctness separately.",
+          "c": "Wrong code can mislead a learner."
+        }
+      },
+      {
+        "id": "L12-game-r3",
+        "prompt": "You generate a second complete variant. Which enters the next request by default?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Both variants concatenated"
+          },
+          {
+            "id": "b",
+            "text": "The newer one always"
+          },
+          {
+            "id": "c",
+            "text": "The existing selected reply until you change it"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Mixing alternatives would create ambiguous history.",
+          "b": "Trying a variant does not silently replace an existing selection.",
+          "c": "Use this reply makes the choice explicit."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L12-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L12-quiz-r1",
+        "prompt": "What does the toy rubric verify automatically?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "All factual claims"
+          },
+          {
+            "id": "b",
+            "text": "Nothing factual; it totals supplied judgments"
+          },
+          {
+            "id": "c",
+            "text": "Google billing"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "It only adds boolean judgments.",
+          "b": "Human evidence is still needed.",
+          "c": "The toy has no provider usage data."
+        }
+      },
+      {
+        "id": "L12-quiz-r2",
+        "prompt": "An earlier fruit detail is missing from the response. What is a useful first check?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Inspect the selected request context"
+          },
+          {
+            "id": "b",
+            "text": "Assume the model was trained incorrectly"
+          },
+          {
+            "id": "c",
+            "text": "Change the website background"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The detail may not have been sent.",
+          "b": "Context omission is different from training failure.",
+          "c": "Color does not change model input."
+        }
+      },
+      {
+        "id": "L12-quiz-r3",
+        "prompt": "How do you explore a different reply to an older turn that already has follow-ups?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Silently replace its reply"
+          },
+          {
+            "id": "b",
+            "text": "Treat every branch as the same"
+          },
+          {
+            "id": "c",
+            "text": "Start a new chat for that branch"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "That would alter the meaning of subsequent turns.",
+          "b": "Branches can lead to different conversations.",
+          "c": "M3 keeps older selections stable rather than silently rebasing history."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L12-build",
+    "title": "Run a two-reply taste test",
+    "instructions": "Ask Demo “What is a token?”, try another demo reply, and inspect both snapshots. Explain why deterministic rules may repeat. Select a variant explicitly. If Google is configured, ask for a two-sentence explanation of training versus inference and compare two real variants with the four-point rubric. Save your judgments and evidence in the journal; label offline rehearsal separately.",
+    "criteria": [
+      "You identify the selected variant and explain what goes into a follow-up.",
+      "Your journal records task, accuracy, context, and uncertainty judgments with specific evidence; it does not call the toy a fact-checker."
+    ],
+    "hints": [
+      "Inspect sent context for each variant before comparing answers.",
+      "For accuracy, compare training/storage claims against the authored lessons; run Python code locally if needed."
+    ],
+    "reference_solution": "Demo variants can be identical because the same rule receives the same input. The selected_id determines the reply included in later context. A careful evaluation names each rubric criterion and provides evidence; a 4/4 score is still a limited judgment, not a universal guarantee."
+  },
+  "reflection": "Which rubric criterion could a cheerful, confident reply still fail? Give a concrete example.",
+  "tutor_context": "Teach Evaluate a reply using a small rubric instead of trusting confident wording., Compare variants without silently mixing conversation branches., Separate style, factual accuracy, uncertainty, and context use. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+}

@@ -51,3 +51,30 @@ class TutorMessage(AIMessage):
 
 class ConnectionTest(Input):
     request_id: str = Field(pattern=r"^[a-zA-Z0-9-]{8,80}$")
+
+
+class ChatCreate(Input):
+    mode: Literal['demo', 'google_cloud'] = 'demo'
+    persona: Literal['guide', 'coach', 'concise'] = 'guide'
+
+
+class ChatUpdate(Input):
+    title: str = Field(min_length=1, max_length=80)
+    persona: Literal['guide', 'coach', 'concise']
+
+
+class ChatRetry(Input):
+    request_id: str = Field(pattern=r"^[a-zA-Z0-9-]{8,80}$")
+
+
+class ChatSelection(Input):
+    generation_id: str = Field(min_length=8, max_length=80)
+    include_partial: bool = False
+
+
+class EmptyInput(Input):
+    pass
+
+
+class ChatContext(Input):
+    message: str = Field(default='', max_length=4000)

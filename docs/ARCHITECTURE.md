@@ -51,7 +51,7 @@ tests/                     # Added with implementation
 tools/                     # Content rendering and validation
 ```
 
-M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`, `models.py`, `content.py`, `progress.py`, `db.py`, and `demo.py`, plus templates and static assets. M2 adds `ai.py` for context, policy, and usage, and `providers.py` for the Google SDK. Saved multi-turn chats in the diagram remain planned for M3. Keeping the current modules small makes the Python request flow easy to follow.
+M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`, `models.py`, `content.py`, `progress.py`, `db.py`, and `demo.py`, plus templates and static assets. M2 adds `ai.py` for context, policy, and usage, and `providers.py` for the Google SDK. M3 adds `chat.py` for saved turns, persona/context selection, streaming workers, and recovery; it reuses the existing database and AI reservation policy.
 
 ## App API contract
 
@@ -69,11 +69,16 @@ M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`
 | `POST /api/provider/test` | Explicit bounded connection test | M2 |
 | `POST /api/tutor/messages` | Complete lesson-aware single-turn response | M2 |
 | `POST /api/ai/messages` | Complete single-turn chatbot response | M2 |
-| `POST /api/chats` | Create saved chatbot conversation | M3 planned |
-| `POST /api/chats/{id}/messages` | Saved multi-turn response/streaming | M3 planned |
+| `POST /api/chats` | Create saved Demo or Google conversation | M3 |
+| `GET /api/chats` | List active/archived chats by mode | M3 |
+| `POST /api/chats/{id}/messages` | Persist turn and start/recover generation by request ID | M3 |
 | `GET /api/chats/{id}` | Saved messages and statuses | M3 |
 | `POST /api/generations/{id}/cancel` | Request cancellation | M3 |
-| `DELETE /api/chats/{id}` | Explicit local deletion | M3 |
+| `POST /api/chats/{id}/settings` | Save title and persona for future requests | M3 |
+| `POST /api/chats/{id}/archive`, `/restore` | Reversible local archive | M3 |
+| `POST /api/chats/{id}/context` | Preview draft and selected context | M3 |
+| `POST /api/chats/{id}/turns/{turn}/retry`, `/select` | Explicit latest-turn variants/selection | M3 |
+| `GET /api/generations/{id}`, `/events` | Saved status or reconnectable SSE snapshots | M3 |
 | `POST /api/course/drafts` | Structured content proposal | Later |
 | `POST /api/course/drafts/{id}/publish` | Publish validated draft | Later |
 
@@ -85,7 +90,11 @@ M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`
 
 Schema version 2 appends `ai_requests` (attempt ID, payload hash, purpose, lesson ID, status, timestamp, calls attempted, returned usage, cached response, redacted error code). Existing progress, XP, and journals are untouched. One local server process is supported. On restart, running attempts become interrupted without automatic reruns. The request ledger is not selected conversation history.
 
-## Planned database additions beyond M2
+## M3 persistence
+
+Schema version 3 appends `chats` (mode, title, predefined persona, archive flag), `chat_turns` (user text and selected generation ID), and `generations` (variant text/status, immutable input context snapshot, usage and redacted errors). Live generations also reserve the existing `ai_requests` ledger. All prior learning rows remain unchanged. M3 uses one local server process. SQLite backup is taken before the local upgrade.
+
+## Future database additions
 
 - `chats`: ID, learner ID, mode (`tutor` or `chatbot`), persona version, timestamps.
 - `messages`: ID, chat ID, role, content, status, active variant, timestamps.
@@ -103,11 +112,11 @@ Keep auth-mode selection separate from the generation interface. Tutor and chatb
 
 ## Context and streaming
 
-M2 uses a complete response first. M3 upgrades chat using `fetch` with a streamed POST response and SSE-framed events. Native `EventSource` is not used for POST. App events: `start`, `delta`, `usage`, `done`, and `error`, each with a request/generation ID. These are our app protocol, independent of Google's transport.
+M2 uses complete single-turn responses. M3 separates generation creation from stream reading: an idempotent POST saves/starts the attempt; `fetch` reads a GET SSE endpoint with `snapshot` and `done` events containing full saved generation text, status, and usage. This replaces the planned streamed POST/delta design because refresh can reconnect without replay offsets or a new paid attempt. A background worker persists chunks independently of the browser connection.
 
-Reserve output tokens and system instructions before selecting recent conversation turns. Count with the configured provider/model where supported; use a conservative, explicitly labeled estimate otherwise. Never slice bytes halfway through a message. Keep role order valid and include a current user message.
+Select at most ten recent whole user/selected-assistant pairs using a labeled conservative UTF-8 byte heuristic for a 12,000-token input cap, including system instructions and the current message. Google counts the actual structured input before generation. Output is capped separately at 2,048 tokens. Older omitted turns stay saved. Never slice a message or include an orphan assistant reply.
 
-Persist the user message before generation. Accumulate assistant deltas with a throttle; finalize status as `complete`, `stopped`, `failed`, or `blocked`. Partial messages stay visible but are excluded from subsequent context unless the learner elects to include them. A stop request closes the browser stream and asks the backend to stop consuming; it does not promise that upstream billing immediately stops.
+Persist the user message and reservation before generation. Save accepted text chunks and finalize as `complete`, `stopped`, `failed`, `blocked`, or `truncated`; restart recovery adds `interrupted`. Partials are excluded until explicitly selected. Blocked text is cleared. Stop commits status immediately and signals the worker; conditional writes fence late chunks. Cancellation can wait for an in-flight SDK read, and the live reservation remains held until it unwinds. The browser reads a final snapshot and closes the stream. Upstream billing may already have occurred.
 
 ## Local and hosted boundaries
 

@@ -55,7 +55,25 @@ class Database:
                     input_tokens INTEGER, output_tokens INTEGER, total_tokens INTEGER,
                     response TEXT, error_code TEXT
                 );
-                PRAGMA user_version = 2;
+                CREATE TABLE IF NOT EXISTS chats (
+                    id TEXT PRIMARY KEY, title TEXT NOT NULL, mode TEXT NOT NULL,
+                    persona TEXT NOT NULL, archived INTEGER NOT NULL DEFAULT 0,
+                    created_at REAL NOT NULL, updated_at REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS chat_turns (
+                    id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id),
+                    user_text TEXT NOT NULL, selected_id TEXT, created_at REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS generations (
+                    id TEXT PRIMARY KEY, turn_id TEXT NOT NULL REFERENCES chat_turns(id),
+                    payload_hash TEXT NOT NULL, context_json TEXT NOT NULL,
+                    status TEXT NOT NULL, text TEXT NOT NULL DEFAULT '',
+                    error TEXT, error_code TEXT, finish_reason TEXT,
+                    input_tokens INTEGER, output_tokens INTEGER, total_tokens INTEGER,
+                    created_at REAL NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS chat_turn_order ON chat_turns(chat_id,created_at);
+                PRAGMA user_version = 3;
             """)
 
     @contextmanager

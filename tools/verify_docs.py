@@ -103,7 +103,7 @@ def main() -> None:
     authored = [entry for entry in entries.values() if entry["status"] == "authored"]
     seed_ids = {f"L{i:02}" for i in range(1, 7)}
     # Explicitly reviewed, offline-only examples; do not execute arbitrary future content.
-    trusted_examples = seed_ids | {"L07", "L08", "L09"}
+    trusted_examples = seed_ids | {"L07", "L08", "L09", "L10", "L11", "L12"}
     require(seed_ids <= {entry["id"] for entry in authored}, "Initial six lessons missing")
     for entry in entries.values():
         require(entry["status"] in {"authored", "outline"}, "Unknown content status")

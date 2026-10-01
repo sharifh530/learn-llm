@@ -41,22 +41,20 @@ class GoogleProvider:
     def __init__(self, settings):
         self.settings = settings
 
+    def client_arguments(self):
+        arguments = {'vertexai': True, 'http_options': types.HttpOptions(api_version='v1', timeout=30000,
+                     retry_options=types.HttpRetryOptions(attempts=1))}
+        if self.settings.auth_mode == 'express_key':
+            arguments['api_key'] = self.settings.api_key
+        else:
+            import google.auth
+            credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+            arguments.update(credentials=credentials, project=self.settings.project, location=self.settings.location)
+        return arguments
+
     def generate(self, instruction, message, input_limit, output_limit, on_call):
         try:
-            options = types.HttpOptions(api_version="v1", timeout=30000,
-                                        retry_options=types.HttpRetryOptions(attempts=1))
-            # vertexai remains supported by the pinned SDK. It selects Cloud,
-            # including express keys, rather than the Gemini Developer API.
-            arguments = {"vertexai": True, "http_options": options}
-            if self.settings.auth_mode == "express_key":
-                arguments["api_key"] = self.settings.api_key
-            else:
-                # Explicit credentials prevent ambient GOOGLE_API_KEY from
-                # accidentally selecting key authentication for ADC mode.
-                import google.auth
-                credentials, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-                arguments.update(credentials=credentials, project=self.settings.project, location=self.settings.location)
-            with genai.Client(**arguments) as client:
+            with genai.Client(**self.client_arguments()) as client:
                 on_call()
                 counted = client.models.count_tokens(model=self.settings.model, contents=message,
                                                       config=types.CountTokensConfig(system_instruction=instruction))
@@ -83,6 +81,60 @@ class GoogleProvider:
                                   metadata.candidates_token_count if metadata else None,
                                   metadata.total_token_count if metadata else None,
                                   str(candidates[0].finish_reason).split(".")[-1] if candidates else None)
+        except AIError:
+            raise
+        except Exception as error:
+            raise provider_error(error) from None
+
+    def stream(self, instruction, messages, input_limit, output_limit, on_call, cancelled):
+        """Yield normalized visible text, then a final usage/finish event."""
+        try:
+            contents = [types.Content(role='model' if item['role']=='assistant' else 'user',
+                        parts=[types.Part.from_text(text=item['text'])]) for item in messages]
+            with genai.Client(**self.client_arguments()) as client:
+                if cancelled():
+                    return
+                on_call()
+                counted = client.models.count_tokens(model=self.settings.model, contents=contents,
+                           config=types.CountTokensConfig(system_instruction=instruction))
+                if counted.total_tokens is None:
+                    raise AIError('count', 'Google returned no input token count. No generation was sent.')
+                if counted.total_tokens > input_limit:
+                    raise AIError('input_limit', 'Conversation context exceeds the input token limit. Start a shorter chat.', 413)
+                if cancelled():
+                    return
+                on_call()
+                stream = client.models.generate_content_stream(model=self.settings.model, contents=contents,
+                         config=types.GenerateContentConfig(system_instruction=instruction, max_output_tokens=output_limit,
+                                response_modalities=['TEXT'], candidate_count=1))
+                usage, reason, visible = (None, None, None), None, False
+                try:
+                    for chunk in stream:
+                        if cancelled():
+                            return
+                        metadata = chunk.usage_metadata
+                        if metadata:
+                            usage = (metadata.prompt_token_count, metadata.candidates_token_count, metadata.total_token_count)
+                        block = chunk.prompt_feedback and chunk.prompt_feedback.block_reason
+                        candidates = chunk.candidates or []
+                        reasons = {str(candidate.finish_reason).split('.')[-1] for candidate in candidates if candidate.finish_reason}
+                        if (block and str(block).split('.')[-1]!='BLOCKED_REASON_UNSPECIFIED') or reasons.intersection({'SAFETY','PROHIBITED_CONTENT','RECITATION','BLOCKLIST','SPII'}):
+                            raise AIError('blocked', 'Google blocked this response. Try a different question.', 422, usage)
+                        if reasons:
+                            reason = str(candidates[0].finish_reason).split('.')[-1]
+                        # Exclude thought and non-text parts; never expose private reasoning.
+                        parts = candidates[0].content.parts if candidates and candidates[0].content else []
+                        text = ''.join(part.text for part in (parts or []) if part.text and not part.thought)
+                        if text:
+                            visible = True
+                            yield ModelReply(text)
+                    if not visible:
+                        raise AIError('empty', 'Google returned an empty reply. Your question is saved.', 422, usage)
+                    if reason not in ('STOP','MAX_TOKENS'):
+                        raise AIError('incomplete', 'Google stream ended without a normal completion marker. Partial text saved.', 503, usage)
+                    yield ModelReply('', *usage, finish_reason=reason)
+                finally:
+                    stream.close()
         except AIError:
             raise
         except Exception as error:
