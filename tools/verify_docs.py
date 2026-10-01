@@ -102,6 +102,8 @@ def main() -> None:
 
     authored = [entry for entry in entries.values() if entry["status"] == "authored"]
     seed_ids = {f"L{i:02}" for i in range(1, 7)}
+    # Explicitly reviewed, offline-only examples; do not execute arbitrary future content.
+    trusted_examples = seed_ids | {"L07", "L08", "L09"}
     require(seed_ids <= {entry["id"] for entry in authored}, "Initial six lessons missing")
     for entry in entries.values():
         require(entry["status"] in {"authored", "outline"}, "Unknown content status")
@@ -133,7 +135,7 @@ def main() -> None:
             all_ids.add(identity)
         code = lesson["python_example"]["code"]
         compile(code, f"{entry['id']}-example.py", "exec")
-        if entry["id"] not in seed_ids:
+        if entry["id"] not in trusted_examples:
             skipped_examples.append(entry["id"])
             continue
         with tempfile.TemporaryDirectory(prefix="tiny-chat-example-") as temporary:
@@ -163,7 +165,7 @@ def main() -> None:
     print("PASS: content contract subset, IDs, feedback, prerequisites, and generated reading copy")
     if skipped_examples:
         print(f"Additional examples checked for syntax only: {', '.join(skipped_examples)}. Review and verify them separately.")
-    print("For application checks, run pytest and tools/browser_check.py. Live Google integration is deferred to M2.")
+    print("For application checks, run pytest and tools/browser_check.py. Live Google verification requires credentials and a real connection test.")
 
 
 if __name__ == "__main__":

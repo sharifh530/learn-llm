@@ -25,16 +25,23 @@
     </div>
   </header>
   <main id="main" class="page-shell">{% block content %}{% endblock %}</main>
-  <footer class="site-footer"><span>One idea. One game. One thing you build.</span><span>Local learning · No API key needed</span></footer>
+  <footer class="site-footer"><span>One idea. One game. One thing you build.</span><span>Offline lessons · Optional Google AI</span></footer>
   <dialog id="tutor-dialog" class="tutor-dialog" aria-labelledby="tutor-title">
     <div class="dialog-header"><span class="tag">Your learning companion</span><button class="icon-button" data-close-tutor aria-label="Close Ask AI">×</button></div>
     <h2 id="tutor-title">A little help, when you need it.</h2>
-    <p>Ask AI will connect to Google Cloud / Vertex AI in M2. You can keep learning with the authored hints, feedback, and reference solutions.</p>
-    <div class="notice"><strong>No model connected</strong><p>Your questions are not sent to Google in this version.</p></div>
-    <label for="tutor-draft">Save a question for later</label>
-    <textarea id="tutor-draft" rows="3" maxlength="2000" placeholder="For example: why isn't a saved chat the same as training?"></textarea>
-    <p class="muted small">Draft stays in this browser tab. Nothing is submitted to an AI.</p>
-    <a class="button" href="/settings">See connection plan <span aria-hidden="true">↗</span></a>
+    <p>One question, a tiny example, and a chance to try again. AI explanations can be imperfect; authored feedback decides your score.</p>
+    <div class="notice"><strong>{{ 'Google configured' if provider.configured else 'No model connected' }}</strong><p>{{ provider.message }}</p></div>
+    <form id="tutor-form">
+      <label for="tutor-mode">How would you like help?</label>
+      <select id="tutor-mode"><option value="hint">Give me a hint</option><option value="explain">Explain the idea</option><option value="solution">Show the build solution</option></select>
+      <label for="tutor-draft">Your question about this lesson</label>
+      <textarea id="tutor-draft" rows="3" maxlength="4000" required placeholder="For example: why isn't a saved chat the same as training?"></textarea>
+      <button class="button" id="tutor-send" type="submit">Ask Google AI ↗</button>
+    </form>
+    <p class="muted small">Sends this lesson and question to Google. Each question is independent; earlier replies are not sent. Calls may incur charges.</p>
+    <p id="tutor-status" role="status" class="small"></p>
+    <div id="tutor-answer" class="ai-answer" aria-live="polite"></div>
+    <a class="text-link" href="/settings">Connection settings ↗</a>
   </dialog>
   <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
 </body>

@@ -1,4 +1,4 @@
-"""Exercise M1 in Chromium using an isolated database, never learner progress."""
+"""Exercise the offline learning flow in Chromium with an isolated database."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ def run():
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
     base = f"http://127.0.0.1:{port}"
-    environment = {**os.environ, "TINY_CHAT_DATABASE": str(run_dir / "browser-test.db")}
+    environment = {**os.environ, "TINY_CHAT_DATABASE": str(run_dir / "browser-test.db"), "AI_ENABLED": "false"}
     with (run_dir / "server.log").open("w", encoding="utf-8") as log:
         server = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:create_app", "--factory", "--host", "127.0.0.1", "--port", str(port)],
                                   cwd=ROOT, env=environment, stdout=log, stderr=subprocess.STDOUT)
@@ -100,11 +100,14 @@ def run():
                 expect(page.locator("[data-open-tutor]")).to_be_focused()
                 page.locator("[data-open-tutor]").click()
                 expect(page.locator("#tutor-draft")).to_have_value("Why isn't saving a chat training?")
+                page.locator("#tutor-send").click()
+                expect(page.locator("#tutor-status")).to_contain_text("AI is disabled")
+                expect(page.locator("#tutor-draft")).to_have_value("Why isn't saving a chat training?")
                 page.locator("[data-close-tutor]").click()
                 page.locator("[data-ack=reading]").click()
                 expect(page.locator("[data-total-xp]")).to_have_text("10")
                 page.screenshot(path=str(screenshots / "lesson-play-desktop.png"), full_page=True)
-                for number in range(1, 7):
+                for number in range(1, 10):
                     identity = f"L{number:02}"
                     lesson = context.request.get(base + f"/api/lessons/{identity}").json()
                     if number > 1:
@@ -123,12 +126,12 @@ def run():
                     page.locator("[data-step=build]").click()
                     page.locator("[data-ack=build]").click()
                     expect(page.locator("#lesson-completion")).to_be_visible()
-                assert progress()["xp"] == 480 and progress()["completed"] == 6
+                assert progress()["xp"] == 720 and progress()["completed"] == 9
                 assert len(progress()["badges"]) == 2
                 goto("/lessons/L01?step=play")
                 lesson = context.request.get(base + "/api/lessons/L01").json()
                 exercise(lesson, "game")
-                assert progress()["xp"] == 480
+                assert progress()["xp"] == 720
                 page.locator("[data-step=build]").click()
                 form = page.locator("[data-journal]")
                 form.locator("[name=changed]").fill("Added a robot prediction")
@@ -148,12 +151,22 @@ def run():
                 assert page.evaluate("window.injected === undefined")
                 page.reload()
                 expect(page.locator("#chat-messages")).to_contain_text("<script>window.injected=true</script>")
+                page.locator("#chat-mode").select_option("google_cloud")
+                page.locator("#chat-input").fill("Keep this question on failure")
+                page.locator("#chat-send").click()
+                expect(page.locator("#chat-status")).to_contain_text("AI is disabled")
+                expect(page.locator("#chat-input")).to_have_value("Keep this question on failure")
+                expect(page.locator("#chat-messages")).not_to_contain_text("<script>window.injected=true</script>")
+                page.locator("#chat-mode").select_option("demo")
+                expect(page.locator("#chat-messages")).to_contain_text("<script>window.injected=true</script>")
                 page.screenshot(path=str(screenshots / "chat-desktop.png"), full_page=True)
                 goto("/settings")
                 page.locator("#reload-content").click()
-                expect(page.locator("#reload-status")).to_contain_text("6 lessons reloaded")
-                assert progress()["xp"] == 480
-                goto("/lessons/L07")
+                expect(page.locator("#reload-status")).to_contain_text("9 lessons reloaded")
+                page.locator("#test-provider").click()
+                expect(page.locator("#provider-test-status")).to_contain_text("AI is disabled")
+                assert progress()["xp"] == 720
+                goto("/lessons/L10")
                 expect(page.locator(".unavailable")).to_contain_text("Coming in a later session")
 
                 for width in (390, 640, 1280):
@@ -166,8 +179,8 @@ def run():
                             page.screenshot(path=str(screenshots / name), full_page=True)
                 assert not errors, errors
                 assert not external, external
-                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 36,
-                          "completed_lessons": 6, "xp": 480, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability"],
+                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 54,
+                          "completed_lessons": 9, "xp": 720, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability", "disabled AI preserves questions", "demo and AI display isolation"],
                           "viewport_widths": [390, 640, 1280, 1440], "reduced_motion": True,
                           "external_requests": external, "javascript_errors": errors,
                           "database": "isolated test database; learner progress untouched"}

@@ -13,16 +13,20 @@ from app import config
 from app.content import ContentError, ContentStore
 from app.db import Database
 from app.demo import reply
-from app.models import Acknowledgment, Attempt, DemoMessage, Journal
+from app.models import Acknowledgment, Attempt, DemoMessage, Journal, AIMessage, TutorMessage, ConnectionTest
+from app.ai import AIService
+from app.providers import AIError
 from app.progress import ProgressError, ProgressService
 
 
-def create_app(database_path: Path | None = None, content_dir: Path | None = None):
+def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None):
     content = ContentStore(content_dir or config.CONTENT_DIR)
     database = Database(database_path or config.DATABASE_PATH)
     progress = ProgressService(database, content)
+    ai = AIService(ai_settings or config.AISettings.load(), database, content, provider)
     app = FastAPI(title="Tiny Chat Lab", docs_url=None, redoc_url=None)
     app.state.content, app.state.progress, app.state.database = content, progress, database
+    app.state.ai = ai
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
     app.mount("/static", StaticFiles(directory=config.APP_DIR / "static"), name="static")
     templates = Jinja2Templates(directory=config.APP_DIR / "templates")
@@ -51,6 +55,10 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     async def progress_error(request, error):
         return JSONResponse({"detail": str(error)}, status_code=error.status)
 
+    @app.exception_handler(AIError)
+    async def ai_error(request, error):
+        return JSONResponse({"detail": str(error), "code": error.code}, status_code=error.status)
+
     @app.exception_handler(KeyError)
     async def missing(request, error):
         return JSONResponse({"detail": "That lesson is not available yet."}, status_code=404)
@@ -59,7 +67,7 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
         summary = progress.summary()
         return templates.TemplateResponse(request=request, name=template, context={
             "course": content.course, "progress": summary, "page": template.removesuffix(".html"),
-            "authored": content.lessons, **extra,
+            "authored": content.lessons, "provider": ai.status(), **extra,
         })
 
     @app.get("/", response_class=HTMLResponse)
@@ -121,8 +129,19 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/api/provider/status")
     def provider_status():
-        return {"mode": "demo", "connected": False, "provider": "Google Cloud / Vertex AI",
-                "message": "Demo: no model connected. Live Google integration arrives in M2."}
+        return ai.status()
+
+    @app.post("/api/provider/test")
+    def connection_test(body: ConnectionTest):
+        return ai.request("connection", body)
+
+    @app.post("/api/ai/messages")
+    def ai_message(body: AIMessage):
+        return ai.request("chat", body)
+
+    @app.post("/api/tutor/messages")
+    def tutor_message(body: TutorMessage):
+        return ai.request("tutor", body)
 
     @app.post("/api/demo/messages")
     def demo_message(body: DemoMessage):
@@ -137,6 +156,6 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "milestone": "M1", "mode": "demo"}
+        return {"status": "ok", "milestone": "M2", "mode": ai.status()["mode"]}
 
     return app

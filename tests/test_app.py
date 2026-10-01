@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.content import ContentError, ContentStore
 from app.main import create_app
+from app.config import AISettings
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +20,7 @@ def setup(tmp_path):
     content = tmp_path / "content"
     shutil.copytree(ROOT / "content", content)
     database = tmp_path / "progress.db"
-    application = create_app(database, content)
+    application = create_app(database, content, ai_settings=AISettings())
     with TestClient(application) as client:
         yield client, application, database, content
 
@@ -48,16 +49,16 @@ def complete(client, identity="L01"):
 
 def test_pages_and_availability(setup):
     client, *_ = setup
-    for path in ("/", "/workshop", "/chat", "/settings", *(f"/lessons/L{i:02}" for i in range(1, 7))):
+    for path in ("/", "/workshop", "/chat", "/settings", *(f"/lessons/L{i:02}" for i in range(1, 10))):
         response = client.get(path)
         assert response.status_code == 200, path
         assert "Tiny Chat" in response.text
-    assert "Coming in a later session" in client.get("/lessons/L07").text
-    assert client.get("/api/lessons/L07").status_code == 404
+    assert "Coming in a later session" in client.get("/lessons/L10").text
+    assert client.get("/api/lessons/L10").status_code == 404
     assert len(client.get("/api/course").json()["lessons"]) == 24
 
 
-@pytest.mark.parametrize("identity", [f"L{i:02}" for i in range(1, 7)])
+@pytest.mark.parametrize("identity", [f"L{i:02}" for i in range(1, 10)])
 def test_all_lessons_score_choices_and_feedback(setup, identity):
     client, *_ = setup
     lesson = client.get(f"/api/lessons/{identity}").json()

@@ -1,0 +1,210 @@
+{
+  "id": "L09",
+  "version": 1,
+  "status": "authored",
+  "title": "Your first live model call",
+  "zone": "Prompt Kitchen",
+  "minutes": 25,
+  "prerequisites": [
+    "L08"
+  ],
+  "objectives": [
+    "Trace browser → Python server → Google → browser.",
+    "Tell configured settings, a successful real test, and a demo reply apart.",
+    "Read usage without treating unknown tokens or cost as zero."
+  ],
+  "prediction": "The Settings page says configured. Does that alone prove Google accepted your credentials?",
+  "explanation": [
+    "A real model call crosses a network. The browser posts a question to our local Python server. Python checks limits, adds instructions, counts input tokens through Google, and requests a text reply. The browser displays the returned text safely.",
+    "Configuration means required settings are present. A successful connection test means Google actually returned a usable reply in this server session. An invalid key, permission, model, or region can fail even when all settings exist. Our Python rules demo makes zero Google calls.",
+    "Copy .env.example to the ignored .env file and choose Cloud express_key or standard Cloud adc. Set a supported GOOGLE_MODEL and AI_ENABLED=true. For express use a Cloud express key; for ADC set project/location and configure Application Default Credentials. Restart the server, then click Test Google connection in Settings. Never put the key in a browser field, prompt, screenshot, or commit.",
+    "Each successful app attempt normally makes two model API calls: count_tokens then generate_content. Automatic retries are disabled. We record attempts, calls attempted, and reported tokens. Missing usage and failures can still incur charges. Cost is unknown until pricing is verified; the app limits are not a spending guarantee.",
+    "The code below is an offline journey simulation. It shows the message and steps but does not contact Google. Your build task performs the real connection once credentials are configured. Live reply text and usage vary, so there is no fixed expected AI answer."
+  ],
+  "analogy_limit": "The printed journey is a simulation, not a connection test. Only an actual successful Google response verifies access. Token limits and request limits reduce exposure but do not guarantee a currency cap.",
+  "python_example": {
+    "code": "def simulate_request(question):\n    steps = ['Browser posts question', 'Python checks limits',\n             'Google counts input tokens', 'Google generates text',\n             'Python returns reply', 'Browser displays text']\n    print('Question:', question)\n    for number, step in enumerate(steps, 1):\n        print(f'{number}. {step}')\n    print('Simulation only: no Google calls')\n\nsimulate_request('Explain a token in one sentence.')\n",
+    "expected_output": "Question: Explain a token in one sentence.\n1. Browser posts question\n2. Python checks limits\n3. Google counts input tokens\n4. Google generates text\n5. Python returns reply\n6. Browser displays text\nSimulation only: no Google calls\n",
+    "walkthrough": [
+      "The list names app and provider actions.",
+      "enumerate counts steps starting at one.",
+      "No network or SDK function is used here.",
+      "Compare this toy with app/providers.py after your first real test."
+    ]
+  },
+  "game": {
+    "id": "L09-game",
+    "type": "choice_rounds",
+    "title": "Message Relay",
+    "instructions": "Choose an ingredient for each experiment. Read the feedback; get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L09-game-r1",
+        "prompt": "Where does the reusable key belong?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "In the chat message"
+          },
+          {
+            "id": "b",
+            "text": "In server configuration outside Git"
+          },
+          {
+            "id": "c",
+            "text": "In browser sessionStorage"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Model content must not contain authentication secrets.",
+          "b": "Python reads the local ignored configuration.",
+          "c": "Tab storage is browser-accessible and is not our key store."
+        }
+      },
+      {
+        "id": "L09-game-r2",
+        "prompt": "The app says configured but the first Google request fails with permissions. What is true?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Settings exist, but live access is not verified"
+          },
+          {
+            "id": "b",
+            "text": "Google must have replied successfully"
+          },
+          {
+            "id": "c",
+            "text": "The demo model was trained"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "Presence checks are different from actual connectivity.",
+          "b": "A failure does not verify access.",
+          "c": "This is an authentication problem, not training."
+        }
+      },
+      {
+        "id": "L09-game-r3",
+        "prompt": "A failed request has no reported token usage. What should the usage panel say?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Exactly zero cost"
+          },
+          {
+            "id": "b",
+            "text": "Unlimited free calls"
+          },
+          {
+            "id": "c",
+            "text": "Usage unknown; charges may still apply"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Missing data is not a verified zero.",
+          "b": "There is no free-call guarantee.",
+          "c": "This accurately preserves uncertainty."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L09-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L09-quiz-r1",
+        "prompt": "Which response proves a real connection?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A printed simulation"
+          },
+          {
+            "id": "b",
+            "text": "A complete reply returned by Google after the connection test"
+          },
+          {
+            "id": "c",
+            "text": "The word configured alone"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "The simulation stays local.",
+          "b": "This tests credentials, model availability, and a real request.",
+          "c": "Configuration presence is only a prerequisite."
+        }
+      },
+      {
+        "id": "L09-quiz-r2",
+        "prompt": "Why count_tokens before generate_content?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "To train the model"
+          },
+          {
+            "id": "b",
+            "text": "To remember all previous chats"
+          },
+          {
+            "id": "c",
+            "text": "To check the app input token limit before generation"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Counting does not train weights.",
+          "b": "Counting cannot add omitted context.",
+          "c": "The server checks the actual token count against its input limit."
+        }
+      },
+      {
+        "id": "L09-quiz-r3",
+        "prompt": "What happens if Google mode fails?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The app keeps the question and shows an error for your explicit retry"
+          },
+          {
+            "id": "b",
+            "text": "It secretly switches to demo and labels it Google"
+          },
+          {
+            "id": "c",
+            "text": "It retries forever"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "You can inspect usage and decide whether to retry.",
+          "b": "Our UI never masks a live failure with a demo reply.",
+          "c": "Retries can add charges; this milestone has no automatic retries."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L09-build",
+    "title": "Send your first real question",
+    "instructions": "Run the simulation first. Follow Settings to configure Google locally. Run one connection test, choose Google Cloud AI in My chatbot, and ask “Explain a Python list in two sentences using a shopping basket”. Record the actual answer, reported tokens, and whether it followed the format. If credentials are not ready, save the simulation in your journal as an offline rehearsal; leave the real-call task unfinished.",
+    "criteria": [
+      "A real test reports a usable Google reply; configuration alone or simulation does not count.",
+      "Your journal records actual output and usage (or explicitly unknown usage) without secrets. Mark this build done only after the real-call experiment."
+    ],
+    "hints": [
+      "Use Settings → Test Google connection after restarting the configured server.",
+      "Compare Google mode with Demo mode; the provider label tells you which path ran."
+    ],
+    "reference_solution": "A successful experiment shows a Google connection-test reply and a separate Google chatbot reply. The wording varies. Usage should display provider-reported tokens or unknown. Demo replies are labeled Python rules and make zero Google calls. If credentials are absent, the correct result is a clear configuration error, not a fabricated live reply."
+  },
+  "reflection": "Point to every step where a key, request limit, response, or usage record belongs. Which parts ran locally and which crossed the network?",
+  "tutor_context": "Teach the actual app request path and authentication distinction. Simulation and fake-provider tests are not live proof. No secrets in prompts. Missing usage is unknown, not free. Keep live build incomplete until real connection is verified."
+}

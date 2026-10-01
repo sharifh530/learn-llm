@@ -14,3 +14,12 @@ label{font-weight:550;font-size:.87rem;display:block}textarea,select{display:blo
 
 /* Keep core lesson and answer text comfortably readable at every viewport. */
 .reading-pane,.activity-intro,.choice-option{font-size:1rem}
+
+/* Shared native inputs keep the connection experiment keyboard friendly. */
+select {width:100%; padding:12px; border:1px solid var(--line, #dce3ef); border-radius:10px; background:#fff; color:inherit; font:inherit; margin:8px 0 16px;}
+.tutor-dialog {max-height:90dvh; overflow-y:auto;}
+#tutor-form {display:grid; gap:10px;}
+#tutor-form label {margin-top:8px;}
+.ai-answer {white-space:pre-wrap; overflow-wrap:anywhere; font-size:1rem; line-height:1.65; margin:20px 0;}
+.settings-panel code {overflow-wrap:anywhere;}
+.chat-message p {white-space:pre-wrap;}

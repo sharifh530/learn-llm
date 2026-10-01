@@ -1,6 +1,6 @@
 # Implementation backlog
 
-Status: **M0 and M1 delivered. B01–B10 complete.** M2 and later application tasks remain planned. See [the M1 verification record](M1_VALIDATION.md) for actual checks and limits.
+Status: **M0 and M1 delivered. B01–B10 complete.** M2 implementation is present; B12 and the real-request gates in B13/B15 remain pending actual credential setup. B11, B14, B16, and B17 pass local checks. M3 and later remain planned. See [the M1 verification record](M1_VALIDATION.md) for actual checks and limits.
 
 ## M1: offline learning app
 
@@ -30,6 +30,8 @@ Recommended first working slice: B01–B04 for L01, then B05–B08 for L01, then
 | B15 | Basic real chatbot | A user message gets a complete real reply; empty/blocked/timeout handled |
 | B16 | Limits and usage | Input/concurrency/request limits enforced; usage labeled accurately |
 | B17 | Author L07–L09 | Validated complete lessons with real app tasks and expected behavior |
+
+M2 uses independent single-turn tutor/chat requests. Earlier display history is isolated by purpose and lesson; saved conversations and selected context are M3. Fake-provider and SDK transport tests verify mechanics only. See [M2 verification](M2_VALIDATION.md).
 
 ## M3–M7
 

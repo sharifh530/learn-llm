@@ -2,7 +2,7 @@
 
 Created: 1 October 2026. Working name: **Tiny Chat Lab**.
 
-Current status: **M0 and M1 complete.** The local learning app is implemented and verified. See [the M1 walkthrough](M1_WALKTHROUGH.md) and [verification record](M1_VALIDATION.md). M2 is the next build milestone.
+Current status: **M0 and M1 complete.** The local learning app is implemented and verified. See [the M1 walkthrough](M1_WALKTHROUGH.md) and [verification record](M1_VALIDATION.md). M2 software is implemented and locally tested; its actual-credential connection gate remains open. See [M2 walkthrough](M2_WALKTHROUGH.md) and [M2 verification](M2_VALIDATION.md).
 
 ## Outcome
 

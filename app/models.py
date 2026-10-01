@@ -36,3 +36,18 @@ class DemoMessage(Input):
         if not value.strip():
             raise ValueError("Write a message first.")
         return value
+
+
+class AIMessage(Input):
+    message: str = Field(min_length=1, max_length=4000)
+    request_id: str = Field(pattern=r"^[a-zA-Z0-9-]{8,80}$")
+
+
+class TutorMessage(AIMessage):
+    lesson_id: str = Field(pattern=r"^L\d{2}$")
+    version: int = Field(ge=1, strict=True)
+    mode: Literal["hint", "explain", "solution"] = "hint"
+
+
+class ConnectionTest(Input):
+    request_id: str = Field(pattern=r"^[a-zA-Z0-9-]{8,80}$")

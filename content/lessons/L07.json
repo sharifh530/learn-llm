@@ -1,0 +1,208 @@
+{
+  "id": "L07",
+  "version": 1,
+  "status": "authored",
+  "title": "Prompt Kitchen",
+  "zone": "Prompt Kitchen",
+  "minutes": 25,
+  "prerequisites": [
+    "L06"
+  ],
+  "objectives": [
+    "Construct a prompt from a task, context, and output shape.",
+    "Compare prompts by checking the resulting answer against a small rubric."
+  ],
+  "prediction": "Which recipe is easier to follow: “make food” or “make one vegetarian sandwich and list three steps”?",
+  "explanation": [
+    "A prompt is request material you give a model. A useful starting recipe is task + relevant context + output shape. Task says what to do; context gives the facts or audience; output shape says how to present the result.",
+    "For example: explain a Python list to a beginner using a shopping basket, in two sentences. This is easier to assess than “tell me everything about Python”. Clear instructions reduce ambiguity; they do not guarantee correctness.",
+    "Our Python function assembles strings. It does not run an LLM. Change one ingredient at a time and inspect the printed prompt before spending an API call.",
+    "When Google is connected, compare the vague and specific prompts in Google chatbot mode. Score each answer: did it explain the requested idea, use the supplied example, and follow the format? Variation between replies means one comparison is evidence, not a universal rule."
+  ],
+  "analogy_limit": "A recipe helps explain request design, but a model is not a deterministic cook. Good wording cannot guarantee facts, exact counts, or safety. This Python example only builds text.",
+  "python_example": {
+    "code": "def make_prompt(task, context, shape):\n    return f'Task: {task}\\nContext: {context}\\nOutput: {shape}'\n\nprompt = make_prompt('Explain a Python list', 'Use a shopping basket', 'Two sentences')\nprint(prompt)\n",
+    "expected_output": "Task: Explain a Python list\nContext: Use a shopping basket\nOutput: Two sentences\n",
+    "walkthrough": [
+      "The function takes three ordinary strings.",
+      "The f-string inserts values; newline characters separate the ingredients.",
+      "Printing this text sends nothing to Google.",
+      "The same assembled text could become a model request later."
+    ]
+  },
+  "game": {
+    "id": "L07-game",
+    "type": "choice_rounds",
+    "title": "Prompt Recipe Mixer",
+    "instructions": "Choose an ingredient for each experiment. Read the feedback; get two of three right.",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L07-game-r1",
+        "prompt": "You want a short explanation of tokens. Pick the clearest task.",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Explain what a text token is for a Python beginner"
+          },
+          {
+            "id": "b",
+            "text": "Be amazing"
+          },
+          {
+            "id": "c",
+            "text": "Write everything you know"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "This names an idea and audience.",
+          "b": "Praise is not a concrete task.",
+          "c": "An unlimited task makes a short result harder to assess."
+        }
+      },
+      {
+        "id": "L07-game-r2",
+        "prompt": "Which ingredient gives useful context?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Use a font size of 18"
+          },
+          {
+            "id": "b",
+            "text": "The learner knows Python strings but no machine learning"
+          },
+          {
+            "id": "c",
+            "text": "Please be clever"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Font size concerns display, not the learner context.",
+          "b": "This identifies what the learner already understands.",
+          "c": "Clever is vague; name the actual background."
+        }
+      },
+      {
+        "id": "L07-game-r3",
+        "prompt": "Which ingredient specifies output shape?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Tokens are text pieces"
+          },
+          {
+            "id": "b",
+            "text": "The learner likes puzzles"
+          },
+          {
+            "id": "c",
+            "text": "Give two sentences and one tiny example"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "That is content, not a requested format.",
+          "b": "That is learner context.",
+          "c": "This gives a structure we can inspect."
+        }
+      }
+    ]
+  },
+  "quiz": {
+    "id": "L07-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L07-quiz-r1",
+        "prompt": "Does a more specific prompt guarantee a correct answer?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes, always"
+          },
+          {
+            "id": "b",
+            "text": "No; inspect the answer against your rubric"
+          },
+          {
+            "id": "c",
+            "text": "Only if it is very long"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Wording does not guarantee truth.",
+          "b": "A rubric checks the actual result.",
+          "c": "Length alone does not improve correctness."
+        }
+      },
+      {
+        "id": "L07-quiz-r2",
+        "prompt": "Does running make_prompt call Google?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "No; it builds an ordinary Python string"
+          },
+          {
+            "id": "b",
+            "text": "Yes; f-strings train a model"
+          },
+          {
+            "id": "c",
+            "text": "Yes; printing starts inference"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "No SDK or network function is present.",
+          "b": "String formatting changes text, not model weights.",
+          "c": "Printing sends text to your terminal."
+        }
+      },
+      {
+        "id": "L07-quiz-r3",
+        "prompt": "How should you compare prompt variants?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Change every setting at once"
+          },
+          {
+            "id": "b",
+            "text": "Pick the longer answer automatically"
+          },
+          {
+            "id": "c",
+            "text": "Change one ingredient and check both answers using the same rubric"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Several changes hide what affected the result.",
+          "b": "Length is not the rubric.",
+          "c": "A consistent check makes the experiment easier to interpret."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L07-build",
+    "title": "Cook a clearer prompt",
+    "instructions": "Run the example locally. Make a vague prompt and a recipe for explaining dictionaries using a phone contacts list. Print both. Write a three-item rubric. If Google is connected, send both separately and score the replies; otherwise keep the recipe and rubric ready.",
+    "criteria": [
+      "Your recipe names dictionaries, a beginner audience, contacts-list context, and a short output format.",
+      "Your rubric checks the concept, example, and format separately. Live output is variable; do not invent a result."
+    ],
+    "hints": [
+      "Keep the task and output short.",
+      "A dictionary maps a key to a value; your rubric can check for that idea."
+    ],
+    "reference_solution": "vague = 'Explain dictionaries'\nclear = make_prompt('Explain a dictionary to a Python beginner', 'Use a phone contacts list', 'Two sentences and one key:value example')\nprint(vague)\nprint(clear)\nRubric: explains key-to-value lookup; uses contacts; follows the requested shape. Live answers will vary."
+  },
+  "reflection": "Which ingredient made your request easier to assess? Record the prompt, your rubric, and what remains uncertain.",
+  "tutor_context": "Teach task/context/output shape. Clearly distinguish string assembly from inference. Use small prompt comparisons and a rubric; never promise deterministic or truthful output."
+}

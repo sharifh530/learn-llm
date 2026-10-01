@@ -23,13 +23,13 @@
   <div><strong>{{ progress.completed }} / {{ progress.available }}</strong><span>available lessons complete</span></div>
   <div><strong>{{ progress.xp }} XP</strong><span>earned through practice</span></div>
   <div><strong>{{ progress.journal_count }}</strong><span>experiments in your journal</span></div>
-  <div class="strip-note"><span class="status-dot" aria-hidden="true"></span><span>Your first six lessons are ready.<br>Future lessons grow with your prompts.</span></div>
+  <div class="strip-note"><span class="status-dot" aria-hidden="true"></span><span>{{ progress.available }} lessons are ready.<br>Future lessons grow with your prompts.</span></div>
 </section>
 <section id="learning-path" class="learning-path">
   <div class="section-heading"><div><p class="eyebrow">Your learning path</p><h2>A little further, every time.</h2><p>Start small. Follow your curiosity. Come back whenever you like.</p></div><span class="tag neutral">8 zones · 24 planned lessons</span></div>
   <div class="zone-grid">
     {% for zone in course.zones %}
-    <article class="zone-panel {% if loop.index > 2 %}future-zone{% endif %}">
+    <article class="zone-panel {% if zone.lessons[0] not in authored %}future-zone{% endif %}">
       <div class="zone-heading"><span class="zone-number">{{ '%02d'|format(loop.index) }}</span><div><h3>{{ zone.title }}</h3><p>{{ ['Guess what comes next.', 'Play with text, chance, and context.', 'Give clear instructions. Get a real reply.', 'Turn a reply into a conversation.', 'Peek inside the prediction machine.', 'Give your chatbot useful notes.', 'Make it careful, useful, and testable.', 'Finish it. Explain it. Make it yours.'][loop.index0] }}</p></div></div>
       <ol class="lesson-list">
         {% for identity in zone.lessons %}

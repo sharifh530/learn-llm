@@ -51,7 +51,7 @@ tests/                     # Added with implementation
 tools/                     # Content rendering and validation
 ```
 
-M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`, `models.py`, `content.py`, `progress.py`, `db.py`, and `demo.py`, plus templates and static assets. Provider, live-chat, and usage services in the diagram/layout remain planned for M2 onward. Keeping the current modules small makes the Python request flow easy to follow.
+M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`, `models.py`, `content.py`, `progress.py`, `db.py`, and `demo.py`, plus templates and static assets. M2 adds `ai.py` for context, policy, and usage, and `providers.py` for the Google SDK. Saved multi-turn chats in the diagram remain planned for M3. Keeping the current modules small makes the Python request flow easy to follow.
 
 ## App API contract
 
@@ -67,20 +67,25 @@ M1 is implemented with a deliberately smaller layout: `app/main.py`, `config.py`
 | `POST /api/journal` | Save learner reflection | M1 |
 | `GET /api/provider/status` | Masked configuration status; no network call | M2 |
 | `POST /api/provider/test` | Explicit bounded connection test | M2 |
-| `POST /api/tutor` | Complete lesson-aware response | M2 |
-| `POST /api/chats` | Create separate chatbot conversation | M2 |
-| `POST /api/chats/{id}/messages` | Complete response, then streaming in M3 | M2/M3 |
+| `POST /api/tutor/messages` | Complete lesson-aware single-turn response | M2 |
+| `POST /api/ai/messages` | Complete single-turn chatbot response | M2 |
+| `POST /api/chats` | Create saved chatbot conversation | M3 planned |
+| `POST /api/chats/{id}/messages` | Saved multi-turn response/streaming | M3 planned |
 | `GET /api/chats/{id}` | Saved messages and statuses | M3 |
 | `POST /api/generations/{id}/cancel` | Request cancellation | M3 |
 | `DELETE /api/chats/{id}` | Explicit local deletion | M3 |
 | `POST /api/course/drafts` | Structured content proposal | Later |
 | `POST /api/course/drafts/{id}/publish` | Publish validated draft | Later |
 
-`POST /api/tutor` accepts lesson ID/version, mode, question, and optional bounded tutor thread ID. It does not accept client-supplied system instructions or authoritative lesson bodies. On version mismatch, load the selected known version or return a refresh-required error.
+`POST /api/tutor/messages` accepts lesson ID/version, mode, message, and request_id. M2 is single-turn; no history is sent. It does not accept client-supplied system instructions or authoritative lesson bodies. On version mismatch, load the selected known version or return a refresh-required error.
 
 `POST /api/attempts` accepts lesson/version, activity ID, round-to-choice mapping, and an idempotency key. Validate answer references, calculate score, and commit attempt plus any first-time XP award in one transaction. Client-provided scores are ignored.
 
-## Database additions beyond progress
+## M2 persistence
+
+Schema version 2 appends `ai_requests` (attempt ID, payload hash, purpose, lesson ID, status, timestamp, calls attempted, returned usage, cached response, redacted error code). Existing progress, XP, and journals are untouched. One local server process is supported. On restart, running attempts become interrupted without automatic reruns. The request ledger is not selected conversation history.
+
+## Planned database additions beyond M2
 
 - `chats`: ID, learner ID, mode (`tutor` or `chatbot`), persona version, timestamps.
 - `messages`: ID, chat ID, role, content, status, active variant, timestamps.

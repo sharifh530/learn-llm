@@ -8,7 +8,10 @@ export async function api(path, body) {
   const data = await response.json();
   if (!response.ok) {
     const detail = Array.isArray(data.detail) ? data.detail.map(item => item.msg).join(" ") : data.detail;
-    throw new Error(detail || "That action could not be saved. Please retry.");
+    const error = new Error(detail || "That action could not be saved. Please retry.");
+    error.reachedServer = true;
+    error.code = data.code;
+    throw error;
   }
   return data;
 }
@@ -41,14 +44,54 @@ export function writeTab(key, value) {
   try { sessionStorage.setItem(key, value); } catch { /* Draft storage is optional. */ }
 }
 
+export async function aiCall(path, body) {
+  // A lost HTTP response may already have incurred a Google charge. Preserve
+  // the same attempt ID across refresh/retry until the server answers.
+  const key = `tiny-chat-pending-${path}-${body.lesson_id || 'chat'}`;
+  const signature = JSON.stringify(body);
+  let pending;
+  try {pending = JSON.parse(readTab(key, "null"));} catch { /* New attempt. */ }
+  if (!pending || pending.signature !== signature) pending = {signature, id: crypto.randomUUID()};
+  writeTab(key, JSON.stringify(pending));
+  try {
+    const result = await api(path, {...body, request_id: pending.id});
+    writeTab(key, "null");
+    return result;
+  } catch (error) {
+    if (error.reachedServer && error.code !== "in_progress") writeTab(key, "null");
+    throw error;
+  }
+}
+
 const dialog = document.querySelector("#tutor-dialog");
 document.querySelectorAll("[data-open-tutor]").forEach(button => button.addEventListener("click", () => dialog.showModal()));
 document.querySelector("[data-close-tutor]")?.addEventListener("click", () => dialog.close());
 dialog?.addEventListener("click", event => {if (event.target === dialog && event.offsetX < 0) dialog.close();});
 const tutorDraft = document.querySelector("#tutor-draft");
 if (tutorDraft) {
-  tutorDraft.value = readTab("tiny-chat-tutor-draft");
-  tutorDraft.addEventListener("input", () => writeTab("tiny-chat-tutor-draft", tutorDraft.value));
+  const lessonData = document.querySelector("#lesson-data");
+  const lesson = lessonData ? JSON.parse(lessonData.textContent) : null;
+  const draftKey = `tiny-chat-tutor-draft-${lesson?.id || 'none'}`;
+  tutorDraft.value = readTab(draftKey);
+  tutorDraft.addEventListener("input", () => writeTab(draftKey, tutorDraft.value));
+  const status = document.querySelector("#tutor-status");
+  const button = document.querySelector("#tutor-send");
+  button.disabled = !lesson;
+  if (!lesson) status.textContent = "Open a lesson to ask a question about its content.";
+  document.querySelector("#tutor-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!lesson || button.disabled) return;
+    button.disabled = true;
+    status.textContent = "Sending this lesson and your question to Google…";
+    document.querySelector("#tutor-answer").textContent = "";
+    try {
+      const result = await aiCall("/api/tutor/messages", {lesson_id: lesson.id, version: lesson.version,
+        mode: document.querySelector("#tutor-mode").value, message: tutorDraft.value});
+      document.querySelector("#tutor-answer").textContent = result.reply;
+      status.textContent = `Google AI · ${result.usage.total_tokens ?? 'unknown'} reported tokens · No XP awarded${result.truncated ? ' · Output limit reached; answer may be incomplete' : ''}`;
+    } catch (error) {status.textContent = error.message;}
+    finally {button.disabled = false;}
+  });
 }
 
 document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {

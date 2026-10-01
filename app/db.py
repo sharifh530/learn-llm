@@ -47,7 +47,15 @@ class Database:
                     changed TEXT NOT NULL, learned TEXT NOT NULL,
                     confusing TEXT NOT NULL, created_at TEXT NOT NULL
                 );
-                PRAGMA user_version = 1;
+                CREATE TABLE IF NOT EXISTS ai_requests (
+                    request_id TEXT PRIMARY KEY, payload_hash TEXT NOT NULL,
+                    purpose TEXT NOT NULL, lesson_id TEXT,
+                    status TEXT NOT NULL, created_at REAL NOT NULL,
+                    provider_calls INTEGER NOT NULL DEFAULT 0,
+                    input_tokens INTEGER, output_tokens INTEGER, total_tokens INTEGER,
+                    response TEXT, error_code TEXT
+                );
+                PRAGMA user_version = 2;
             """)
 
     @contextmanager
