@@ -85,6 +85,8 @@ class Connection:
             response.raise_for_status()
             data = response.json()
             self.baton = data.get('baton')
+            if self.baton is None:
+                self.initial = True  # Native Turso closes autocommit streams.
             # The connection's assigned server must remain within Turso.
             if data.get('base_url'):
                 self.url = endpoint(data['base_url'])

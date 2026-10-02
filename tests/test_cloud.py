@@ -56,6 +56,11 @@ class SQLServer:
                 results.append({'type':'ok','response':{'type':'execute','result':result}})
             except sqlite3.Error as error:
                 results.append({'type':'error','error':{'code':'SQLITE_CONSTRAINT' if isinstance(error,sqlite3.IntegrityError) else 'SQLITE_ERROR','message':str(error)}})
+        if baton is not None and not connection.in_transaction:
+            connection.close()
+            with self.lock:
+                del self.connections[baton]
+            baton = None
         return httpx.Response(200,json={'baton':baton,'base_url':None,'results':results})
 
 
