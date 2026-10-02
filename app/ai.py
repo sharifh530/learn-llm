@@ -31,8 +31,16 @@ class AIService:
         self.connected = False
         # Local app runs one server process. A crashed request is uncertain:
         # keep its ID consumed, so a refresh cannot silently create another bill.
-        with database.connection() as connection:
-            connection.execute("UPDATE ai_requests SET status='interrupted', error_code='interrupted' WHERE status='running'")
+        if not database.remote:
+            with database.connection() as connection:
+                connection.execute("UPDATE ai_requests SET status='interrupted', error_code='interrupted' WHERE status='running'")
+        else:
+            # A cold start must never interrupt another instance's live work.
+            # Cloud requests are bounded to 90s; recover only abandoned leases.
+            with database.connection() as connection:
+                cutoff = time.time() - 150
+                connection.execute("UPDATE generations SET status='interrupted',error='Cloud request ended; partial reply saved.',error_code='interrupted' WHERE status='running' AND COALESCE((SELECT started_at FROM generation_workers WHERE id=generations.id),created_at)<?", (cutoff,))
+                connection.execute("UPDATE ai_requests SET status='interrupted',error_code='interrupted' WHERE status='running' AND COALESCE((SELECT started_at FROM generation_workers WHERE id=ai_requests.request_id),created_at)<?", (cutoff,))
 
     def status(self):
         problem = self.settings.problem()
@@ -49,11 +57,23 @@ class AIService:
         # Caller holds ChatService.lock, so no stream starts during this update.
         with self.configuration_lock:
             with self.database.connection() as connection:
+                if self.database.remote:
+                    connection.execute('BEGIN IMMEDIATE')
+                    try:
+                        self.refresh_cloud_settings(connection)
+                    except ValueError:
+                        # An unreadable/rotated key can be replaced or removed,
+                        # but a blank save must not silently lose it.
+                        if body is not None and not body.api_key:
+                            raise
                 running = connection.execute("SELECT 1 FROM ai_requests WHERE status='running' LIMIT 1").fetchone()
-            if self.active_requests or running:
-                raise AIError('busy', 'Wait for the current AI request to finish before changing the connection.', 409)
-            settings = store.candidate(self.settings, body) if body else replace(self.settings, enabled=False, api_key='')
-            store.save(settings)
+                if self.active_requests or running:
+                    raise AIError('busy', 'Wait for the current AI request to finish before changing the connection.', 409)
+                settings = store.candidate(self.settings, body) if body else replace(self.settings, enabled=False, api_key='')
+                if self.database.remote:
+                    store.save(settings, connection=connection)
+            if not self.database.remote:
+                store.save(settings)
             self.settings = settings
             self.provider = self.custom_provider or GoogleProvider(settings)
             self.connected = False
@@ -122,6 +142,11 @@ class AIService:
         digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
         with self.database.connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
+            self.refresh_cloud_settings(connection)
+            if problem := self.settings.problem():
+                raise AIError('configuration', problem)
+            payload['model'] = self.settings.model
+            digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             previous = self.reserve(connection, body.request_id, digest, purpose, lesson['id'] if lesson else None)
             if previous:
                 if previous["status"] == "succeeded":
@@ -155,3 +180,10 @@ class AIService:
                 connection.execute("UPDATE ai_requests SET status='failed',error_code=?,input_tokens=?,output_tokens=?,total_tokens=? WHERE request_id=?",
                                    (public.code, *usage, body.request_id))
             raise public from None
+
+    def refresh_cloud_settings(self, connection):
+        if self.database.remote and hasattr(self, 'settings_store'):
+            # Refresh under the same write lock as request admission.
+            settings = self.settings_store.load(connection=connection)
+            self.settings = settings
+            self.provider = self.custom_provider or GoogleProvider(settings)

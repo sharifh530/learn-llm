@@ -37,7 +37,7 @@ async function changeConnection(remove = false) {
   const wasRemovable = !removeButton.disabled;
   [...form.elements].forEach(control => {control.disabled = true;});
   testButton.disabled = true;
-  saveStatus.textContent = remove ? 'Removing the saved key…' : 'Saving your local connection…';
+  saveStatus.textContent = remove ? 'Removing the saved key…' : 'Saving your connection…';
   let success = false;
   try {
     const body = remove ? {} : {enabled: enabled.checked, auth_mode: auth.value, api_key: auth.value === 'express_key' ? key.value : '', model: document.querySelector('#provider-model').value, project: document.querySelector('#provider-project').value, location: document.querySelector('#provider-location').value};

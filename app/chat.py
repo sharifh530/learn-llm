@@ -24,8 +24,9 @@ class ChatService:
     def __init__(self, database, ai):
         self.database, self.ai = database, ai
         self.jobs, self.lock = {}, threading.Lock()
-        with database.connection() as connection:
-            connection.execute("UPDATE generations SET status='interrupted',error='Server restarted; partial reply saved.',error_code='interrupted' WHERE status='running'")
+        if not database.remote:
+            with database.connection() as connection:
+                connection.execute("UPDATE generations SET status='interrupted',error='Server restarted; partial reply saved.',error_code='interrupted' WHERE status='running'")
 
     def list(self, mode, archived=False):
         with self.database.connection() as connection:
@@ -152,6 +153,9 @@ class ChatService:
                 raise AIError('configuration',problem)
             with self.database.connection() as connection:
                 connection.execute('BEGIN IMMEDIATE')
+                self.ai.refresh_cloud_settings(connection)
+                if chat['mode']=='google_cloud' and (problem:=self.ai.settings.problem()):
+                    raise AIError('configuration',problem)
                 self.writable(connection,chat_id)
                 if chat['mode']=='google_cloud':
                     prior = self.ai.reserve(connection,identity,digest,'saved_chat')
@@ -166,9 +170,10 @@ class ChatService:
                 connection.execute('INSERT INTO generations(id,turn_id,payload_hash,context_json,status,created_at) VALUES(?,?,?,?,?,?)',
                                    (identity,turn_id,digest,json.dumps(context),'running',time.time()))
                 connection.execute('UPDATE chats SET updated_at=? WHERE id=?',(time.time(),chat_id))
-            stop = threading.Event()
-            self.jobs[identity] = stop
-            threading.Thread(target=self.run,args=(identity,chat['mode'],context,stop),daemon=True,name='chat-generation').start()
+            if not self.database.remote:
+                stop = threading.Event()
+                self.jobs[identity] = stop
+                threading.Thread(target=self.run,args=(identity,chat['mode'],context,stop),daemon=True,name='chat-generation').start()
         return self.generation(identity)
 
     def demo_stream(self, context, stop):
@@ -187,6 +192,10 @@ class ChatService:
         yield ModelReply('',0,0,0,'STOP')
 
     def run(self, identity, mode, context, stop):
+        for _ in self.run_steps(identity, mode, context, stop):
+            pass
+
+    def run_steps(self, identity, mode, context, stop):
         text, usage, reason, error = '', (None,None,None), None, None
         started = time.monotonic()
         def cancelled():
@@ -213,8 +222,13 @@ class ChatService:
                     raise AIError('output_limit','Reply reached the app’s text limit. Partial text saved.',413)
                 with self.database.connection() as connection:
                     connection.execute("UPDATE generations SET text=?,input_tokens=?,output_tokens=?,total_tokens=?,finish_reason=? WHERE id=? AND status='running'",(text,*usage,reason,identity))
+                if self.database.remote:
+                    yield self.generation(identity)
             if not stop.is_set() and not text.strip():
                 raise AIError('empty','No usable reply was returned. Your question is saved.',422,usage)
+        except GeneratorExit:
+            error = AIError('interrupted', 'The cloud stream ended. Partial text saved; reconnect to inspect it.')
+            raise
         except Exception as failure:
             error = failure if isinstance(failure,AIError) else AIError('unavailable','This reply failed. Your question and partial text are saved.')
             if error.usage:
@@ -225,7 +239,7 @@ class ChatService:
                     stream.close()
                 except Exception:
                     pass
-            status = 'stopped' if stop.is_set() else ('blocked' if error and error.code=='blocked' else 'failed' if error else 'truncated' if reason=='MAX_TOKENS' else 'complete')
+            status = 'stopped' if stop.is_set() else ('interrupted' if error and error.code=='interrupted' else 'blocked' if error and error.code=='blocked' else 'failed' if error else 'truncated' if reason=='MAX_TOKENS' else 'complete')
             with self.database.connection() as connection:
                 # Stop is committed immediately; late chunks cannot change it.
                 if status=='blocked':
@@ -253,6 +267,8 @@ class ChatService:
                     if event:=self.jobs.get(identity):
                         event.set()
                     connection.execute("UPDATE generations SET status='stopped',error='Stopped. Partial text saved; usage may be unknown.',error_code='stopped' WHERE id=?",(identity,))
+                    if self.database.remote and not connection.execute('SELECT 1 FROM generation_workers WHERE id=?',(identity,)).fetchone():
+                        connection.execute("UPDATE ai_requests SET status='stopped',error_code='stopped' WHERE request_id=?",(identity,))
         return self.generation(identity)
 
     def select(self, chat_id, turn_id, body):
@@ -271,7 +287,29 @@ class ChatService:
 
     def events(self, identity):
         self.generation(identity)
+        if self.database.remote:
+            with self.database.connection() as connection:
+                connection.execute('BEGIN IMMEDIATE')
+                current = connection.execute('SELECT g.*,c.mode FROM generations g JOIN chat_turns t ON t.id=g.turn_id JOIN chats c ON c.id=t.chat_id WHERE g.id=?',(identity,)).fetchone()
+                won = False
+                if current['status']=='running':
+                    won = bool(connection.execute('INSERT OR IGNORE INTO generation_workers(id,started_at) VALUES(?,?)',(identity,time.time())).rowcount)
+                    if won and current['mode']=='google_cloud':
+                        self.ai.refresh_cloud_settings(connection)
+            if won:
+                service = self
+                class CloudStop:
+                    def is_set(self):
+                        return service.generation(identity)['status']!='running'
+                    def wait(self, seconds):
+                        time.sleep(seconds)
+                        return self.is_set()
+                # The SSE request owns the worker. No daemon survives a
+                # response; another reader only watches the durable snapshots.
+                for current in self.run_steps(identity,current['mode'],json.loads(current['context_json']),CloudStop()):
+                    yield f'event: snapshot\ndata: {json.dumps(current)}\n\n'
         previous = None
+        started = time.monotonic()
         while True:
             current = self.generation(identity)
             value = json.dumps(current)
@@ -282,4 +320,6 @@ class ChatService:
                 previous = value
             if current['status']!='running':
                 break
-            time.sleep(.12)
+            if self.database.remote and time.monotonic()-started>95:
+                break  # Reconnect watches the same ID; it never claims it twice.
+            time.sleep(.5 if self.database.remote else .12)

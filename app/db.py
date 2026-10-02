@@ -6,11 +6,26 @@ import sqlite3
 
 
 class Database:
+    remote = False
     def __init__(self, path: Path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as connection:
-            connection.executescript("""
+            connection.executescript(SCHEMA)
+
+    @contextmanager
+    def connection(self):
+        connection = sqlite3.connect(self.path, timeout=10)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
+
+
+SCHEMA = """
                 CREATE TABLE IF NOT EXISTS lesson_progress (
                     lesson_id TEXT PRIMARY KEY,
                     completed_version INTEGER,
@@ -74,15 +89,4 @@ class Database:
                 );
                 CREATE INDEX IF NOT EXISTS chat_turn_order ON chat_turns(chat_id,created_at);
                 PRAGMA user_version = 3;
-            """)
-
-    @contextmanager
-    def connection(self):
-        connection = sqlite3.connect(self.path, timeout=10)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys = ON")
-        try:
-            with connection:
-                yield connection
-        finally:
-            connection.close()
+            """

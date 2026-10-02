@@ -1,6 +1,7 @@
 """Routes connect the browser to the content and progress services."""
 
 from pathlib import Path
+from contextvars import ContextVar
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
@@ -26,11 +27,11 @@ from app.settings_store import SettingsStore, SettingsStoreError
 from app import labs
 
 
-def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None):
+def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None, *, database=None, settings_store=None, hosted=False, allowed_hosts=None):
     content = ContentStore(content_dir or config.CONTENT_DIR)
-    database = Database(database_path or config.DATABASE_PATH)
+    database = database or Database(database_path or config.DATABASE_PATH)
     progress = ProgressService(database, content)
-    settings_store = SettingsStore(database.path.parent / 'ai-settings.json')
+    settings_store = settings_store or SettingsStore(database.path.parent / 'ai-settings.json')
     settings_notice = ''
     if ai_settings is None:
         try:
@@ -38,13 +39,24 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
         except SettingsStoreError as error:
             ai_settings, settings_notice = config.AISettings(), str(error)
     ai = AIService(ai_settings, database, content, provider)
+    ai.settings_store = settings_store
     ai.settings_notice = settings_notice
     chats = ChatService(database, ai)
+    # Cloud instances never share mutable credentials or worker dictionaries
+    # between requests. SQLite remains the unchanged local default.
+    request_services = ContextVar('tiny_chat_services')
+    if hosted:
+        class ServiceProxy:
+            def __init__(self, name):
+                self.name = name
+            def __getattr__(self, name):
+                return getattr(request_services.get()[self.name], name)
+        ai, chats = ServiceProxy('ai'), ServiceProxy('chats')
     app = FastAPI(title="Tiny Chat Lab", docs_url=None, redoc_url=None)
     app.state.content, app.state.progress, app.state.database = content, progress, database
     app.state.ai = ai
     app.state.chats = chats
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver", "[::1]"])
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts or ["127.0.0.1", "localhost", "testserver", "[::1]"])
     app.mount("/static", StaticFiles(directory=config.APP_DIR / "static"), name="static")
     templates = Jinja2Templates(directory=config.APP_DIR / "templates")
 
@@ -55,12 +67,36 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
             current = urlsplit(str(request.base_url))
             supplied = urlsplit(origin) if origin else None
             if request.headers.get("sec-fetch-site") == "cross-site" or (supplied and (supplied.scheme, supplied.netloc) != (current.scheme, current.netloc)):
-                return JSONResponse({"detail": "Use this app from its own local browser tab."}, status_code=403)
+                return JSONResponse({"detail": "Use this app from its own browser tab."}, status_code=403)
             if not request.headers.get("content-type", "").startswith("application/json"):
                 return JSONResponse({"detail": "Send a JSON request."}, status_code=415)
             if len(await request.body()) > 32000:
                 return JSONResponse({"detail": "That request is too large."}, status_code=413)
-        response = await call_next(request)
+        token = None
+        if hosted:
+            from starlette.concurrency import run_in_threadpool
+            def services():
+                notice = ''
+                try:
+                    settings = settings_store.load()
+                except SettingsStoreError as error:
+                    settings, notice = config.AISettings(), str(error)
+                service = AIService(settings, database, content, provider)
+                service.settings_store = settings_store
+                service.settings_notice = notice
+                return {'ai': service, 'chats': ChatService(database, service)}
+            try:
+                token = request_services.set(await run_in_threadpool(services))
+            except Exception as error:
+                from app.cloud_db import CloudStorageError
+                if not isinstance(error, CloudStorageError):
+                    raise
+                return JSONResponse({'detail': str(error)}, status_code=503, headers={'Cache-Control':'no-store'})
+        try:
+            response = await call_next(request)
+        finally:
+            if token is not None:
+                request_services.reset(token)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
@@ -91,11 +127,17 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     async def missing(request, error):
         return JSONResponse({"detail": "That lesson is not available yet."}, status_code=404)
 
+    if hosted:
+        from app.cloud_db import CloudStorageError
+        @app.exception_handler(CloudStorageError)
+        async def cloud_storage_error(request, error):
+            return JSONResponse({'detail': str(error)}, status_code=503)
+
     def render(request, template, **extra):
         summary = progress.summary()
         return templates.TemplateResponse(request=request, name=template, context={
             "course": content.course, "progress": summary, "page": template.removesuffix(".html"),
-            "authored": content.lessons, "provider": ai.status(), **extra,
+            "authored": content.lessons, "provider": ai.status(), "hosted": hosted, **extra,
         })
 
     @app.get("/", response_class=HTMLResponse)
@@ -269,6 +311,6 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "milestone": "M4", "mode": ai.status()["mode"]}
+        return {"status": "ok", "milestone": "M4", "mode": ai.status()["mode"], "storage": "cloud" if hosted else "local"}
 
     return app

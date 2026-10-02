@@ -3,7 +3,10 @@ export async function api(path, body) {
   try {
     response = await fetch(path, {method: body === undefined ? "GET" : "POST", headers: {"Content-Type": "application/json"}, ...(body === undefined ? {} : {body: JSON.stringify(body)})});
   } catch {
-    throw new Error("The local app could not be reached. Your input is still here; check that the Python server is running, then retry.");
+    throw new Error("The app could not be reached. Your input is still here; check your connection, then retry.");
+  }
+  if (!response.headers.get("content-type")?.includes("application/json")) {
+    throw new Error("The lab returned an unexpected response. Sign in to the hosted lab or check the server, then retry the same action.");
   }
   const data = await response.json();
   if (!response.ok) {

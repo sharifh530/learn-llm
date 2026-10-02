@@ -16,7 +16,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001
 ```
 
-The environment is already installed in this workspace. `./run.ps1` starts the app too; `./run.ps1 -Port 8002` selects another port. Tested on Python 3.14.7. Keep the app on loopback; public hosting is a later milestone.
+The environment is already installed in this workspace. `./run.ps1` starts the app too; `./run.ps1 -Port 8002` selects another port. Tested on Python 3.14.7. Keep this local server on loopback. The separate [Vercel deployment guide](docs/VERCEL_DEPLOYMENT.md) describes private hosting with durable cloud storage.
 
 Progress, journals, saved Demo/Google chats, persona settings, variants, and usage live in the ignored `data/tiny-chat.db`. Unsent drafts stay in browser tab storage. Only selected recent turns from the current chat enter a chatbot request. No Google account is required for offline learning or the clearly labeled Python memory/stream rehearsal.
 
@@ -50,6 +50,7 @@ We will build an application around a pretrained model. We will also build tiny 
 | [M4 walkthrough](docs/M4_WALKTHROUGH.md) | How do vectors, attention, and a training update work? |
 | [M4 verification](docs/M4_VALIDATION.md) | What proves the numeric toys and expanded learning flow? |
 | [Settings verification](docs/SETTINGS_VALIDATION.md) | How are saved keys protected and connection changes tested? |
+| [Vercel deployment](docs/VERCEL_DEPLOYMENT.md) | How does the private cloud lab preserve progress, chats, and Settings? |
 | [Product requirements](docs/PRODUCT.md) | What must each screen and feature do? |
 | [Curriculum](docs/CURRICULUM.md) | What are the 24 lessons, games, and build tasks? |
 | [Starter lessons](docs/STARTER_LESSONS.md) | What can I learn right now? |
