@@ -131,3 +131,9 @@ Before public hosting: add authentication, ownership checks, CSRF protection for
 `GET /observatory` renders `observatory.html`; `labs.js` manages tabs, sliders, accessible meters, a loss plot/table, stale-response suppression, errors, and optional session storage. Explicit Train buttons apply updates; Predict reads the weight. Full-precision weight persists separately from the range input's rounded value. History resets on reload or manual weight changes and is bounded to 13 plotted states/12 table updates.
 
 The optional lesson `lab` enum names a registered toy. Content remains schema validated; existing lesson JSON without `lab` remains valid. Earlier lesson versions and scoring IDs are unchanged. No generated code is executed by these routes.
+
+## Connection settings · 2 October 2026
+
+Settings now posts typed connection fields to `POST /api/provider/settings`; `POST /api/provider/key/remove` removes the key and disables AI. Status returns nonsecret fields and `key_saved` only. No AI configuration is loaded from environment files or variables. Windows DPAPI encrypts the credential in ignored `data/ai-settings.json`, which is atomically replaced before applying the new in-memory immutable settings and adapter. Failed validation/storage keeps the old connection. No plaintext fallback is used on other operating systems.
+
+Admission locks and active-request accounting reject connection changes during tutor/connection calls and saved-chat workers. Saves reset verified status without calling Google. Settings survive restart, while unreadable storage opens the app offline with a recovery notice. SQLite learning/usage/chat data is unaffected. Local port access and processes running as the same Windows account remain within the trust boundary.

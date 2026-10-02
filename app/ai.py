@@ -3,6 +3,8 @@
 import hashlib
 import json
 import time
+import threading
+from dataclasses import replace
 
 from app.providers import AIError, GoogleProvider
 
@@ -22,6 +24,10 @@ class AIService:
     def __init__(self, settings, database, content, provider=None):
         self.settings, self.database, self.content = settings, database, content
         self.provider = provider or GoogleProvider(settings)
+        self.custom_provider = provider
+        self.configuration_lock = threading.RLock()
+        self.active_requests = 0
+        self.settings_notice = ''
         self.connected = False
         # Local app runs one server process. A crashed request is uncertain:
         # keep its ID consumed, so a refresh cannot silently create another bill.
@@ -33,8 +39,26 @@ class AIService:
         return {"mode": "google_cloud" if not problem else "demo", "configured": not bool(problem),
                 "connected": self.connected, "provider": "Google Cloud / Vertex AI",
                 "auth_mode": self.settings.auth_mode, "model": self.settings.model,
+                "enabled": self.settings.enabled, "key_saved": bool(self.settings.api_key),
+                "project": self.settings.project, "location": self.settings.location,
+                "settings_notice": self.settings_notice,
                 "message": problem or ("Google replied in this server session." if self.connected else "Configured. Run the connection test to verify access."),
                 "usage": self.usage()}
+
+    def configure(self, store, body=None):
+        # Caller holds ChatService.lock, so no stream starts during this update.
+        with self.configuration_lock:
+            with self.database.connection() as connection:
+                running = connection.execute("SELECT 1 FROM ai_requests WHERE status='running' LIMIT 1").fetchone()
+            if self.active_requests or running:
+                raise AIError('busy', 'Wait for the current AI request to finish before changing the connection.', 409)
+            settings = store.candidate(self.settings, body) if body else replace(self.settings, enabled=False, api_key='')
+            store.save(settings)
+            self.settings = settings
+            self.provider = self.custom_provider or GoogleProvider(settings)
+            self.connected = False
+            self.settings_notice = ''
+            return self.status()
 
     def usage(self):
         today = int(time.time() // 86400) * 86400
@@ -66,6 +90,15 @@ class AIService:
         return None
 
     def request(self, purpose, body):
+        with self.configuration_lock:
+            self.active_requests += 1
+        try:
+            return self._request(purpose, body)
+        finally:
+            with self.configuration_lock:
+                self.active_requests -= 1
+
+    def _request(self, purpose, body):
         lesson = None
         instruction, message = CHAT, body.message if purpose != "connection" else "Say hello in one short sentence."
         if purpose == "tutor":

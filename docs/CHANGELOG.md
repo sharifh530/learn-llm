@@ -1,5 +1,12 @@
 # Course and project changelog
 
+## 2 October 2026: connection setup in Settings
+
+- Added a password field, model/auth settings, instant Save, explicit Test, and Remove key; no server restart or configuration file is required.
+- Windows DPAPI encrypts the stored key; browser/API responses expose only whether a key is saved. Keys never enter browser drafts or prompts.
+- Removed the old Google environment loader, its example file, and the direct dotenv dependency. Existing private files are not deleted or automatically imported.
+- L09 is now version 2 with the new setup flow; IDs, questions, answer keys, existing completion, and XP are preserved. Course version is 5; a prior content snapshot is retained locally.
+
 ## 1 October 2026: M4 Model Observatory
 
 - Added local fruit-vector cosine, manual masked-softmax attention, and one-weight gradient-update experiments, with numeric results, keyboard controls, responsive layouts, and reduced-motion support.

@@ -21,6 +21,8 @@ from app.progress import ProgressError, ProgressService
 from app.chat import ChatService, PERSONAS
 from app.models import ChatCreate, ChatUpdate, ChatRetry, ChatSelection, ChatContext, EmptyInput
 from app.models import SimilarityToy, AttentionToy, TrainingToy
+from app.models import ProviderSettings
+from app.settings_store import SettingsStore, SettingsStoreError
 from app import labs
 
 
@@ -28,7 +30,15 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     content = ContentStore(content_dir or config.CONTENT_DIR)
     database = Database(database_path or config.DATABASE_PATH)
     progress = ProgressService(database, content)
-    ai = AIService(ai_settings or config.AISettings.load(), database, content, provider)
+    settings_store = SettingsStore(database.path.parent / 'ai-settings.json')
+    settings_notice = ''
+    if ai_settings is None:
+        try:
+            ai_settings = settings_store.load()
+        except SettingsStoreError as error:
+            ai_settings, settings_notice = config.AISettings(), str(error)
+    ai = AIService(ai_settings, database, content, provider)
+    ai.settings_notice = settings_notice
     chats = ChatService(database, ai)
     app = FastAPI(title="Tiny Chat Lab", docs_url=None, redoc_url=None)
     app.state.content, app.state.progress, app.state.database = content, progress, database
@@ -72,6 +82,10 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     @app.exception_handler(AIError)
     async def ai_error(request, error):
         return JSONResponse({"detail": str(error), "code": error.code}, status_code=error.status)
+
+    @app.exception_handler(SettingsStoreError)
+    async def settings_error(request, error):
+        return JSONResponse({"detail": str(error)}, status_code=400)
 
     @app.exception_handler(KeyError)
     async def missing(request, error):
@@ -164,6 +178,20 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     @app.post("/api/provider/test")
     def connection_test(body: ConnectionTest):
         return ai.request("connection", body)
+
+    @app.post('/api/provider/settings')
+    def save_provider_settings(body: ProviderSettings):
+        with chats.lock:
+            if chats.jobs:
+                raise AIError('busy', 'Wait for the current reply to finish before changing the connection.', 409)
+            return ai.configure(settings_store, body)
+
+    @app.post('/api/provider/key/remove')
+    def remove_provider_key(body: EmptyInput):
+        with chats.lock:
+            if chats.jobs:
+                raise AIError('busy', 'Wait for the current reply to finish before changing the connection.', 409)
+            return ai.configure(settings_store)
 
     @app.post("/api/ai/messages")
     def ai_message(body: AIMessage):

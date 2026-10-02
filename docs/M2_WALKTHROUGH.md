@@ -16,21 +16,15 @@ Write a rubric before looking at an AI answer: does it explain lookup, use your 
 
 ## Connect your Google account
 
-From the project directory, create the ignored server configuration:
+Open [Settings](http://127.0.0.1:8001/settings). For **Cloud express mode**, select Google Cloud express API key, paste your key in the password field, enter a text model ID supported by your account, enable Google AI, and click **Save connection**. The form takes effect immediately. A blank key field keeps an already saved key; pasting a new key replaces it.
 
-```powershell
-Copy-Item -LiteralPath .env.example -Destination .env
-```
+The key goes to the local Python server and is encrypted for your Windows account using DPAPI in ignored `data/ai-settings.json`. It is never returned by the settings API, put in prompt context, or stored in browser drafts. The input is cleared after a successful save and when leaving the page. **Remove saved key** removes the stored credential and disables AI while keeping lessons, usage, and saved chats. Saving or removing makes no Google request. Processes running under the same Windows account can still access your protected key; this is local account protection, not an independent vault.
 
-Run that command only if `.env` does not already exist. Edit the local file directly. Do not paste a key into a chat, frontend code, or a screenshot. OS environment settings override `.env` values.
+For **standard Google Cloud**, choose Standard Cloud · local ADC and enter project, location, and model in this same form. Configure local Application Default Credentials once using `gcloud auth application-default login`. The SDK receives those credentials explicitly and does not use a saved express key in this mode. Your project must have the required API, billing, permissions, and model/location access. Standard Cloud API-key authentication is not implemented; use an express key for express mode or ADC for a standard project. See [Google's express example](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/samples/googlegenaisdk-vertexai-express-mode).
 
-For **Cloud express mode**, set `GOOGLE_AUTH_MODE=express_key`, fill `GOOGLE_CLOUD_API_KEY` with your Cloud express key, set `GOOGLE_MODEL` to a supported text model, and set `AI_ENABLED=true`. This is a Cloud key, not a Gemini Developer API / AI Studio key. The adapter uses the express Cloud endpoint without a project/region in the request path. See [Google’s express setup](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/start/express-mode/overview).
+Click **Test Google connection** after saving. This makes a token-count request and one short generation request; charges may apply. “Configured” means fields exist. A real usable reply verifies access; fake tests and offline simulations cannot do that. Saving resets any earlier verified status, and connection changes are rejected while an AI request is active. No model ID or price is assumed for your account.
 
-For **standard Google Cloud**, set `GOOGLE_AUTH_MODE=adc`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_MODEL`, and `AI_ENABLED=true`. Configure local Application Default Credentials with `gcloud auth application-default login`. Your project needs the required API, billing, IAM access, and a supported model/location. The server obtains credentials through `google.auth.default`; it explicitly supplies them to the SDK. It does not use the express key in ADC mode. See [Google’s Cloud setup](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/start).
-
-Standard Cloud API-key authentication is not implemented; choose express mode for an express key or ADC for a standard project. No model ID or pricing is assumed for your project.
-
-Restart the Python server after editing configuration. Stop it with Ctrl+C in its terminal, then run `./run.ps1`. Open Settings and click **Test Google connection**. This explicitly makes a token-count request and one short generation request; charges may apply. “Configured” means fields exist. A successful real reply verifies access. A fake-provider test or the offline simulation cannot do that.
+Google connection setup now uses this form exclusively. Legacy configuration files and AI environment variables are no longer read. Existing private files are left untouched; re-enter your connection in Settings once. The encrypted key survives a restart under the same Windows account. If the file is corrupt or cannot be decrypted, the app opens offline and invites you to save new settings.
 
 Choose **Google Cloud AI** on My chatbot and send your prompt recipe. Compare the answer against your rubric and record the actual result in the journal. Leave L09’s live build unfinished until you have completed this real experiment.
 
@@ -56,7 +50,7 @@ The key authenticates the server’s transport. It is never an ingredient in the
 
 | File | What to learn from it |
 | --- | --- |
-| `app/config.py` | Read local configuration without putting secrets in HTML |
+| `app/config.py` / `app/settings_store.py` | Load Settings and protect the saved key without returning it in HTML |
 | `app/main.py` | Map browser URLs to Python functions; sync routes run in FastAPI’s worker pool |
 | `app/ai.py` | Select the current lesson, enforce limits, reserve an attempt, save its outcome |
 | `app/providers.py` | Translate our request into Google SDK calls and redact failures |

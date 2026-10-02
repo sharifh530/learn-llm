@@ -20,6 +20,10 @@ The environment is already installed in this workspace. `./run.ps1` starts the a
 
 Progress, journals, saved Demo/Google chats, persona settings, variants, and usage live in the ignored `data/tiny-chat.db`. Unsent drafts stay in browser tab storage. Only selected recent turns from the current chat enter a chatbot request. No Google account is required for offline learning or the clearly labeled Python memory/stream rehearsal.
 
+## Connect from Settings
+
+Open [Settings](http://127.0.0.1:8001/settings), paste your Google Cloud express API key in the password field, choose a model, and click **Save connection**. Then **Test Google connection** to verify access. No configuration file or server restart is needed. Saved keys are encrypted for your Windows account; a blank field keeps the key and **Remove saved key** clears it and disables AI. Standard Cloud ADC remains available in the same form. See [the setup walkthrough](docs/M2_WALKTHROUGH.md).
+
 ## Start here
 
 1. Start with [the M1 walkthrough](docs/M1_WALKTHROUGH.md), or continue to [the M2 experiments and setup](docs/M2_WALKTHROUGH.md).
@@ -45,6 +49,7 @@ We will build an application around a pretrained model. We will also build tiny 
 | [M3 verification](docs/M3_VALIDATION.md) | What proves local behavior, and which live checks remain? |
 | [M4 walkthrough](docs/M4_WALKTHROUGH.md) | How do vectors, attention, and a training update work? |
 | [M4 verification](docs/M4_VALIDATION.md) | What proves the numeric toys and expanded learning flow? |
+| [Settings verification](docs/SETTINGS_VALIDATION.md) | How are saved keys protected and connection changes tested? |
 | [Product requirements](docs/PRODUCT.md) | What must each screen and feature do? |
 | [Curriculum](docs/CURRICULUM.md) | What are the 24 lessons, games, and build tasks? |
 | [Starter lessons](docs/STARTER_LESSONS.md) | What can I learn right now? |
@@ -93,6 +98,7 @@ The plan uses Google Cloud / Vertex AI because you selected it. Cloud express ke
 .\.venv\Scripts\python.exe tools/browser_ai_check.py
 .\.venv\Scripts\python.exe tools/browser_chat_check.py
 .\.venv\Scripts\python.exe tools/browser_labs_check.py
+.\.venv\Scripts\python.exe tools/browser_settings_check.py
 .\.venv\Scripts\python.exe tools/design_check.py
 ```
 

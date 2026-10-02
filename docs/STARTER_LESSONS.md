@@ -1688,7 +1688,7 @@ Which parts of our app are enforced by Python, and which are only requested from
 
 ## L09: Your first live model call
 
-Prompt Kitchen · about 25 minutes · version 1
+Prompt Kitchen · about 25 minutes · version 2
 
 ### Your goal
 
@@ -1706,7 +1706,7 @@ A real model call crosses a network. The browser posts a question to our local P
 
 Configuration means required settings are present. A successful connection test means Google actually returned a usable reply in this server session. An invalid key, permission, model, or region can fail even when all settings exist. Our Python rules demo makes zero Google calls.
 
-Copy .env.example to the ignored .env file and choose Cloud express_key or standard Cloud adc. Set a supported GOOGLE_MODEL and AI_ENABLED=true. For express use a Cloud express key; for ADC set project/location and configure Application Default Credentials. Restart the server, then click Test Google connection in Settings. Never put the key in a browser field, prompt, screenshot, or commit.
+Open Settings and choose Google Cloud express API key or standard Cloud ADC. For express, paste your key into the password field and choose a text model available to your account. For ADC, enter project/location and configure local Application Default Credentials. Enable Google AI and click Save connection, then Test Google connection. No configuration file or server restart is needed. Windows encrypts a saved key for your account; it is never returned to the page or stored in browser drafts. Keep keys out of prompts, screenshots, and commits.
 
 Each successful app attempt normally makes two model API calls: count_tokens then generate_content. Automatic retries are disabled. We record attempts, calls attempted, and reported tokens. Missing usage and failures can still incur charges. Cost is unknown until pricing is verified; the app limits are not a spending guarantee.
 
@@ -1881,7 +1881,7 @@ You are done when:
 <details>
 <summary>Hints</summary>
 
-1. Use Settings → Test Google connection after restarting the configured server.
+1. Use Settings → Save connection, then Test Google connection. Saving makes no Google call and needs no restart.
 2. Compare Google mode with Demo mode; the provider label tells you which path ran.
 
 </details>

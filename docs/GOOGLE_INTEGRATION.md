@@ -1,17 +1,18 @@
 # Google Cloud / Vertex AI integration
 
-Selected by the learner: **Google Cloud / Vertex AI**, not AI Studio. Implemented in M2 with `google-genai==2.26.0`. Reference check: 1 October 2026. Google's current docs use Gemini Enterprise Agent Platform; the pinned SDK accepts `vertexai=True` as a legacy Cloud selector. Actual access remains unverified until credentials are configured and a real request succeeds.
+Selected by the learner: **Google Cloud / Vertex AI**, not AI Studio. Implemented in M2 with `google-genai==2.26.0`. Reference check: 2 October 2026. Google's current docs use Gemini Enterprise Agent Platform; the pinned SDK accepts `vertexai=True` as a legacy Cloud selector. Actual access remains unverified until credentials are configured and a real request succeeds.
 
 ## Implemented authentication
 
 | Mode | Server configuration | Client initialization |
 | --- | --- | --- |
-| Cloud express key | GOOGLE_AUTH_MODE=express_key; GOOGLE_CLOUD_API_KEY; GOOGLE_MODEL | `genai.Client(vertexai=True, api_key=...)` |
-| Standard Cloud ADC | GOOGLE_AUTH_MODE=adc; GOOGLE_CLOUD_PROJECT; GOOGLE_CLOUD_LOCATION; GOOGLE_MODEL; local ADC | `genai.Client(vertexai=True, credentials=..., project=..., location=...)` |
+| Cloud express key | Settings: Cloud express key, password field, text model | `genai.Client(vertexai=True, api_key=...)` |
+| Standard Cloud ADC | Settings: Standard Cloud ADC, project, location, model; local ADC | `genai.Client(vertexai=True, credentials=..., project=..., location=...)` |
 | Standard Cloud API key | Not implemented | Use ADC for a standard project, or a Cloud express key in express mode |
 
-Both routes require `AI_PROVIDER=google_cloud` and `AI_ENABLED=true`. Copy `.env.example` to ignored `.env`, edit locally, and restart. OS settings override the file. Required-field presence means configured; only a real usable reply verifies access. Missing/disabled settings make no provider calls. The key never enters prompt context or browser storage. Do not infer a key's product from its prefix or silently reinterpret it as AI Studio authentication.
+Enable Google AI in Settings, then Save connection. Settings take effect immediately without a restart. The password input sends the key only to the loopback Python server; Windows DPAPI encrypts it for the current Windows account in ignored `data/ai-settings.json`. Neither HTML nor status/save responses return the key, and it never enters prompt context or browser storage. Saving makes no Google call. Remove saved key clears it and disables AI without deleting learning/chat data. A blank key on Save keeps the existing credential. The app no longer reads legacy connection files or AI environment variables.
 
+Required-field presence means configured; only a real usable reply verifies access. Missing/disabled settings make no provider calls. Do not infer a key's product from its prefix or silently reinterpret it as AI Studio authentication. See [Google's express-key example](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/samples/googlegenaisdk-vertexai-express-mode).
 The ADC route obtains credentials through `google.auth.default` and explicitly passes them, preventing ambient GOOGLE_API_KEY from changing auth mode. Local ADC normally uses `gcloud auth application-default login`; project API, billing, IAM, and model/location access must also be correct. See [Google's Cloud setup](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/start) and [express mode guide](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/start/express-mode/overview).
 
 ## Transport and lifecycle

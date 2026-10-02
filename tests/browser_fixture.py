@@ -37,3 +37,10 @@ def create_app():
     if not path.is_relative_to((ROOT / 'data/browser-checks').resolve()):
         raise ValueError('Test factory requires an isolated browser-checks database.')
     return application(path, ai_settings=AISettings(enabled=True, api_key='test-only-fake-key', model='test-only-model'), provider=BrowserFake())
+
+
+def create_settings_app():
+    path = Path(os.environ['TINY_CHAT_DATABASE']).resolve()
+    if not path.is_relative_to((ROOT / 'data/browser-checks').resolve()):
+        raise ValueError('Settings test requires an isolated database.')
+    return application(path, provider=BrowserFake())

@@ -11,7 +11,7 @@
 | Six full starter lessons and 24 total path entries | Authored plan | Usable starting content with manageable later expansion |
 | Offline games and local scoring | Planned core | Learn without credentials; deterministic feedback |
 | Separate tutor and chatbot conversations | Planned core | Prevents tutoring context leaking into experiments |
-| Credentials from server environment | Planned core | Avoids reusable secrets in browser code/storage |
+| Connection configured in Settings | Implemented 2 October 2026 | Windows DPAPI protects the local saved key; no credential returned to the browser or stored in drafts |
 | In-app generated lesson publishing | Deferred | Local development prompts support updates immediately |
 | Browser Python execution | Deferred | Requires isolated runtime and its own resource/security design |
 

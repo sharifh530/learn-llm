@@ -50,7 +50,7 @@ Context inspector shows which prior turns were sent and which were omitted. Chan
 
 ### Settings
 
-Show provider, auth mode, model, region if relevant, connection status, demo mode, and usage limits. Do not show a reusable key in page source. The first version reads credentials from server environment configuration; the screen explains this setup and tests connection.
+Show provider, auth mode, model, region if relevant, connection status, demo mode, and usage limits. Settings accepts a key in a password field, saves it encrypted for the Windows account, and applies the connection immediately. A blank key keeps the saved credential; Remove key clears it and disables AI. Never return the saved key in page source or API responses. Save makes no provider call; Test connection is an explicit separate action.
 
 Optional later local-only key entry: submit to the backend, retain only in server memory, expire on restart, and display a masked status. Persistent key vaults and multi-user key entry require a separate design.
 

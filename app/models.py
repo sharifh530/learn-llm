@@ -53,6 +53,22 @@ class ConnectionTest(Input):
     request_id: str = Field(pattern=r"^[a-zA-Z0-9-]{8,80}$")
 
 
+class ProviderSettings(Input):
+    enabled: bool = Field(strict=True)
+    auth_mode: Literal['express_key', 'adc'] = 'express_key'
+    api_key: str = Field(default='', max_length=512, repr=False)
+    model: str = Field(default='', max_length=150, pattern=r'^[a-zA-Z0-9._-]*$')
+    project: str = Field(default='', max_length=100, pattern=r'^[a-zA-Z0-9._:-]*$')
+    location: str = Field(default='', max_length=60, pattern=r'^[a-zA-Z0-9-]*$')
+
+    @field_validator('api_key')
+    @classmethod
+    def key_is_single_line(cls, value):
+        if any(character.isspace() or not character.isascii() for character in value):
+            raise ValueError('Paste one API key without spaces or line breaks.')
+        return value
+
+
 class ChatCreate(Input):
     mode: Literal['demo', 'google_cloud'] = 'demo'
     persona: Literal['guide', 'coach', 'concise'] = 'guide'
