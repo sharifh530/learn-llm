@@ -5,6 +5,7 @@ roll back. No local replica, credentials in URLs, or automatic write retries.
 """
 from contextlib import contextmanager
 import sqlite3
+import logging
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
@@ -91,6 +92,7 @@ class Connection:
             for item in data['results']:
                 if item['type'] == 'error':
                     code = item['error'].get('code', '')
+                    logging.warning('Tiny Chat Lab database error code: %s', code)
                     if code.startswith('SQLITE_CONSTRAINT'):
                         raise sqlite3.IntegrityError('A conflicting record already exists.')
                     raise CloudStorageError('Cloud storage could not complete this action. Retry the same action to recover it.')

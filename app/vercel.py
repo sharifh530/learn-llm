@@ -1,5 +1,6 @@
 """Vercel's exported FastAPI entry point, with fail-closed cloud setup."""
 import os
+import logging
 import threading
 
 from fastapi import FastAPI
@@ -31,7 +32,8 @@ class HostedLab:
         try:
             if self.application is None:
                 await run_in_threadpool(self.initialize)
-        except CloudStorageError:
+        except CloudStorageError as error:
+            logging.warning('Tiny Chat Lab cloud setup: %s', str(error))
             # No transient SQLite fallback and no credentials in error output.
             if scope['type'] != 'http':
                 raise
