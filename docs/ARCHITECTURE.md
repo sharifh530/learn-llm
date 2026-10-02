@@ -137,3 +137,21 @@ The optional lesson `lab` enum names a registered toy. Content remains schema va
 Settings now posts typed connection fields to `POST /api/provider/settings`; `POST /api/provider/key/remove` removes the key and disables AI. Status returns nonsecret fields and `key_saved` only. No AI configuration is loaded from environment files or variables. Windows DPAPI encrypts the credential in ignored `data/ai-settings.json`, which is atomically replaced before applying the new in-memory immutable settings and adapter. Failed validation/storage keeps the old connection. No plaintext fallback is used on other operating systems.
 
 Admission locks and active-request accounting reject connection changes during tutor/connection calls and saved-chat workers. Saves reset verified status without calling Google. Settings survive restart, while unreadable storage opens the app offline with a recovery notice. SQLite learning/usage/chat data is unaffected. Local port access and processes running as the same Windows account remain within the trust boundary.
+
+## Private Vercel deployment · 2 October 2026
+
+`app/vercel.py` exports the hosted FastAPI entry point. Vercel Authentication
+protects all deployments of this single-learner lab; every authorized visitor
+shares one learner profile. `app/cloud_db.py` executes the existing parameterized
+queries through Turso's HTTPS pipeline, with explicit transactions and no local
+replica. Database setup adds tables without changing local Windows data.
+
+Hosted AI and chat services are scoped to each request. Reservations and settings
+checks share a database transaction. Google keys are entered in Settings and
+encrypted by `app/cloud_settings.py`; hosting variables contain only infrastructure
+configuration. A hosted SSE request claims the saved generation's worker lease
+and owns its execution. Other requests observe snapshots, while Stop fences late
+writes in the database. Local mode keeps its existing background workers.
+
+See [Vercel deployment and rollback](VERCEL_DEPLOYMENT.md) for provisioning,
+credential boundaries, live verification, and remaining checks.

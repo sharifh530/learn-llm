@@ -51,10 +51,10 @@ abandoned for 150 seconds are recovered; cold starts leave active work alone.
    Save makes no Google request. Test connection is explicit and may incur
    Google charges. Local ADC is only available in the Windows app.
 
-The production domain allocated by Vercel is `learn-llm-pi.vercel.app`.
-Availability is not implied until the deployment and live acceptance checks
-pass. Database quotas and Vercel limits still apply; no paid resources or
-actual Google calls are required for deployment verification.
+The live production app is [learn-llm-pi.vercel.app](https://learn-llm-pi.vercel.app/).
+Sign in with the Vercel account authorized for this project. Database quotas
+and Vercel limits still apply; no paid resources or actual Google calls were
+used for deployment verification.
 
 ## Credential and data boundaries
 
@@ -86,7 +86,35 @@ SQLite and a fake provider. They verify transactions, rollback, encryption,
 instance changes, duplicate worker fencing, Stop, partials, and fail-closed
 setup. They do not prove real Google access or a real Turso service connection.
 
-Record live verification and deployment commit here after provisioning.
+### Deployment verified on 2 October 2026
+
+- Production code commit `b6a09b5`: Vercel deployment
+  `CSiYLnSUN8kmoJsV8Q9wneSoYRiX`, Ready, Python 3.14.
+- Dedicated Turso database `tiny-chat-lab`, Starter plan ($0/month), connected
+  to Production. Marketplace agreements accepted after explicit owner approval.
+- Vercel Authentication is enabled for **All Deployments**. No bypass links
+  or public exceptions were created. The signed-in browser opened the app.
+- Home loads all 15 authored lessons; L01's first game round gives feedback.
+  Workshop and Settings render, with cloud persistence copy and express-key
+  input. Google remains disabled; no key was entered or model call made.
+- The live demo streamed two completed replies, remembered the mango from
+  the previous message, and saved the title `Deployment check · mango demo`.
+  The conversation is retained as a clearly labeled deployment example.
+- Automated checks: 128 tests passed; isolated cloud browser checks passed
+  with no JavaScript errors or external requests; documentation examples and
+  internal links passed. The fake-provider tests cover settings encryption,
+  Stop, duplicate streams, rollback, and instance changes.
+- Native Turso closes autocommit streams. The adapter reinitializes each new
+  stream and omits the local SQLite file-header `user_version` pragma.
+  The local database keeps its version marker and remains untouched.
+
+Verification limits: this computer's standalone HTTP client could not connect
+to the Vercel domain, and the in-app browser blocked direct JSON `/health`
+navigation. Anonymous HTTP and `/health` responses were therefore not
+independently observed. Protection was verified in Vercel's saved configuration;
+the real database was exercised by the signed-in app's saved chat APIs.
+Google access still needs an explicit connection test with your own key.
+
 For rollback, restore the preceding Vercel deployment while retaining All
 Deployments protection and the dedicated database. Do not delete storage.
 The previous local app remains runnable with its original Windows data and
