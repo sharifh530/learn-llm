@@ -45,6 +45,8 @@ class SQLServer:
                 continue
             try:
                 statement = item['stmt']
+                if statement['sql'].strip().upper().startswith('PRAGMA USER_VERSION'):
+                    raise sqlite3.OperationalError('native Turso does not parse user_version')
                 if self.fail_begin and statement['sql'].startswith('BEGIN'):
                     raise sqlite3.OperationalError('busy')
                 cursor = connection.execute(statement['sql'],tuple(decode(value) for value in statement.get('args',[])))

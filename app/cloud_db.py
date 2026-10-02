@@ -141,7 +141,10 @@ class CloudDatabase:
         # Expand only. Repeated cold starts can safely finish partial setup.
         with self.connection() as connection:
             for statement in SCHEMA.split(';'):
-                if statement.strip():
+                # Turso's native engine does not parse SQLite's file-header
+                # user_version PRAGMA. Cloud setup is expand-only table DDL;
+                # the local file retains its existing version marker.
+                if statement.strip() and not statement.strip().upper().startswith('PRAGMA USER_VERSION'):
                     connection.execute(statement)
             connection.execute('CREATE TABLE IF NOT EXISTS cloud_settings (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)')
             connection.execute('CREATE TABLE IF NOT EXISTS generation_workers (id TEXT PRIMARY KEY REFERENCES generations(id), started_at REAL NOT NULL)')
