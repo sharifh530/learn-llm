@@ -155,3 +155,29 @@ writes in the database. Local mode keeps its existing background workers.
 
 See [Vercel deployment and rollback](VERCEL_DEPLOYMENT.md) for provisioning,
 credential boundaries, live verification, and remaining checks.
+
+## Knowledge Library · M5
+
+`app/library.py` splits curated paragraphs into bounded chunks and ranks positive
+keyword overlap. `ContentStore` validates `content/library.json` with the course
+and lessons before publishing a new in-memory snapshot. Search returns at most
+three chunks, their matched terms, source IDs, and the library fingerprint.
+Scores describe word overlap, not answer confidence.
+
+`GET /library` and `GET /api/library` expose the curated catalog.
+`POST /api/library/chunks` provides a temporary preview without storing or adding
+text to retrieval. `POST /api/library/search` returns the search trace;
+`POST /api/library/answers` returns offline quotes or explicit Google selection.
+The typed, same-origin mutation routes return uncached responses.
+
+No matches means no provider call. In Google mode, only the question and up to
+three retrieved chunks enter the existing `AIService` request path. A strict
+validator accepts only unique retrieved IDs paired with their exact whole chunk
+text, or an empty insufficient-evidence response. The browser displays checked
+quotes rather than a free-form model answer. This proves source/text membership,
+not relevance or truth. Invalid output is withheld while known usage remains
+recorded. The existing request ledger, quota, Settings, and cloud transactions
+apply; no database migration is needed. The context fingerprint also participates
+in request identity so revised sources cannot reuse an old cached selection.
+
+See [M5 walkthrough](M5_WALKTHROUGH.md) and [verification](M5_VALIDATION.md).

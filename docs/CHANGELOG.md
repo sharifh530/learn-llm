@@ -1,5 +1,13 @@
 # Course and project changelog
 
+## 5 October 2026: M5 Knowledge Library
+
+- Added four fictional cafe notes, nine source chunks, transparent keyword ranking, note filtering, source links, and a temporary chunk preview.
+- Added offline matching quotes and an optional Google evidence picker. The app checks retrieved source IDs and exact whole-chunk quotes before display; malformed, fabricated, altered, or truncated results are withheld.
+- Reused the existing Google request ledger, quota, usage, and idempotent recovery. Failed source checks retain known usage. No new provider, embedding calls, package, or database migration is required.
+- Authored L16-L18 version 1; course version 6 has 18 lessons and 108 rounds. L01-L15, existing activity IDs, learner progress, and XP awards are preserved.
+- Added the walkthrough and backend/browser proof. M6 is next; actual Google selection remains a credential-dependent gate.
+
 ## 2 October 2026: connection setup in Settings
 
 - Added a password field, model/auth settings, instant Save, explicit Test, and Remove key; no server restart or configuration file is required.

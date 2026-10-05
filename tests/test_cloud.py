@@ -102,6 +102,26 @@ def save(client,key='fake-google-secret'):
     return client.post('/api/provider/settings',json={'enabled':True,'api_key':key,'model':'fake-model','auth_mode':'express_key'})
 
 
+def test_library_paid_evidence_survives_cloud_instance_change(cloud):
+    from tests.test_library import EvidenceProvider
+    _, database, store, _, _ = cloud
+    provider = EvidenceProvider()
+    def instance():
+        return TestClient(create_app(database=database, settings_store=store, hosted=True, provider=provider))
+    request={'message':'Which drinks contain mango?','mode':'google_cloud','request_id':str(uuid4())}
+    with instance() as first:
+        assert save(first).status_code==200
+        response=first.post('/api/library/answers',json=request)
+        assert response.status_code==200 and len(response.json()['evidence'])==2
+    with instance() as second:
+        recovered=second.post('/api/library/answers',json=request).json()
+        assert recovered['cached'] and recovered['usage']['total_tokens']==50
+        assert second.get('/api/progress').json()['xp']==0
+        assert second.get('/library').status_code==200
+        assert second.post('/api/library/answers',json={**request,'message':'Who owns the cafe?','request_id':str(uuid4())}).json()['provider_calls']==0
+    assert len(provider.calls)==1
+
+
 def test_progress_chats_and_encrypted_settings_survive_instances(cloud):
     factory, db, store, provider, server = cloud
     with factory() as first:

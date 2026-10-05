@@ -6,7 +6,7 @@ Current status: **M0 and M1 complete.** The local learning app is implemented an
 
 M3 software is now implemented with saved chats, personas, multi-turn context, streaming, Stop, retry variants, and L10–L12. See [M3 walkthrough](M3_WALKTHROUGH.md) and [M3 verification](M3_VALIDATION.md). The requested next implementation proceeded using local demo/mock proof; real Google gates for M2/M3 remain open.
 
-M4 is implemented with three local numeric toys and L13–L15. See [M4 walkthrough](M4_WALKTHROUGH.md) and [M4 verification](M4_VALIDATION.md). M5 is the next planned implementation. This software status does not imply a learner has completed the exercises.
+M4 is implemented with three local numeric toys and L13–L15. See [M4 walkthrough](M4_WALKTHROUGH.md) and [M4 verification](M4_VALIDATION.md). M5 now adds curated notes, keyword retrieval, checked evidence, and L16–L18. See [M5 walkthrough](M5_WALKTHROUGH.md) and [M5 verification](M5_VALIDATION.md). M6 is the next planned implementation. This software status does not imply a learner has completed the exercises.
 
 ## Outcome
 
@@ -20,7 +20,7 @@ The app has two personalities: a patient tutor that helps you learn, and your ow
 - Short sessions: about 20–35 minutes for a lesson, with longer build sessions when needed.
 - Python drives the backend. HTML/CSS and a little JavaScript are introduced gradually.
 - Google Cloud / Vertex AI is the selected provider. Credentials stay on the server.
-- Fifteen complete lessons are available now; the remaining nine have planned objectives and activities.
+- Eighteen complete lessons are available now; the remaining six have planned objectives and activities.
 - Progress persists between sessions. Content grows when you ask for additions or changes.
 - No calendar pressure: use session numbers, not deadlines. Roughly 20–35 hours for the full core path including builds, depending on practice and debugging.
 

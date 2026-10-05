@@ -4,7 +4,7 @@ Learn how LLMs work by playing short games and building your own small chatbot.
 
 This project is designed for someone who can read basic Python: variables, lists, dictionaries, loops, and functions. You do not need machine learning experience. The plan starts with familiar examples and introduces math only when it explains something useful.
 
-**Current deliverable: M4 is implemented.** Fifteen complete lessons and three interactive Model Observatory toys work offline: fruit-vector similarity, masked attention mixing, and one-weight training. The saved chatbot, personas, streaming, Stop, variants, and lesson tutor from M3 remain available. Google live verification still needs local credentials. Start with [the M4 walkthrough](docs/M4_WALKTHROUGH.md) or [M2 Google setup](docs/M2_WALKTHROUGH.md); see [M4 verification](docs/M4_VALIDATION.md).
+**Current deliverable: M5 is implemented.** Eighteen complete lessons work offline, with the Model Observatory and a new Knowledge Library. Split practice notes, inspect keyword search, and read exact source quotes. Optional Google mode selects checked evidence using the same Settings connection and request limits. Saved chats, streaming, Stop, variants, and the lesson tutor remain available. Start with [the M5 walkthrough](docs/M5_WALKTHROUGH.md); see [M5 verification](docs/M5_VALIDATION.md). Actual Google access still needs your explicit connection test.
 
 ## Run the app
 
@@ -49,6 +49,8 @@ We will build an application around a pretrained model. We will also build tiny 
 | [M3 verification](docs/M3_VALIDATION.md) | What proves local behavior, and which live checks remain? |
 | [M4 walkthrough](docs/M4_WALKTHROUGH.md) | How do vectors, attention, and a training update work? |
 | [M4 verification](docs/M4_VALIDATION.md) | What proves the numeric toys and expanded learning flow? |
+| [M5 walkthrough](docs/M5_WALKTHROUGH.md) | How do chunks, retrieval, and checked evidence work? |
+| [M5 verification](docs/M5_VALIDATION.md) | What proves Library behavior and its limitations? |
 | [Settings verification](docs/SETTINGS_VALIDATION.md) | How are saved keys protected and connection changes tested? |
 | [Vercel deployment](docs/VERCEL_DEPLOYMENT.md) | How does the private cloud lab preserve progress, chats, and Settings? |
 | [Product requirements](docs/PRODUCT.md) | What must each screen and feature do? |
@@ -69,7 +71,8 @@ We will build an application around a pretrained model. We will also build tiny 
 ## Content and checks
 
 - `content/course.json`: the full learning path, with honest authored/outline statuses.
-- `content/lessons/*.json`: fifteen complete lessons; the authoritative lesson text.
+- `content/lessons/*.json`: eighteen complete lessons; the authoritative lesson text.
+- `content/library.json`: four curated café notes used by the Knowledge Library.
 - `content/lesson.schema.json`: the planned validation contract for every published lesson.
 - `tools/verify_docs.py`: dependency-free checks for the starter content, document links, and Python examples.
 
@@ -99,8 +102,9 @@ The plan uses Google Cloud / Vertex AI because you selected it. Cloud express ke
 .\.venv\Scripts\python.exe tools/browser_ai_check.py
 .\.venv\Scripts\python.exe tools/browser_chat_check.py
 .\.venv\Scripts\python.exe tools/browser_labs_check.py
+.\.venv\Scripts\python.exe tools/browser_library_check.py
 .\.venv\Scripts\python.exe tools/browser_settings_check.py
 .\.venv\Scripts\python.exe tools/design_check.py
 ```
 
-Browser checks use isolated databases and do not change your progress. The documentation check remains `python tools/verify_docs.py`. Fifteen matching Python examples, a 90-round Chromium learning flow, separate FAKE-provider tutor/chat flows, and mocked SDK streaming verify software behavior. A real Google connection still needs credentials; see the M3 verification record.
+Browser checks use isolated databases and do not change your progress. The documentation check remains `python tools/verify_docs.py`. Eighteen matching Python examples, a 108-round Chromium learning flow, separate FAKE-provider tutor/chat flows, and mocked SDK streaming verify software behavior. A real Google connection still needs credentials; see the M5 verification record.

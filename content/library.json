@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "notes": [
+    {
+      "id": "N01", "version": 1, "title": "Pip's café: drinks",
+      "text": "Mango Cloud is a cold drink made with mango, oat milk, and ice. Mango Cloud costs 4 café coins.\n\nMango Spark is a fizzy drink made with mango and sparkling water. Mango Spark costs 3 café coins.\n\nMint Moon is a warm drink made with mint and water. Mint Moon costs 2 café coins and contains no mango."
+    },
+    {
+      "id": "N02", "version": 1, "title": "Opening the little café",
+      "text": "On weekdays, Pip's café opens at 09:00 and closes at 17:00.\n\nOn Saturday, Pip's café opens at 10:00 and closes at 14:00. The café is closed on Sunday."
+    },
+    {
+      "id": "N03", "version": 1, "title": "The puzzle club",
+      "text": "Puzzle club meets at Pip's café on Saturday at 11:00. Guests bring one paper puzzle to swap.\n\nPuzzle club has six seats. Book a seat at the counter before Saturday; no online booking is offered."
+    },
+    {
+      "id": "N04", "version": 1, "title": "Borrow a board game",
+      "text": "Board games are for use inside Pip's café. Guests return each board game to the shelf before leaving.\n\nThe board game shelf has Chess, Word Trail, and Tiny Towers. The café notes do not describe how to play these games."
+    }
+  ]
+}

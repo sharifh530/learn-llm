@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Library · Tiny Chat Lab{% endblock %}
+{% block scripts %}<link rel="stylesheet" href="/static/css/library.css"><script type="module" src="/static/js/library.js"></script>{% endblock %}
+{% block content %}
+<header class="page-heading library-heading"><span class="tag">Knowledge Library</span><h1>A little knowledge.<br>A trail of clues.</h1><p>Ask about Pip’s fictional café. Find the notes, inspect the evidence, and learn when to say “I don’t know.”</p></header>
+<div class="library-layout">
+  <aside class="note-shelf" aria-labelledby="shelf-title">
+    <div class="shelf-heading"><h2 id="shelf-title">The café notebook</h2><span class="tag neutral">{{ catalog.notes|length }} notes</span></div>
+    <p class="small muted">An authored teaching library. Café coins, opening times, and characters are imaginary.</p>
+    {% for note in catalog.notes %}<details class="library-note" id="note-{{ note.id }}" {% if loop.first %}open{% endif %}>
+      <summary><span class="note-number">{{ loop.index }}</span><span>{{ note.title }}<small>{{ note.chunks|length }} clues inside</small></span></summary>
+      {% for chunk in note.chunks %}<article class="source-chunk" id="source-{{ chunk.source_id }}" tabindex="-1"><code>{{ chunk.source_id }}</code><p>{{ chunk.text }}</p></article>{% endfor %}
+    </details>{% endfor %}
+    <p class="small muted shelf-foot">A note is data. It cannot change the app’s instructions, run code, or train Google.</p>
+  </aside>
+  <section class="library-desk" aria-labelledby="question-title">
+    <div class="desk-intro"><img src="/static/pip.svg" alt="" aria-hidden="true"><div><h2 id="question-title">Let’s follow a question.</h2><p>Search first. Read the clues. Then choose your evidence.</p></div></div>
+    <form id="library-form">
+      <label for="library-question">Your question</label><textarea id="library-question" rows="2" required maxlength="4000" placeholder="Which drinks contain mango?"></textarea>
+      <div class="library-examples" role="group" aria-label="Try a café question"><button type="button" data-library-question="Which drinks contain mango?">A mango mystery</button><button type="button" data-library-question="When does the café close on Saturday?">Saturday plans</button><button type="button" data-library-question="Who owns the café?">A missing clue</button></div>
+      <div class="library-options"><label for="library-note">Where to look<select id="library-note"><option value="">All café notes</option>{% for note in catalog.notes %}<option value="{{ note.id }}">{{ note.title }}</option>{% endfor %}</select></label><label for="library-mode">How to answer<select id="library-mode"><option value="demo">Offline · show matching quotes</option><option value="google_cloud">Google · select checked evidence</option></select></label></div>
+      <p id="library-mode-help" class="small muted">Python keyword search and exact quotes. Zero Google calls; this is a retrieval rehearsal.</p>
+      <div class="library-actions"><button class="button secondary" type="button" id="library-search">Find clues</button><button class="button" type="submit" id="library-answer">Show evidence</button></div>
+      <p id="library-status" class="small" role="status">Try a question, or open a note to start exploring.</p>
+    </form>
+    <section id="library-answer-panel" class="evidence-panel" aria-labelledby="evidence-heading" hidden><h3 id="evidence-heading">Evidence on the table</h3><p id="library-reply"></p><div id="library-evidence"></div><p id="library-usage" class="small muted"></p></section>
+    <details class="retrieval-inspector" id="retrieval-inspector"><summary>Peek at the search trail</summary><p class="small muted">The app keeps the top three chunks with positive keyword overlap. A score counts distinct matching words; it is not confidence.</p><p id="retrieval-terms" class="small">Find clues to see which words the search uses.</p><div id="retrieval-results"></div><p class="small muted">Keyword matches can miss synonyms, include negated words, and overlook needed evidence. A citation identifies a source; read it before trusting the answer.</p></details>
+    <a class="text-link" href="/settings">Connect Google in Settings →</a>
+  </section>
+</div>
+<section class="chunk-workbench" aria-labelledby="chunk-title"><div><h2 id="chunk-title">A note becomes little pieces.</h2><p>A chunk is a piece small enough to search and send with a question. Try changing its size.</p><a class="text-link" href="/lessons/L16">Learn about chunks →</a></div><form id="chunk-form"><label for="chunk-text">Your practice note</label><textarea id="chunk-text" rows="4" maxlength="4000" required>Mango Cloud is a cold drink made with mango, oat milk, and ice. Mango Cloud costs 4 café coins.
+
+Puzzle club meets on Saturday at 11:00. Bring one paper puzzle to swap.</textarea><label for="chunk-size">Words per piece <output id="chunk-size-value" for="chunk-size">30</output></label><input id="chunk-size" type="range" min="10" max="80" step="10" value="30"><button class="button secondary" type="submit">Split this note</button><p class="small muted">Sent only to this app’s Python server for preview. Not saved, added to the library, or sent to Google.</p><p id="chunk-status" class="small" role="status"></p><div id="chunk-results"></div></form></section>
+<section class="library-next"><h2>Make the detective yours.</h2><p>Try a question the notes cannot answer. Explain whether the missing clue is absent from the library or just missed by search.</p><div><a class="text-link" href="/lessons/L17">L17 · Find the right clue →</a><a class="text-link" href="/lessons/L18">L18 · Check the evidence →</a><a class="text-link" href="/workshop">Save your reflection →</a></div></section>
+{% endblock %}

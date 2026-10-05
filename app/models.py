@@ -116,3 +116,37 @@ class TrainingToy(Input):
     learning_rate: float = Field(default=.25, ge=.05, le=1, allow_inf_nan=False, strict=True)
     steps: int = Field(default=1,ge=1,le=10,strict=True)
     operation: Literal['predict','train'] = 'predict'
+
+
+class LibraryNote(Input):
+    id: str = Field(pattern=r'^N[0-9]{2}$')
+    version: int = Field(ge=1, strict=True)
+    title: str = Field(min_length=1, max_length=100)
+    text: str = Field(min_length=1, max_length=4000)
+
+
+class LibraryData(Input):
+    version: int = Field(ge=1, strict=True)
+    notes: list[LibraryNote] = Field(min_length=1, max_length=8)
+
+    @field_validator('notes')
+    @classmethod
+    def unique_notes(cls, value):
+        if len({note.id for note in value}) != len(value):
+            raise ValueError('Library note IDs must be unique.')
+        return value
+
+
+class LibrarySearch(Input):
+    message: str = Field(min_length=1, max_length=4000)
+    note_id: str = Field(default='', pattern=r'^(|N[0-9]{2})$')
+
+
+class LibraryQuestion(LibrarySearch):
+    mode: Literal['demo', 'google_cloud'] = 'demo'
+    request_id: str = Field(pattern=r'^[a-zA-Z0-9-]{8,80}$')
+
+
+class ChunkPreview(Input):
+    text: str = Field(min_length=1, max_length=4000)
+    words: int = Field(default=30, ge=10, le=80, strict=True)

@@ -1,7 +1,7 @@
 {
   "id": "tiny-chat-lab",
   "title": "Tiny Chat Lab",
-  "version": 5,
+  "version": 6,
   "learner_level": "Basic Python; no machine learning prerequisites",
   "provider": "google_cloud_vertex",
   "xp": {
@@ -230,26 +230,29 @@
     {
       "id": "L16",
       "title": "Split your notes into useful pieces",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L15"
-      ]
+      ],
+      "path": "lessons/L16.json"
     },
     {
       "id": "L17",
       "title": "Retrieve before you reply",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L16"
-      ]
+      ],
+      "path": "lessons/L17.json"
     },
     {
       "id": "L18",
       "title": "Answer with evidence",
-      "status": "outline",
+      "status": "authored",
       "prerequisites": [
         "L17"
-      ]
+      ],
+      "path": "lessons/L18.json"
     },
     {
       "id": "L19",

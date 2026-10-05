@@ -109,16 +109,16 @@ class AIService:
                            (request_id, digest, purpose, lesson_id, 'running', now))
         return None
 
-    def request(self, purpose, body):
+    def request(self, purpose, body, *, context=None, validate=None):
         with self.configuration_lock:
             self.active_requests += 1
         try:
-            return self._request(purpose, body)
+            return self._request(purpose, body, context=context, validate=validate)
         finally:
             with self.configuration_lock:
                 self.active_requests -= 1
 
-    def _request(self, purpose, body):
+    def _request(self, purpose, body, *, context=None, validate=None):
         lesson = None
         instruction, message = CHAT, body.message if purpose != "connection" else "Say hello in one short sentence."
         if purpose == "tutor":
@@ -134,6 +134,8 @@ class AIService:
                 excerpt["build"]["reference_solution"] = lesson["build"]["reference_solution"]
             instruction = TUTOR + "\nMode: " + body.mode
             message = "Lesson data:\n" + json.dumps(excerpt, ensure_ascii=False) + "\nLearner question:\n" + body.message
+        if context:
+            instruction, message, context_label = context
         problem = self.settings.problem()
         if problem:
             raise AIError("configuration", problem)
@@ -158,16 +160,21 @@ class AIService:
         def on_call():
             with self.database.connection() as connection:
                 connection.execute("UPDATE ai_requests SET provider_calls=provider_calls+1 WHERE request_id=?", (body.request_id,))
+        result = None
         try:
             result = self.provider.generate(instruction, message, 6000 if purpose == "tutor" else 12000,
                                            128 if purpose == "connection" else (1024 if purpose == "tutor" else 2048), on_call)
             if not result.text.strip():
                 raise AIError("empty", "No usable answer was returned. Your question is preserved.", 422)
             response = {"reply": result.text, "mode": "google_cloud", "request_id": body.request_id,
-                        "cached": False, "context": "Current lesson and question" if lesson else "Current message only",
+                        "cached": False, "context": context_label if context else ("Current lesson and question" if lesson else "Current message only"),
                         "usage": {"input_tokens": result.input_tokens, "output_tokens": result.output_tokens,
                                   "total_tokens": result.total_tokens}, "cost": None,
                         "finish_reason": result.finish_reason, "truncated": result.finish_reason == "MAX_TOKENS"}
+            if validate:
+                if response['truncated']:
+                    raise AIError('evidence', 'The evidence response reached its output limit and was withheld. Inspect the clues before making a new attempt.', 422)
+                response.update(validate(result.text))
             with self.database.connection() as connection:
                 connection.execute("UPDATE ai_requests SET status='succeeded',response=?,input_tokens=?,output_tokens=?,total_tokens=? WHERE request_id=?",
                     (json.dumps(response), result.input_tokens, result.output_tokens, result.total_tokens, body.request_id))
@@ -176,7 +183,7 @@ class AIService:
         except Exception as error:
             public = error if isinstance(error, AIError) else AIError("unavailable", "This AI attempt failed. Your question is preserved.")
             with self.database.connection() as connection:
-                usage = public.usage or (None, None, None)
+                usage = public.usage or ((result.input_tokens, result.output_tokens, result.total_tokens) if result else (None, None, None))
                 connection.execute("UPDATE ai_requests SET status='failed',error_code=?,input_tokens=?,output_tokens=?,total_tokens=? WHERE request_id=?",
                                    (public.code, *usage, body.request_id))
             raise public from None

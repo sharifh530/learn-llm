@@ -26,8 +26,8 @@ def question_lines(question: dict) -> list[str]:
 def render() -> str:
     lines = [
         "# Authored lessons: Tiny Chat Lab", "",
-        "Start with L01. Predict before running code or revealing answers. The first fifteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory.", "",
-        "These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries locally.", "",
+        "Start with L01. Predict before running code or revealing answers. The first eighteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory. L16–L18 explore the curated Knowledge Library with offline clues and optional checked Google evidence.", "",
+        "These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries in local SQLite or the private cloud database.", "",
         "This reading copy is generated from `content/lessons/*.json`. Edit the JSON, then run `python tools/render_lessons.py`. Some Markdown viewers show the answer panels expanded; pause before looking at them.", "",
     ]
     for path in sorted((ROOT / "content" / "lessons").glob("*.json")):

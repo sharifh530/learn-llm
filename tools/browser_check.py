@@ -107,7 +107,7 @@ def run():
                 page.locator("[data-ack=reading]").click()
                 expect(page.locator("[data-total-xp]")).to_have_text("10")
                 page.screenshot(path=str(screenshots / "lesson-play-desktop.png"), full_page=True)
-                for number in range(1, 16):
+                for number in range(1, 19):
                     identity = f"L{number:02}"
                     lesson = context.request.get(base + f"/api/lessons/{identity}").json()
                     if number > 1:
@@ -126,12 +126,12 @@ def run():
                     page.locator("[data-step=build]").click()
                     page.locator("[data-ack=build]").click()
                     expect(page.locator("#lesson-completion")).to_be_visible()
-                assert progress()["xp"] == 1200 and progress()["completed"] == 15
+                assert progress()["xp"] == 1440 and progress()["completed"] == 18
                 assert len(progress()["badges"]) == 2
                 goto("/lessons/L01?step=play")
                 lesson = context.request.get(base + "/api/lessons/L01").json()
                 exercise(lesson, "game")
-                assert progress()["xp"] == 1200
+                assert progress()["xp"] == 1440
                 page.locator("[data-step=build]").click()
                 form = page.locator("[data-journal]")
                 form.locator("[name=changed]").fill("Added a robot prediction")
@@ -164,11 +164,11 @@ def run():
                 page.screenshot(path=str(screenshots / "chat-desktop.png"), full_page=True)
                 goto("/settings")
                 page.locator("#reload-content").click()
-                expect(page.locator("#reload-status")).to_contain_text("15 lessons reloaded")
+                expect(page.locator("#reload-status")).to_contain_text("18 lessons reloaded")
                 page.locator("#test-provider").click()
                 expect(page.locator("#provider-test-status")).to_contain_text("AI is disabled")
-                assert progress()["xp"] == 1200
-                goto("/lessons/L16")
+                assert progress()["xp"] == 1440
+                goto("/lessons/L19")
                 expect(page.locator(".unavailable")).to_contain_text("Coming in a later session")
 
                 for width in (390, 640, 1280):
@@ -181,8 +181,8 @@ def run():
                             page.screenshot(path=str(screenshots / name), full_page=True)
                 assert not errors, errors
                 assert not external, external
-                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 90,
-                          "completed_lessons": 15, "xp": 1200, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability", "disabled AI preserves questions", "demo and AI display isolation"],
+                report = {"status": "passed", "browser": "Chromium", "game_quiz_rounds": 108,
+                          "completed_lessons": 18, "xp": 1440, "checks": ["wrong-answer feedback", "study mode", "replay", "journal reload", "keyboard tabs", "dialog focus", "safe demo output", "content reload", "outline availability", "disabled AI preserves questions", "demo and AI display isolation"],
                           "viewport_widths": [390, 640, 1280, 1440], "reduced_motion": True,
                           "external_requests": external, "javascript_errors": errors,
                           "database": "isolated test database; learner progress untouched"}

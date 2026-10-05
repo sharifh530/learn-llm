@@ -1,0 +1,61 @@
+/* Extend the existing maker studio. Source sheets group real evidence. */
+.library-heading {padding-bottom:30px;}
+.library-heading h1 {font-size:clamp(2.6rem,5vw,4.5rem);}
+.library-heading p {max-width:62ch;}
+.library-layout {display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.4fr);gap:38px;align-items:start;}
+.shelf-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.shelf-heading h2 {margin-bottom:12px;}
+.note-shelf,.library-desk {min-width:0;}
+.library-note {border-top:1px solid var(--line);}
+.library-note:last-of-type {border-bottom:1px solid var(--line);}
+.library-note summary {display:flex;align-items:center;gap:15px;padding:18px 0;cursor:pointer;font-weight:650;}
+.library-note summary::marker {content:"";}
+.library-note summary::-webkit-details-marker {display:none;}
+.library-note summary::after {content:"+";margin-left:auto;font-size:1.3rem;}
+.library-note[open] summary::after {content:"−";}
+.library-note summary small {display:block;color:var(--muted);font-weight:400;font-size:.8rem;margin-top:3px;}
+.note-number {display:grid;place-items:center;background:var(--blue-soft);border-radius:10px;min-width:40px;height:40px;}
+.source-chunk {padding:14px 17px;margin:0 0 12px;background:var(--paper);border:1px solid var(--line);border-radius:14px;scroll-margin-top:110px;overflow-wrap:anywhere;}
+.source-chunk p {font-size:.92rem;margin:8px 0 2px;}
+.source-chunk:target,.source-chunk:focus {outline:3px solid var(--blue);outline-offset:2px;}
+.shelf-foot {margin:20px 0;}
+.library-desk {padding:30px;border-radius:var(--radius);background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);}
+.desk-intro {display:flex;gap:16px;align-items:center;margin-bottom:24px;}
+.desk-intro img {width:58px;height:64px;object-fit:contain;}
+.desk-intro h2 {font-size:1.5rem;margin-bottom:6px;}
+.desk-intro p {font-size:.9rem;color:var(--muted);margin:0;}
+#library-form label,#chunk-form label {display:block;font-weight:650;margin-bottom:7px;}
+#library-form textarea,#chunk-form textarea {display:block;width:100%;min-width:0;resize:vertical;padding:14px;border:1px solid #a7b9a9;background:#fffefb;border-radius:13px;color:var(--ink);font:inherit;}
+.library-options {display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.library-options label {font-size:.9rem;}
+.library-options select {font-size:.9rem;}
+.library-examples {display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 22px;}
+.library-examples button {color:var(--blue);background:var(--blue-soft);border:1px solid #b6cbbb;border-radius:10px;padding:8px 10px;font-size:.8rem;min-height:40px;}
+.library-examples button:hover {background:#d5e8d8;}
+.library-actions {display:flex;gap:12px;flex-wrap:wrap;}
+#library-status {margin:15px 0 0;min-height:1.6em;overflow-wrap:anywhere;}
+#library-status[data-error=true],#chunk-status[data-error=true] {color:var(--error);}
+.evidence-panel {margin:28px 0 20px;border-left:4px solid var(--blue);padding:20px;background:var(--blue-soft);border-radius:0 14px 14px 0;}
+.evidence-panel h3 {font-size:1.1rem;}
+.evidence-panel p {overflow-wrap:anywhere;}
+.evidence-quote {margin:14px 0;padding:0;animation:clue-arrive .3s ease-out both;}
+.evidence-quote blockquote {margin:0 0 8px;font-size:1rem;}
+.evidence-quote a {display:inline-block;font-size:.8rem;font-weight:650;text-decoration:underline;overflow-wrap:anywhere;}
+.retrieval-inspector {margin:24px 0;border-top:1px solid var(--line);padding-top:18px;}
+.retrieval-inspector summary {cursor:pointer;font-weight:650;margin-bottom:14px;}
+.retrieved-clue {padding:13px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere;animation:clue-arrive .3s ease-out both;}
+.retrieved-clue p {margin:6px 0;font-size:.9rem;}
+.retrieved-clue code {font-size:.78rem;}
+.chunk-workbench {display:grid;grid-template-columns:.8fr 1.4fr;gap:38px;padding:38px;background:#e6eedb;border-radius:var(--radius);margin:55px 0;}
+.chunk-workbench>div p {max-width:35ch;}
+#chunk-form input {width:100%;accent-color:var(--blue);margin:10px 0 20px;}
+#chunk-form label[for=chunk-size] {margin-top:20px;display:flex;justify-content:space-between;}
+#chunk-form .button {margin-bottom:15px;}
+#chunk-results .source-chunk {margin-top:12px;}
+.library-next {padding:10px 0 35px;max-width:75ch;}
+.library-next div {display:flex;gap:20px;flex-wrap:wrap;}
+@keyframes clue-arrive {from {opacity:.4;transform:translateY(7px);}to {opacity:1;transform:translateY(0);}}
+.motion-off .evidence-quote,.motion-off .retrieved-clue {animation:none;}
+@media(prefers-reduced-motion:reduce){.evidence-quote,.retrieved-clue{animation:none;}}
+@media(max-width:900px){.library-layout{grid-template-columns:minmax(220px,.8fr) minmax(0,1.4fr);gap:22px;}.library-desk{padding:22px;}.library-options{grid-template-columns:1fr;gap:0;}.chunk-workbench{padding:25px;gap:25px;}}
+@media(max-width:760px){.library-layout,.chunk-workbench{grid-template-columns:1fr;gap:24px;}.library-heading h1{font-size:2.6rem;}.library-heading{padding-top:25px;}.library-desk{padding:20px;}.note-shelf{order:2;}.chunk-workbench{margin:30px 0;padding:22px;}.desk-intro img{width:46px;height:50px;}.desk-intro h2{font-size:1.3rem;}.library-examples button{min-height:44px;}.library-options{grid-template-columns:1fr;}.library-actions .button{flex:1;white-space:nowrap;}.source-chunk{scroll-margin-top:150px;}}

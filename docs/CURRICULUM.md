@@ -1,6 +1,6 @@
 # Curriculum: learn by building
 
-Each zone contains three lessons and a short boss challenge. Bosses reinforce ideas; they are not blockers. L01–L15 are fully authored in `content/lessons/`. L16–L24 and all bosses are outlines until a later prompt expands them.
+Each zone contains three lessons and a short boss challenge. Bosses reinforce ideas; they are not blockers. L01–L18 are fully authored in `content/lessons/`. L19–L24 and all bosses are outlines until a later prompt expands them.
 
 ## Python warmup if needed
 

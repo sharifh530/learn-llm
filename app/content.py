@@ -7,6 +7,8 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
+from app.models import LibraryData
+
 
 class ContentError(ValueError):
     pass
@@ -23,6 +25,7 @@ class ContentStore:
         """Build a candidate locally. Only publish it when every check passes."""
         try:
             course = json.loads((self.directory / "course.json").read_text(encoding="utf-8"))
+            library = LibraryData.model_validate_json((self.directory / 'library.json').read_text(encoding='utf-8')).model_dump()
             schema = json.loads((self.directory / "lesson.schema.json").read_text(encoding="utf-8"))
             Draft202012Validator.check_schema(schema)
             validator = Draft202012Validator(schema)
@@ -83,7 +86,7 @@ class ContentStore:
             raise
         except (OSError, ValueError, KeyError, TypeError, StopIteration, SchemaError) as error:
             raise ContentError(f"Could not load course: {error}") from error
-        self.course, self.lessons = course, lessons
+        self.course, self.lessons, self.library = course, lessons, library
         return {"authored": len(lessons), "total": len(entries)}
 
     def lesson(self, identity):

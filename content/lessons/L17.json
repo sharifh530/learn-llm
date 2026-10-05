@@ -1,0 +1,211 @@
+{
+  "id": "L17",
+  "title": "Retrieve before you reply",
+  "objectives": [
+    "Trace a question through keyword extraction, overlap scoring, and top-three selection.",
+    "Distinguish retrieved context from chat history and model training.",
+    "Recognize missing evidence, synonyms, negation, and ties as retrieval limitations."
+  ],
+  "prediction": "The drinks note mentions mango, and the hours note mentions Saturday. Which should rank higher for mango drink? What about fruit smoothie, if those words never appear?",
+  "explanation": [
+    "Retrieval means finding relevant information before constructing the model request. Retrieval-augmented generation, or RAG, combines retrieved material with a model’s response process. We start with keyword search because it is easy to inspect in basic Python. This is an application-level rehearsal, not the trained dense-retriever architecture of the original RAG research.",
+    "The app lowercases and removes accents, extracts letters and numbers, removes common words, and applies a small explicit alias dictionary, such as drinks to drink and closes to close. It compares the question’s unique terms with terms in each chunk. Repeating mango ten times does not create ten matches.",
+    "A chunk’s score is the count of distinct shared terms. Keep only positive scores, sort from highest to lowest, break ties by source ID, and keep at most three chunks. Open Peek at the search trail to see query words, matched words, and scores. These counts are not probabilities or confidence measurements.",
+    "Try Which drinks contain mango? The note saying Mint Moon contains no mango may also match. Keyword overlap does not understand negation. A human or evidence selector must read the text. Likewise, fruit smoothie may miss a mango drink because our small alias list does not cover every synonym. No matches means this search found no evidence, not that the claim is false.",
+    "The Where to look filter lets you restrict retrieval to one note. Ask about Saturday with only the drinks note selected, then search all notes. Evidence can be present in the library but excluded by your filter. Top-three selection can also leave out a fourth useful chunk; inspect the notes when a response seems incomplete.",
+    "Find clues makes no Google request. In optional Google mode, Show evidence becomes Ask Google and sends only the current question and retrieved chunks. It sends neither saved chats nor your journal. Retrieving a note into the request changes context for this attempt; it does not update the hosted model’s weights."
+  ],
+  "analogy_limit": "A detective’s word index makes selection visible, but keyword overlap is not semantic understanding. We use no embeddings or vector database in M5.",
+  "reflection": "Was your missing clue absent, filtered out, or missed because your question used different words?",
+  "version": 1,
+  "status": "authored",
+  "zone": "Knowledge Library",
+  "minutes": 25,
+  "prerequisites": [
+    "L16"
+  ],
+  "python_example": {
+    "code": "import re\nnotes = {'menu': 'mango oat milk', 'hours': 'saturday open', 'club': 'puzzle saturday'}\nquery = set(re.findall(r'[a-z]+', 'mango drink'.lower()))\nranked = sorted(((len(query & set(text.split())), name) for name, text in notes.items()), key=lambda row: (-row[0], row[1]))\nfor score, name in ranked:\n    if score > 0:\n        print(f'{name}: {score}')\n",
+    "expected_output": "menu: 1\n",
+    "walkthrough": [
+      "Use a set so duplicate question terms do not add votes.",
+      "Intersect query words with each small note’s words.",
+      "Sort by negative score and then name for a deterministic tie.",
+      "Reject zero matches rather than always pretending to find a source."
+    ]
+  },
+  "game": {
+    "id": "L17-game",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L17-game-r1",
+        "prompt": "Question terms are {mango, drink}. A chunk contains {mango, oat, milk}. What is its score?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "0"
+          },
+          {
+            "id": "b",
+            "text": "1"
+          },
+          {
+            "id": "c",
+            "text": "3"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Mango is shared.",
+          "b": "There is exactly one distinct matching term: mango.",
+          "c": "Chunk length is not the overlap score."
+        }
+      },
+      {
+        "id": "L17-game-r2",
+        "prompt": "Mint Moon contains no mango matches the term mango. What does that prove?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Mint Moon contains mango"
+          },
+          {
+            "id": "b",
+            "text": "The source must be false"
+          },
+          {
+            "id": "c",
+            "text": "Only that the word appears"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Negation changes the meaning.",
+          "b": "A negative statement can be perfectly useful evidence.",
+          "c": "Read the complete quote; overlap does not interpret no."
+        }
+      },
+      {
+        "id": "L17-game-r3",
+        "prompt": "The search returns no chunks for fruit smoothie. What should you try?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Use a word that appears in the notes, then inspect"
+          },
+          {
+            "id": "b",
+            "text": "Declare that no drinks exist"
+          },
+          {
+            "id": "c",
+            "text": "Invent a source"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "A keyword baseline can miss synonyms.",
+          "b": "A failed search cannot prove absence of all drinks.",
+          "c": "Fabricated sources must never replace missing evidence."
+        }
+      }
+    ],
+    "type": "choice_rounds",
+    "title": "Find the Clue",
+    "instructions": "Make a prediction, check every explanation, and get two of three right. No Google connection is needed."
+  },
+  "quiz": {
+    "id": "L17-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L17-quiz-r1",
+        "prompt": "What does Find clues send to Google?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The whole library"
+          },
+          {
+            "id": "b",
+            "text": "Nothing"
+          },
+          {
+            "id": "c",
+            "text": "Your journal"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Search runs in this app’s Python service.",
+          "b": "This button is always retrieval only.",
+          "c": "Journals are kept outside library requests."
+        }
+      },
+      {
+        "id": "L17-quiz-r2",
+        "prompt": "Two chunks have the same score. Our baseline uses…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Source ID as the tie-breaker"
+          },
+          {
+            "id": "b",
+            "text": "A random hidden thought"
+          },
+          {
+            "id": "c",
+            "text": "Model confidence"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "This makes ties reproducible, not semantically better.",
+          "b": "There is no model call during search.",
+          "c": "Scores count shared terms, not confidence."
+        }
+      },
+      {
+        "id": "L17-quiz-r3",
+        "prompt": "Where does retrieval put notes for optional Google answering?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Into updated weights"
+          },
+          {
+            "id": "b",
+            "text": "Into permanent Gemini memory"
+          },
+          {
+            "id": "c",
+            "text": "Into this request’s input context"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "We never train Google.",
+          "b": "A request does not publish a permanent memory to the model.",
+          "c": "Selected evidence accompanies the current question."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L17-build",
+    "title": "Make a tiny note-search function",
+    "instructions": "Run the Python example. Extract the ranking into a function taking notes and a question. Add a note named recipe with text mango ice; predict its score and tie order. In the Library, compare a Saturday question with All café notes versus only the drinks note. Record a successful retrieval and a miss in your journal.",
+    "criteria": [
+      "Your function excludes zero-score notes and sorts ties deterministically.",
+      "You explain one retrieval miss without claiming the requested fact is false."
+    ],
+    "hints": [
+      "Use query & set(text.split()) inside a loop or comprehension.",
+      "The example sorts equal scores alphabetically by name; menu comes before recipe."
+    ],
+    "reference_solution": "For mango drink, menu and recipe both score 1 and sort menu then recipe. Hours and club are excluded. A Saturday question needs the hours or puzzle note; a drinks-only filter can hide useful evidence. This simple function lacks the app’s common-word filtering and alias normalization."
+  },
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+}

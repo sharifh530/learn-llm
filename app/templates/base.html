@@ -21,7 +21,7 @@
       <a class="brand" href="/" aria-label="Tiny Chat Lab home"><span class="brand-mark" aria-hidden="true"><img src="/static/pip.svg" alt=""></span><span>Tiny Chat <strong>Lab</strong></span></a>
       <nav aria-label="Main navigation">
         <a href="/" {% if page in ['home','lesson','unavailable'] %}aria-current="page"{% endif %}>Learn</a>
-        <a href="/workshop" {% if page in ['workshop','observatory'] %}aria-current="page"{% endif %}>Build</a>
+        <a href="/workshop" {% if page in ['workshop','observatory','library'] %}aria-current="page"{% endif %}>Build</a>
         <a href="/chat" {% if page == 'chat' %}aria-current="page"{% endif %}>My chatbot</a>
         <a href="/settings" {% if page == 'settings' %}aria-current="page"{% endif %}>Settings</a>
       </nav>

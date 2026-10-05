@@ -1,0 +1,211 @@
+{
+  "id": "L18",
+  "title": "Answer with evidence",
+  "objectives": [
+    "Check source IDs against the retrieved set and quotes against exact source text.",
+    "Distinguish source existence, quote fidelity, relevance, and truth.",
+    "Use uncertainty without silently retrying a paid request or inventing evidence."
+  ],
+  "prediction": "An answer cites a real menu ID but changes its price from 4 coins to 40. Is a real-looking citation enough?",
+  "explanation": [
+    "A citation is a pointer, not a magic truth badge. We need to know whether the referenced source was actually retrieved, whether the quote matches it, whether it helps answer the question, and whether the underlying note is trustworthy. These are different checks. Our café notes are intentionally fictional.",
+    "Offline mode shows matching exact quotes and calls them clues, not an AI answer. You interpret them yourself. Google mode is a deliberately constrained evidence picker: it receives the current question and at most three chunks, then returns JSON with insufficient and evidence. Each evidence entry contains a supplied source_id and an entire verbatim chunk.",
+    "Python checks the JSON shape, a maximum of three unique source IDs, membership in the actual retrieved set, and exact equality of every quote. Extra answer fields, invented IDs, changed prices, duplicate IDs, and cut-off outputs are rejected before display or successful caching. Free-form model factual claims are not displayed in this milestone.",
+    "These structural checks do not prove the selected quotes answer the question. A real quote can be irrelevant, incomplete, outdated, or contradictory. Read negation and conditions: Mint Moon contains no mango is evidence to exclude a drink, not include it. M6 will add a repeatable evaluation set and adversarial exercises.",
+    "Ask Who owns the café? Our common-word filtering removes café and leaves owns, which matches no note. The app returns uncertainty without calling Google. If keywords do retrieve something but the notes still lack the requested information, Google should return insufficient: true and an empty evidence list. Neither case proves the requested fact is false.",
+    "A live selection uses the same request ledger and limits as other Google calls. Source-check failure can still cost money: the model already replied. Known token usage remains recorded. Retrying an unchanged attempt ID recovers a successful saved result or refuses a consumed failed attempt; it does not automatically pay for another call. Each Library question is independent, and it never awards XP."
+  ],
+  "analogy_limit": "Checking a receipt verifies what was written, not whether a purchase happened. Our exact-quote gate prevents fabricated references and altered quotes but cannot certify relevance, completeness, or real-world truth.",
+  "reflection": "Which property did your Python check prove, and which properties still required your judgment?",
+  "version": 1,
+  "status": "authored",
+  "zone": "Knowledge Library",
+  "minutes": 25,
+  "prerequisites": [
+    "L17"
+  ],
+  "python_example": {
+    "code": "sources = {'menu-p1': 'Mango Cloud costs 4 cafe coins.'}\ndef verified(source_id, quote):\n    return source_id in sources and quote == sources[source_id]\nprint(verified('menu-p1', 'Mango Cloud costs 4 cafe coins.'))\nprint(verified('menu-p1', 'Mango Cloud costs 40 cafe coins.'))\nprint(verified('invented-p9', 'Mango Cloud costs 4 cafe coins.'))\n",
+    "expected_output": "True\nFalse\nFalse\n",
+    "walkthrough": [
+      "Treat sources as the retrieved set, not every possible document.",
+      "Check identity before comparing exact text.",
+      "An altered price fails even when the ID is real.",
+      "An invented ID fails even when the quoted text looks plausible."
+    ]
+  },
+  "game": {
+    "id": "L18-game",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L18-game-r1",
+        "prompt": "A real source ID accompanies an altered price. What should the app do?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Display it with a confidence badge"
+          },
+          {
+            "id": "b",
+            "text": "Reject the altered quote"
+          },
+          {
+            "id": "c",
+            "text": "Accept the ID and ignore the words"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "A badge cannot repair a false quotation.",
+          "b": "Exact text must match the actual retrieved chunk.",
+          "c": "Identity alone is not quote fidelity."
+        }
+      },
+      {
+        "id": "L18-game-r2",
+        "prompt": "Who owns the café? has no retrieved clues. What happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Uncertainty, zero Google calls"
+          },
+          {
+            "id": "b",
+            "text": "Invent Pip as owner"
+          },
+          {
+            "id": "c",
+            "text": "Call Google repeatedly"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The notes contain no owner evidence and this search finds nothing.",
+          "b": "A name in a café title does not establish ownership.",
+          "c": "Missing evidence is not a reason for automatic paid retries."
+        }
+      },
+      {
+        "id": "L18-game-r3",
+        "prompt": "A checked quote is unrelated to the question. Is the answer good?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes, every citation proves truth"
+          },
+          {
+            "id": "b",
+            "text": "Yes, text matching is understanding"
+          },
+          {
+            "id": "c",
+            "text": "No, relevance still needs a check"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Citation existence is a separate property.",
+          "b": "Exact matching checks fidelity, not meaning.",
+          "c": "Read whether the source supports the requested information."
+        }
+      }
+    ],
+    "type": "choice_rounds",
+    "title": "Receipt Detective",
+    "instructions": "Make a prediction, check every explanation, and get two of three right. No Google connection is needed."
+  },
+  "quiz": {
+    "id": "L18-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L18-quiz-r1",
+        "prompt": "Which source IDs are allowed in a Google evidence response?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Any ID in the world"
+          },
+          {
+            "id": "b",
+            "text": "Only IDs supplied in this request’s retrieved chunks"
+          },
+          {
+            "id": "c",
+            "text": "Anything that looks like N01"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Outside sources were not supplied or checked.",
+          "b": "The checker uses this exact request’s retrieved set.",
+          "c": "A pattern is not evidence membership."
+        }
+      },
+      {
+        "id": "L18-quiz-r2",
+        "prompt": "Google output fails source validation after generation. Could it cost money?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Yes, Google already processed the attempt"
+          },
+          {
+            "id": "b",
+            "text": "No, rejection always refunds it"
+          },
+          {
+            "id": "c",
+            "text": "No, every failed call is free"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "The ledger retains reported usage, and charges may apply.",
+          "b": "This app cannot promise refunds.",
+          "c": "Failures and missing usage can still incur charges."
+        }
+      },
+      {
+        "id": "L18-quiz-r3",
+        "prompt": "Adding notes to request context means…",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The model was retrained"
+          },
+          {
+            "id": "b",
+            "text": "Every future chat knows them"
+          },
+          {
+            "id": "c",
+            "text": "This attempt has extra evidence to read"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Retrieval and training are different operations.",
+          "b": "Library requests are independent and do not alter saved chats.",
+          "c": "Only the supplied request context changes."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L18-build",
+    "title": "Catch an invented receipt",
+    "instructions": "Run the Python checker and add a real source with an unrelated sentence. Show that exact validation can pass while relevance fails. In the Library, inspect the mango quotes and ask Who owns the café? Record both outcomes. If Google is configured, explicitly compare its selection with offline clues and inspect each source link; otherwise record an offline rehearsal.",
+    "criteria": [
+      "You demonstrate rejection of both an invented source ID and an altered quotation.",
+      "You separate quote fidelity from relevance and label offline versus real Google evidence honestly."
+    ],
+    "hints": [
+      "Membership uses the retrieved sources dictionary; do not accept every library ID.",
+      "A quote about opening times can be exact yet fail to answer a price question."
+    ],
+    "reference_solution": "The three printed checks are True, False, False. Add hours-p1: The cafe closes at 17:00. verified(hours-p1, that exact sentence) returns True, but the sentence cannot answer a drink-price question. The owner question gets uncertainty without a Google call. A live comparison is complete only after actual configured Google access."
+  },
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+}

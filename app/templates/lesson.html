@@ -21,6 +21,7 @@
       <h2>Let’s unpack the idea.</h2>{% for paragraph in lesson.explanation %}<p class="reading-paragraph">{{ paragraph }}</p>{% endfor %}
       <details class="analogy-note"><summary>Where this analogy stops</summary><p>{{ lesson.analogy_limit }}</p></details>
       {% if lesson.lab %}<aside class="lesson-lab-link"><span class="tag">Try it with your hands</span><h3>Open the Model Observatory.</h3><p>Change the numbers and watch this idea respond. These are local teaching toys, separate from Google and your chat.</p><a class="button secondary" href="/observatory?experiment={{ lesson.lab }}">Explore the {{ lesson.lab }} toy →</a></aside>{% endif %}
+      {% if lesson.id in ['L16','L17','L18'] %}<aside class="lesson-lab-link"><h3>Follow a clue in the Knowledge Library.</h3><p>Split a practice note, inspect retrieval, and check exact source quotes. Offline mode makes no Google calls.</p><a class="button secondary" href="/library">Explore the café notebook →</a></aside>{% endif %}
       <div class="code-block"><div class="code-header"><span>Python · run locally</span><button class="copy-button" data-copy="example-code">Copy code</button></div><pre><code id="example-code">{{ lesson.python_example.code }}</code></pre></div>
       <p class="small muted">Copy into a Python file and run it on your computer. This app does not execute Python in the browser.</p>
       <details class="output-details"><summary>Show expected output</summary><pre>{{ lesson.python_example.expected_output }}</pre></details>

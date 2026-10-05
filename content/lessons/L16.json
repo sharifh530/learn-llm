@@ -1,0 +1,211 @@
+{
+  "id": "L16",
+  "title": "Split your notes into useful pieces",
+  "objectives": [
+    "Explain why a searchable chunk needs a source ID and enough context.",
+    "Split paragraphs into bounded word groups without changing the original note.",
+    "Compare small and large chunks, including a sentence cut by the word limit."
+  ],
+  "prediction": "A note says: Mango Cloud costs 4 coins. It contains oat milk. If you separate every word, can a search result still explain which drink costs 4 coins?",
+  "explanation": [
+    "Give the chatbot a notebook before asking it about a fictional café. Our library has drinks, opening times, a puzzle club, and board games. These are authored facts for a teaching game, not real business information. The library contains no owner name; that absence will become useful later.",
+    "A chunk is a piece of a document that we can search and include with a question. Imagine keeping an index card for each topic. A card reading only 4 is unhelpful. Mango Cloud costs 4 café coins keeps the subject, relation, and value together. Small pieces can lose context; large pieces can add irrelevant text and use more input tokens.",
+    "Our Python splitter starts at blank paragraphs, then divides long paragraphs into groups of at most 60 whitespace words. That is a deliberately simple baseline. A word limit can cut a sentence. Production systems often consider sentences, headings, overlap, and token limits; there is no one perfect size for every document or question.",
+    "Each curated piece has a source ID such as N01-v1-p1-1: note N01, note version 1, paragraph 1, piece 1. This points back to the displayed source. If you revise the note, increase its version and keep the old version in Git history. Do not reuse a source identity to describe changed evidence.",
+    "Open the Knowledge Library and split its practice note at 10 words, then 30. Paragraph boundaries remain separate. The preview is sent to this app’s Python server but is not saved, searched by the live library, or sent to Google. The curated library is changed through reviewed content edits, not by pasting a preview.",
+    "Splitting a note changes its representation for retrieval. It does not train Gemini, update its weights, or make it remember the note permanently. L17 will search these pieces; L18 will check evidence before display."
+  ],
+  "analogy_limit": "Index cards illustrate context and provenance. Our word splitter is not a model tokenizer, a learned retriever, or a complete document ingestion system.",
+  "reflection": "If you had only one chunk, which subject or condition would you need inside it?",
+  "version": 1,
+  "status": "authored",
+  "zone": "Knowledge Library",
+  "minutes": 25,
+  "prerequisites": [
+    "L15"
+  ],
+  "python_example": {
+    "code": "note = 'Mango Cloud costs four coins. It contains oat milk.\\n\\nPuzzle club meets on Saturday.'\nfor paragraph_number, paragraph in enumerate(note.split('\\n\\n'), 1):\n    words = paragraph.split()\n    for offset in range(0, len(words), 6):\n        piece = ' '.join(words[offset:offset + 6])\n        print(f'p{paragraph_number}-{offset // 6 + 1}: {piece}')\n",
+    "expected_output": "p1-1: Mango Cloud costs four coins. It\np1-2: contains oat milk.\np2-1: Puzzle club meets on Saturday.\n",
+    "walkthrough": [
+      "Split at blank paragraphs before cutting by size.",
+      "Keep word order while taking six-word slices.",
+      "Print a paragraph and piece identity beside each slice.",
+      "Notice the first cut: It loses its subject in the next piece."
+    ]
+  },
+  "game": {
+    "id": "L16-game",
+    "pass_correct": 2,
+    "rounds": [
+      {
+        "id": "L16-game-r1",
+        "prompt": "Which chunk can explain the price on its own?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "4"
+          },
+          {
+            "id": "b",
+            "text": "Mango Cloud costs 4 café coins."
+          },
+          {
+            "id": "c",
+            "text": "costs"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "A number has no subject or unit.",
+          "b": "Subject, relation, and value stay together.",
+          "c": "This names a relation but gives no subject or price."
+        }
+      },
+      {
+        "id": "L16-game-r2",
+        "prompt": "A six-word limit cuts Mango Cloud costs four coins. It / contains oat milk. What did the second piece lose?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Its own subject"
+          },
+          {
+            "id": "b",
+            "text": "The model’s weights"
+          },
+          {
+            "id": "c",
+            "text": "Every word"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "It no longer names the drink that contains oat milk.",
+          "b": "Chunking changes text pieces, not trained parameters.",
+          "c": "The words remain, but their context is incomplete."
+        }
+      },
+      {
+        "id": "L16-game-r3",
+        "prompt": "You paste a practice note into Split this note. Where does it go?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Into Google training"
+          },
+          {
+            "id": "b",
+            "text": "Into the permanent café library"
+          },
+          {
+            "id": "c",
+            "text": "Only to this app’s preview endpoint"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "This preview never calls Google.",
+          "b": "Preview pieces are not published or stored as library notes.",
+          "c": "The result is temporary and makes no Google call."
+        }
+      }
+    ],
+    "type": "choice_rounds",
+    "title": "Index Card Jigsaw",
+    "instructions": "Make a prediction, check every explanation, and get two of three right. No Google connection is needed."
+  },
+  "quiz": {
+    "id": "L16-quiz",
+    "pass_correct": 2,
+    "questions": [
+      {
+        "id": "L16-quiz-r1",
+        "prompt": "Why keep a source ID?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "To locate the exact supporting piece"
+          },
+          {
+            "id": "b",
+            "text": "To prove every claim true"
+          },
+          {
+            "id": "c",
+            "text": "To make the model larger"
+          }
+        ],
+        "correct_choice_id": "a",
+        "feedback": {
+          "a": "An ID gives a route back to the displayed note and version.",
+          "b": "Provenance is not a truth guarantee.",
+          "c": "Naming chunks changes no model parameters."
+        }
+      },
+      {
+        "id": "L16-quiz-r2",
+        "prompt": "What is our splitter’s size unit?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Gemini tokens"
+          },
+          {
+            "id": "b",
+            "text": "Whitespace words"
+          },
+          {
+            "id": "c",
+            "text": "Bytes of trained weights"
+          }
+        ],
+        "correct_choice_id": "b",
+        "feedback": {
+          "a": "Our splitter never invokes the Gemini tokenizer.",
+          "b": "split() gives words separated by whitespace.",
+          "c": "No trained weights are read or written."
+        }
+      },
+      {
+        "id": "L16-quiz-r3",
+        "prompt": "Which chunk size is always best?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Exactly one word"
+          },
+          {
+            "id": "b",
+            "text": "The entire library"
+          },
+          {
+            "id": "c",
+            "text": "None: the choice depends on context and questions"
+          }
+        ],
+        "correct_choice_id": "c",
+        "feedback": {
+          "a": "Single words often lose meaning.",
+          "b": "Whole libraries can waste input budget and introduce distractions.",
+          "c": "Compare retrieval quality and context rather than assuming one universal size."
+        }
+      }
+    ]
+  },
+  "build": {
+    "id": "L16-build",
+    "title": "Cut an index card, then repair it",
+    "instructions": "Open the Library and split its practice note at 10 and 30 words. Find one cut that loses a subject or condition. Run the Python example, change its six-word slice to ten words, and compare. Save the original and revised observation in your journal. This preview does not add notes to the curated library.",
+    "criteria": [
+      "You record a concrete example of context lost at a boundary.",
+      "You explain why source IDs and versions matter, and distinguish preview from publication."
+    ],
+    "hints": [
+      "Read the second piece as though you had never seen the first.",
+      "Change both the range step and slice width, then keep the numbering divisor consistent."
+    ],
+    "reference_solution": "At six words, p1-2 says contains oat milk without naming Mango Cloud. At ten words, the whole first paragraph fits one piece. Blank paragraphs still split topics. The library IDs identify note/version/paragraph/piece; preview IDs identify only temporary practice pieces."
+  },
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+}

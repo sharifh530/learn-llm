@@ -35,7 +35,7 @@ M2 uses independent single-turn tutor/chat requests. M3 now provides saved conve
 
 ## M3 implementation status
 
-B18–B20 software is implemented: SQLite chats/personas, whole-turn context, streaming workers and saved snapshots, Stop, explicit retry/selection, recovery, inspector, and L10–L12. Local demo/mock acceptance passes; live Google recall and cancellation remain credential-dependent gates. See [M3 verification](M3_VALIDATION.md). M4/B21 now adds fruit-vector similarity, manual attention, one-weight training, and L13–L15. See [M4 verification](M4_VALIDATION.md). M5 is the next planned build.
+B18–B20 software is implemented: SQLite chats/personas, whole-turn context, streaming workers and saved snapshots, Stop, explicit retry/selection, recovery, inspector, and L10–L12. Local demo/mock acceptance passes; live Google recall and cancellation remain credential-dependent gates. See [M3 verification](M3_VALIDATION.md). M4/B21 now adds fruit-vector similarity, manual attention, one-weight training, and L13–L15. See [M4 verification](M4_VALIDATION.md). B22–B23/M5 are implemented: a curated cafe notebook, keyword retrieval, checked exact quotes, no-evidence behavior, and L16–L18. See [M5 verification](M5_VALIDATION.md). M6 is next.
 
 ## M3–M7
 

@@ -62,3 +62,25 @@ Restore the previous content snapshot, regenerate reading copies, and append a r
 Ask AI answers are transient tutoring messages. A generated lesson is a draft until checked. Generated code is displayed as text; neither the content importer nor tutor executes it. Allow only known block/game types; no raw HTML, JavaScript, arbitrary URLs as executable assets, or hidden instructions from lesson content.
 
 The authoring prompt includes the schema, learner level, specific requested change, target content, and relevant sources. It must not include API keys, unrelated chats, or the entire personal journal.
+
+## Curated Library contract · M5
+
+`content/library.json` has a positive integer `version` and one to eight notes.
+Each note has a unique ID of the form `N01`, a positive integer `version`, a title
+of 1–100 characters, and text of 1–4,000 characters. Extra fields and duplicate
+IDs are rejected. Library validation occurs in the same candidate snapshot as
+lesson/course validation; a failed reload preserves all prior published content.
+
+Blank paragraphs define the first boundaries. Paragraphs exceeding 60 words are
+split into consecutive pieces without changing word order. Canonical source IDs
+include note/version/paragraph/piece, such as `N01-v1-p1-1`. When editing published
+note text, bump the note version and library version, review the generated source
+IDs, and rerun Library checks. Version bumps are an authoring rule, not an
+automatic comparison against the previous file. A fingerprint of the validated
+library binds cached Google selections to the actual content even if an author
+forgets a version bump.
+
+L16–L18 are ordinary version-1 lessons with existing game/quiz/build contracts.
+The Library awards no XP and changes no lesson progress. Practice chunk previews
+are temporary and do not become curated notes. Arbitrary uploads and an in-app
+note editor require a later scoped contract.

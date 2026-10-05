@@ -1,8 +1,8 @@
 # Authored lessons: Tiny Chat Lab
 
-Start with L01. Predict before running code or revealing answers. The first fifteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory.
+Start with L01. Predict before running code or revealing answers. The first eighteen examples use only Python's standard library and run locally without Google credentials. L09's build mission separately requires an actual Google connection. L10–L12 allow an explicitly labeled offline rehearsal and optional live comparison. L13–L15 have interactive local toys in the Model Observatory. L16–L18 explore the curated Knowledge Library with offline clues and optional checked Google evidence.
 
-These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries locally.
+These are complete reading activities, also available as clickable games and quizzes in the M1 web app. Try two of three questions correctly, then complete the small build mission. The app saves lesson progress and journal entries in local SQLite or the private cloud database.
 
 This reading copy is generated from `content/lessons/*.json`. Edit the JSON, then run `python tools/render_lessons.py`. Some Markdown viewers show the answer panels expanded; pause before looking at them.
 
@@ -3167,5 +3167,628 @@ Predict only preserves weight 1. Rate 0.25 training gives weight 2 (train loss 1
 ### Explain it back
 
 Use the two losses to explain why a good training score is not enough. Which exact operation changed the weight?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L16: Split your notes into useful pieces
+
+Knowledge Library · about 25 minutes · version 1
+
+### Your goal
+
+- Explain why a searchable chunk needs a source ID and enough context.
+- Split paragraphs into bounded word groups without changing the original note.
+- Compare small and large chunks, including a sentence cut by the word limit.
+
+### Predict first
+
+A note says: Mango Cloud costs 4 coins. It contains oat milk. If you separate every word, can a search result still explain which drink costs 4 coins?
+
+### Learn
+
+Give the chatbot a notebook before asking it about a fictional café. Our library has drinks, opening times, a puzzle club, and board games. These are authored facts for a teaching game, not real business information. The library contains no owner name; that absence will become useful later.
+
+A chunk is a piece of a document that we can search and include with a question. Imagine keeping an index card for each topic. A card reading only 4 is unhelpful. Mango Cloud costs 4 café coins keeps the subject, relation, and value together. Small pieces can lose context; large pieces can add irrelevant text and use more input tokens.
+
+Our Python splitter starts at blank paragraphs, then divides long paragraphs into groups of at most 60 whitespace words. That is a deliberately simple baseline. A word limit can cut a sentence. Production systems often consider sentences, headings, overlap, and token limits; there is no one perfect size for every document or question.
+
+Each curated piece has a source ID such as N01-v1-p1-1: note N01, note version 1, paragraph 1, piece 1. This points back to the displayed source. If you revise the note, increase its version and keep the old version in Git history. Do not reuse a source identity to describe changed evidence.
+
+Open the Knowledge Library and split its practice note at 10 words, then 30. Paragraph boundaries remain separate. The preview is sent to this app’s Python server but is not saved, searched by the live library, or sent to Google. The curated library is changed through reviewed content edits, not by pasting a preview.
+
+Splitting a note changes its representation for retrieval. It does not train Gemini, update its weights, or make it remember the note permanently. L17 will search these pieces; L18 will check evidence before display.
+
+**Where the analogy stops:** Index cards illustrate context and provenance. Our word splitter is not a model tokenizer, a learned retriever, or a complete document ingestion system.
+
+### Run a tiny Python example
+
+```python
+note = 'Mango Cloud costs four coins. It contains oat milk.\n\nPuzzle club meets on Saturday.'
+for paragraph_number, paragraph in enumerate(note.split('\n\n'), 1):
+    words = paragraph.split()
+    for offset in range(0, len(words), 6):
+        piece = ' '.join(words[offset:offset + 6])
+        print(f'p{paragraph_number}-{offset // 6 + 1}: {piece}')
+```
+
+Expected output:
+
+```text
+p1-1: Mango Cloud costs four coins. It
+p1-2: contains oat milk.
+p2-1: Puzzle club meets on Saturday.
+```
+
+- Split at blank paragraphs before cutting by size.
+- Keep word order while taking six-word slices.
+- Print a paragraph and piece identity beside each slice.
+- Notice the first cut: It loses its subject in the next piece.
+
+### Play: Index Card Jigsaw
+
+Make a prediction, check every explanation, and get two of three right. No Google connection is needed.
+
+#### Round 1
+
+Which chunk can explain the price on its own?
+
+1. 4
+2. Mango Cloud costs 4 café coins.
+3. costs
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Mango Cloud costs 4 café coins.**.
+
+- **4**: A number has no subject or unit.
+- **Mango Cloud costs 4 café coins.**: Subject, relation, and value stay together.
+- **costs**: This names a relation but gives no subject or price.
+
+</details>
+
+#### Round 2
+
+A six-word limit cuts Mango Cloud costs four coins. It / contains oat milk. What did the second piece lose?
+
+1. Its own subject
+2. The model’s weights
+3. Every word
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Its own subject**.
+
+- **Its own subject**: It no longer names the drink that contains oat milk.
+- **The model’s weights**: Chunking changes text pieces, not trained parameters.
+- **Every word**: The words remain, but their context is incomplete.
+
+</details>
+
+#### Round 3
+
+You paste a practice note into Split this note. Where does it go?
+
+1. Into Google training
+2. Into the permanent café library
+3. Only to this app’s preview endpoint
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Only to this app’s preview endpoint**.
+
+- **Into Google training**: This preview never calls Google.
+- **Into the permanent café library**: Preview pieces are not published or stored as library notes.
+- **Only to this app’s preview endpoint**: The result is temporary and makes no Google call.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+Why keep a source ID?
+
+1. To locate the exact supporting piece
+2. To prove every claim true
+3. To make the model larger
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **To locate the exact supporting piece**.
+
+- **To locate the exact supporting piece**: An ID gives a route back to the displayed note and version.
+- **To prove every claim true**: Provenance is not a truth guarantee.
+- **To make the model larger**: Naming chunks changes no model parameters.
+
+</details>
+
+#### Question 2
+
+What is our splitter’s size unit?
+
+1. Gemini tokens
+2. Whitespace words
+3. Bytes of trained weights
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Whitespace words**.
+
+- **Gemini tokens**: Our splitter never invokes the Gemini tokenizer.
+- **Whitespace words**: split() gives words separated by whitespace.
+- **Bytes of trained weights**: No trained weights are read or written.
+
+</details>
+
+#### Question 3
+
+Which chunk size is always best?
+
+1. Exactly one word
+2. The entire library
+3. None: the choice depends on context and questions
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **None: the choice depends on context and questions**.
+
+- **Exactly one word**: Single words often lose meaning.
+- **The entire library**: Whole libraries can waste input budget and introduce distractions.
+- **None: the choice depends on context and questions**: Compare retrieval quality and context rather than assuming one universal size.
+
+</details>
+
+### Build mission: Cut an index card, then repair it
+
+Open the Library and split its practice note at 10 and 30 words. Find one cut that loses a subject or condition. Run the Python example, change its six-word slice to ten words, and compare. Save the original and revised observation in your journal. This preview does not add notes to the curated library.
+
+You are done when:
+
+- You record a concrete example of context lost at a boundary.
+- You explain why source IDs and versions matter, and distinguish preview from publication.
+
+<details>
+<summary>Hints</summary>
+
+1. Read the second piece as though you had never seen the first.
+2. Change both the range step and slice width, then keep the numbering divisor consistent.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+At six words, p1-2 says contains oat milk without naming Mango Cloud. At ten words, the whole first paragraph fits one piece. Blank paragraphs still split topics. The library IDs identify note/version/paragraph/piece; preview IDs identify only temporary practice pieces.
+```
+
+</details>
+
+### Explain it back
+
+If you had only one chunk, which subject or condition would you need inside it?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L17: Retrieve before you reply
+
+Knowledge Library · about 25 minutes · version 1
+
+### Your goal
+
+- Trace a question through keyword extraction, overlap scoring, and top-three selection.
+- Distinguish retrieved context from chat history and model training.
+- Recognize missing evidence, synonyms, negation, and ties as retrieval limitations.
+
+### Predict first
+
+The drinks note mentions mango, and the hours note mentions Saturday. Which should rank higher for mango drink? What about fruit smoothie, if those words never appear?
+
+### Learn
+
+Retrieval means finding relevant information before constructing the model request. Retrieval-augmented generation, or RAG, combines retrieved material with a model’s response process. We start with keyword search because it is easy to inspect in basic Python. This is an application-level rehearsal, not the trained dense-retriever architecture of the original RAG research.
+
+The app lowercases and removes accents, extracts letters and numbers, removes common words, and applies a small explicit alias dictionary, such as drinks to drink and closes to close. It compares the question’s unique terms with terms in each chunk. Repeating mango ten times does not create ten matches.
+
+A chunk’s score is the count of distinct shared terms. Keep only positive scores, sort from highest to lowest, break ties by source ID, and keep at most three chunks. Open Peek at the search trail to see query words, matched words, and scores. These counts are not probabilities or confidence measurements.
+
+Try Which drinks contain mango? The note saying Mint Moon contains no mango may also match. Keyword overlap does not understand negation. A human or evidence selector must read the text. Likewise, fruit smoothie may miss a mango drink because our small alias list does not cover every synonym. No matches means this search found no evidence, not that the claim is false.
+
+The Where to look filter lets you restrict retrieval to one note. Ask about Saturday with only the drinks note selected, then search all notes. Evidence can be present in the library but excluded by your filter. Top-three selection can also leave out a fourth useful chunk; inspect the notes when a response seems incomplete.
+
+Find clues makes no Google request. In optional Google mode, Show evidence becomes Ask Google and sends only the current question and retrieved chunks. It sends neither saved chats nor your journal. Retrieving a note into the request changes context for this attempt; it does not update the hosted model’s weights.
+
+**Where the analogy stops:** A detective’s word index makes selection visible, but keyword overlap is not semantic understanding. We use no embeddings or vector database in M5.
+
+### Run a tiny Python example
+
+```python
+import re
+notes = {'menu': 'mango oat milk', 'hours': 'saturday open', 'club': 'puzzle saturday'}
+query = set(re.findall(r'[a-z]+', 'mango drink'.lower()))
+ranked = sorted(((len(query & set(text.split())), name) for name, text in notes.items()), key=lambda row: (-row[0], row[1]))
+for score, name in ranked:
+    if score > 0:
+        print(f'{name}: {score}')
+```
+
+Expected output:
+
+```text
+menu: 1
+```
+
+- Use a set so duplicate question terms do not add votes.
+- Intersect query words with each small note’s words.
+- Sort by negative score and then name for a deterministic tie.
+- Reject zero matches rather than always pretending to find a source.
+
+### Play: Find the Clue
+
+Make a prediction, check every explanation, and get two of three right. No Google connection is needed.
+
+#### Round 1
+
+Question terms are {mango, drink}. A chunk contains {mango, oat, milk}. What is its score?
+
+1. 0
+2. 1
+3. 3
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **1**.
+
+- **0**: Mango is shared.
+- **1**: There is exactly one distinct matching term: mango.
+- **3**: Chunk length is not the overlap score.
+
+</details>
+
+#### Round 2
+
+Mint Moon contains no mango matches the term mango. What does that prove?
+
+1. Mint Moon contains mango
+2. The source must be false
+3. Only that the word appears
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Only that the word appears**.
+
+- **Mint Moon contains mango**: Negation changes the meaning.
+- **The source must be false**: A negative statement can be perfectly useful evidence.
+- **Only that the word appears**: Read the complete quote; overlap does not interpret no.
+
+</details>
+
+#### Round 3
+
+The search returns no chunks for fruit smoothie. What should you try?
+
+1. Use a word that appears in the notes, then inspect
+2. Declare that no drinks exist
+3. Invent a source
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Use a word that appears in the notes, then inspect**.
+
+- **Use a word that appears in the notes, then inspect**: A keyword baseline can miss synonyms.
+- **Declare that no drinks exist**: A failed search cannot prove absence of all drinks.
+- **Invent a source**: Fabricated sources must never replace missing evidence.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+What does Find clues send to Google?
+
+1. The whole library
+2. Nothing
+3. Your journal
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Nothing**.
+
+- **The whole library**: Search runs in this app’s Python service.
+- **Nothing**: This button is always retrieval only.
+- **Your journal**: Journals are kept outside library requests.
+
+</details>
+
+#### Question 2
+
+Two chunks have the same score. Our baseline uses…
+
+1. Source ID as the tie-breaker
+2. A random hidden thought
+3. Model confidence
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Source ID as the tie-breaker**.
+
+- **Source ID as the tie-breaker**: This makes ties reproducible, not semantically better.
+- **A random hidden thought**: There is no model call during search.
+- **Model confidence**: Scores count shared terms, not confidence.
+
+</details>
+
+#### Question 3
+
+Where does retrieval put notes for optional Google answering?
+
+1. Into updated weights
+2. Into permanent Gemini memory
+3. Into this request’s input context
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Into this request’s input context**.
+
+- **Into updated weights**: We never train Google.
+- **Into permanent Gemini memory**: A request does not publish a permanent memory to the model.
+- **Into this request’s input context**: Selected evidence accompanies the current question.
+
+</details>
+
+### Build mission: Make a tiny note-search function
+
+Run the Python example. Extract the ranking into a function taking notes and a question. Add a note named recipe with text mango ice; predict its score and tie order. In the Library, compare a Saturday question with All café notes versus only the drinks note. Record a successful retrieval and a miss in your journal.
+
+You are done when:
+
+- Your function excludes zero-score notes and sorts ties deterministically.
+- You explain one retrieval miss without claiming the requested fact is false.
+
+<details>
+<summary>Hints</summary>
+
+1. Use query & set(text.split()) inside a loop or comprehension.
+2. The example sorts equal scores alphabetically by name; menu comes before recipe.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+For mango drink, menu and recipe both score 1 and sort menu then recipe. Hours and club are excluded. A Saturday question needs the hours or puzzle note; a drinks-only filter can hide useful evidence. This simple function lacks the app’s common-word filtering and alias normalization.
+```
+
+</details>
+
+### Explain it back
+
+Was your missing clue absent, filtered out, or missed because your question used different words?
+
+**Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.
+
+## L18: Answer with evidence
+
+Knowledge Library · about 25 minutes · version 1
+
+### Your goal
+
+- Check source IDs against the retrieved set and quotes against exact source text.
+- Distinguish source existence, quote fidelity, relevance, and truth.
+- Use uncertainty without silently retrying a paid request or inventing evidence.
+
+### Predict first
+
+An answer cites a real menu ID but changes its price from 4 coins to 40. Is a real-looking citation enough?
+
+### Learn
+
+A citation is a pointer, not a magic truth badge. We need to know whether the referenced source was actually retrieved, whether the quote matches it, whether it helps answer the question, and whether the underlying note is trustworthy. These are different checks. Our café notes are intentionally fictional.
+
+Offline mode shows matching exact quotes and calls them clues, not an AI answer. You interpret them yourself. Google mode is a deliberately constrained evidence picker: it receives the current question and at most three chunks, then returns JSON with insufficient and evidence. Each evidence entry contains a supplied source_id and an entire verbatim chunk.
+
+Python checks the JSON shape, a maximum of three unique source IDs, membership in the actual retrieved set, and exact equality of every quote. Extra answer fields, invented IDs, changed prices, duplicate IDs, and cut-off outputs are rejected before display or successful caching. Free-form model factual claims are not displayed in this milestone.
+
+These structural checks do not prove the selected quotes answer the question. A real quote can be irrelevant, incomplete, outdated, or contradictory. Read negation and conditions: Mint Moon contains no mango is evidence to exclude a drink, not include it. M6 will add a repeatable evaluation set and adversarial exercises.
+
+Ask Who owns the café? Our common-word filtering removes café and leaves owns, which matches no note. The app returns uncertainty without calling Google. If keywords do retrieve something but the notes still lack the requested information, Google should return insufficient: true and an empty evidence list. Neither case proves the requested fact is false.
+
+A live selection uses the same request ledger and limits as other Google calls. Source-check failure can still cost money: the model already replied. Known token usage remains recorded. Retrying an unchanged attempt ID recovers a successful saved result or refuses a consumed failed attempt; it does not automatically pay for another call. Each Library question is independent, and it never awards XP.
+
+**Where the analogy stops:** Checking a receipt verifies what was written, not whether a purchase happened. Our exact-quote gate prevents fabricated references and altered quotes but cannot certify relevance, completeness, or real-world truth.
+
+### Run a tiny Python example
+
+```python
+sources = {'menu-p1': 'Mango Cloud costs 4 cafe coins.'}
+def verified(source_id, quote):
+    return source_id in sources and quote == sources[source_id]
+print(verified('menu-p1', 'Mango Cloud costs 4 cafe coins.'))
+print(verified('menu-p1', 'Mango Cloud costs 40 cafe coins.'))
+print(verified('invented-p9', 'Mango Cloud costs 4 cafe coins.'))
+```
+
+Expected output:
+
+```text
+True
+False
+False
+```
+
+- Treat sources as the retrieved set, not every possible document.
+- Check identity before comparing exact text.
+- An altered price fails even when the ID is real.
+- An invented ID fails even when the quoted text looks plausible.
+
+### Play: Receipt Detective
+
+Make a prediction, check every explanation, and get two of three right. No Google connection is needed.
+
+#### Round 1
+
+A real source ID accompanies an altered price. What should the app do?
+
+1. Display it with a confidence badge
+2. Reject the altered quote
+3. Accept the ID and ignore the words
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Reject the altered quote**.
+
+- **Display it with a confidence badge**: A badge cannot repair a false quotation.
+- **Reject the altered quote**: Exact text must match the actual retrieved chunk.
+- **Accept the ID and ignore the words**: Identity alone is not quote fidelity.
+
+</details>
+
+#### Round 2
+
+Who owns the café? has no retrieved clues. What happens?
+
+1. Uncertainty, zero Google calls
+2. Invent Pip as owner
+3. Call Google repeatedly
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Uncertainty, zero Google calls**.
+
+- **Uncertainty, zero Google calls**: The notes contain no owner evidence and this search finds nothing.
+- **Invent Pip as owner**: A name in a café title does not establish ownership.
+- **Call Google repeatedly**: Missing evidence is not a reason for automatic paid retries.
+
+</details>
+
+#### Round 3
+
+A checked quote is unrelated to the question. Is the answer good?
+
+1. Yes, every citation proves truth
+2. Yes, text matching is understanding
+3. No, relevance still needs a check
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **No, relevance still needs a check**.
+
+- **Yes, every citation proves truth**: Citation existence is a separate property.
+- **Yes, text matching is understanding**: Exact matching checks fidelity, not meaning.
+- **No, relevance still needs a check**: Read whether the source supports the requested information.
+
+</details>
+
+### Quick quiz
+
+Try at least two of three correctly. If you reveal a solution, study it and try again later.
+
+#### Question 1
+
+Which source IDs are allowed in a Google evidence response?
+
+1. Any ID in the world
+2. Only IDs supplied in this request’s retrieved chunks
+3. Anything that looks like N01
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Only IDs supplied in this request’s retrieved chunks**.
+
+- **Any ID in the world**: Outside sources were not supplied or checked.
+- **Only IDs supplied in this request’s retrieved chunks**: The checker uses this exact request’s retrieved set.
+- **Anything that looks like N01**: A pattern is not evidence membership.
+
+</details>
+
+#### Question 2
+
+Google output fails source validation after generation. Could it cost money?
+
+1. Yes, Google already processed the attempt
+2. No, rejection always refunds it
+3. No, every failed call is free
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **Yes, Google already processed the attempt**.
+
+- **Yes, Google already processed the attempt**: The ledger retains reported usage, and charges may apply.
+- **No, rejection always refunds it**: This app cannot promise refunds.
+- **No, every failed call is free**: Failures and missing usage can still incur charges.
+
+</details>
+
+#### Question 3
+
+Adding notes to request context means…
+
+1. The model was retrained
+2. Every future chat knows them
+3. This attempt has extra evidence to read
+
+<details>
+<summary>Reveal answer and feedback</summary>
+
+Correct: **This attempt has extra evidence to read**.
+
+- **The model was retrained**: Retrieval and training are different operations.
+- **Every future chat knows them**: Library requests are independent and do not alter saved chats.
+- **This attempt has extra evidence to read**: Only the supplied request context changes.
+
+</details>
+
+### Build mission: Catch an invented receipt
+
+Run the Python checker and add a real source with an unrelated sentence. Show that exact validation can pass while relevance fails. In the Library, inspect the mango quotes and ask Who owns the café? Record both outcomes. If Google is configured, explicitly compare its selection with offline clues and inspect each source link; otherwise record an offline rehearsal.
+
+You are done when:
+
+- You demonstrate rejection of both an invented source ID and an altered quotation.
+- You separate quote fidelity from relevance and label offline versus real Google evidence honestly.
+
+<details>
+<summary>Hints</summary>
+
+1. Membership uses the retrieved sources dictionary; do not accept every library ID.
+2. A quote about opening times can be exact yet fail to answer a price question.
+
+</details>
+
+<details>
+<summary>Reference solution or solution notes</summary>
+
+```text
+The three printed checks are True, False, False. Add hours-p1: The cafe closes at 17:00. verified(hours-p1, that exact sentence) returns True, but the sentence cannot answer a drink-price question. The owner question gets uncertainty without a Google call. A live comparison is complete only after actual configured Google access.
+```
+
+</details>
+
+### Explain it back
+
+Which property did your Python check prove, and which properties still required your judgment?
 
 **Ask AI when connected:** Give me a hint, use a simpler example, explain this Python, or quiz me with a fresh example.

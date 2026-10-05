@@ -25,12 +25,15 @@ from app.models import SimilarityToy, AttentionToy, TrainingToy
 from app.models import ProviderSettings
 from app.settings_store import SettingsStore, SettingsStoreError
 from app import labs
+from app.library import LibraryService, chunks
+from app.models import LibrarySearch, LibraryQuestion, ChunkPreview
 
 
 def create_app(database_path: Path | None = None, content_dir: Path | None = None, ai_settings=None, provider=None, *, database=None, settings_store=None, hosted=False, allowed_hosts=None):
     content = ContentStore(content_dir or config.CONTENT_DIR)
     database = database or Database(database_path or config.DATABASE_PATH)
     progress = ProgressService(database, content)
+    library = LibraryService(content)
     settings_store = settings_store or SettingsStore(database.path.parent / 'ai-settings.json')
     settings_notice = ''
     if ai_settings is None:
@@ -163,6 +166,26 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
     @app.get('/observatory',response_class=HTMLResponse)
     def observatory(request: Request):
         return render(request,'observatory.html',fruits=labs.FRUITS,words=labs.WORDS)
+
+    @app.get('/library', response_class=HTMLResponse)
+    def knowledge_library(request: Request):
+        return render(request, 'library.html', catalog=library.catalog())
+
+    @app.get('/api/library')
+    def library_catalog():
+        return library.catalog()
+
+    @app.post('/api/library/chunks')
+    def preview_chunks(body: ChunkPreview):
+        return {'chunks': chunks(body.text, body.words), 'words': body.words, 'saved': False}
+
+    @app.post('/api/library/search')
+    def retrieve_notes(body: LibrarySearch):
+        return library.retrieve(body)
+
+    @app.post('/api/library/answers')
+    def answer_from_notes(body: LibraryQuestion):
+        return library.answer(body, ai)
 
     @app.post('/api/labs/similarity')
     def similarity_toy(body: SimilarityToy):
@@ -311,6 +334,6 @@ def create_app(database_path: Path | None = None, content_dir: Path | None = Non
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "milestone": "M4", "mode": ai.status()["mode"], "storage": "cloud" if hosted else "local"}
+        return {"status": "ok", "milestone": "M5", "mode": ai.status()["mode"], "storage": "cloud" if hosted else "local"}
 
     return app
