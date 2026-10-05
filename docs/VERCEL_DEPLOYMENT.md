@@ -119,3 +119,16 @@ For rollback, restore the preceding Vercel deployment while retaining All
 Deployments protection and the dedicated database. Do not delete storage.
 The previous local app remains runnable with its original Windows data and
 settings; the cloud deployment never changes those files.
+
+## M5 release · 5 October 2026
+
+Commit `25f7c97` adds the Knowledge Library and L16–L18 without changing database
+schema or infrastructure settings. A GitHub push completed; when an automatic
+build had not appeared, Create Deployment resolved `main` to that exact commit
+and Deploy to Production created `6GH8LmWvJ2Zr3faNVUfw9ggYga5n`. Vercel reported
+Ready after 23 seconds. The production alias
+[Knowledge Library](https://learn-llm-pi.vercel.app/library) loaded in the signed-in
+browser. Offline mango evidence and missing-owner uncertainty returned correctly
+with zero Google calls. No key, access-control setting, integration, progress,
+or saved chat was changed during these checks. Live Google selection remains
+unverified. See [M5 verification](M5_VALIDATION.md) for software proof and limits.

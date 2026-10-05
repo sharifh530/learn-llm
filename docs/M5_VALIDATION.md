@@ -44,6 +44,15 @@ Commands:
 ```
 
 QA reports and desktop/mobile screenshots are ignored under `data/qa/`.
+Production commit `25f7c97` was deployed on 5 October 2026. Vercel reported Ready
+for deployment `6GH8LmWvJ2Zr3faNVUfw9ggYga5n` after 23 seconds. The signed-in
+production Library returned the three mango-related quotes and the missing-owner
+uncertainty response, both with zero Google calls. The proof image is
+`data/qa/m5-live-library.png`. No progress or chat was created by those checks.
+The existing localhost tab could not be manually inspected because the browser
+security policy rejected tab access; isolated local browser proof and the live
+production check are the UI evidence for this release.
+
 The pre-M5 lesson/database snapshot is `data/backups/before-m5/`. Earlier
 lesson files L01–L15 match that snapshot byte-for-byte. Every learner database
 table also matched before local restart; implementation checks used disposable
