@@ -1,6 +1,6 @@
 {
   "id": "L01",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "The next-word detective",
   "zone": "Prediction Playground",
@@ -201,5 +201,136 @@
     "reference_solution": "next_word = {'My robot likes': 'puzzles'}\nprint(next_word.get('My robot likes', 'I do not know yet'))\nprint(next_word.get('My robot sleeps on', 'I do not know yet'))"
   },
   "reflection": "Explain to a friend why a chatbot can sound confident without proving its answer is true.",
-  "tutor_context": "Basic Python dictionary learner. Explain likely next text versus verified truth. Keep whole-word prediction explicitly labeled as a simplification; give hints before the mission solution."
+  "tutor_context": "Basic Python dictionary learner. Explain likely next text versus verified truth. Keep whole-word prediction explicitly labeled as a simplification; give hints before the mission solution.",
+  "visual": {
+    "title": "Follow a sentence through a tiny lookup",
+    "inputs": "Two known sentence prefixes and their next words live in next_word.",
+    "operation": "get looks for an exact key. If it is absent, Python returns the fallback.",
+    "output": "The first print writes tea. The second writes I do not know yet.",
+    "limit": "This is an authored dictionary, not a model guessing probabilities. A lookup cannot establish a fact.",
+    "frames": [
+      {
+        "title": "Pack two known patterns",
+        "explain": "A dictionary pairs each exact prefix with one reply. Read each row from left to right.",
+        "lines": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Known prefix",
+            "value": "I drink a cup of",
+            "detail": "→ tea",
+            "tone": "active"
+          },
+          {
+            "label": "Known prefix",
+            "value": "The cat says",
+            "detail": "→ meow",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Send a question",
+        "explain": "prompt is a string. Python uses that whole string as the dictionary key.",
+        "lines": [
+          5
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Question",
+            "value": "I drink a cup of",
+            "detail": "The complete key",
+            "tone": "active"
+          },
+          {
+            "label": "Lookup",
+            "value": "next_word.get(prompt, fallback)",
+            "detail": "Search the table",
+            "tone": "neutral"
+          },
+          {
+            "label": "Stored reply",
+            "value": "tea",
+            "detail": "Key exists",
+            "tone": "success"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "The matching key wins",
+        "explain": "get finds the key, so it returns tea instead of the fallback. print puts the result on the console.",
+        "lines": [
+          6
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Dictionary result",
+            "value": "tea",
+            "detail": "Returned value",
+            "tone": "success"
+          },
+          {
+            "label": "Console",
+            "value": "tea",
+            "detail": "Printed once",
+            "tone": "active"
+          }
+        ],
+        "console": "tea\n"
+      },
+      {
+        "title": "A missing key takes the other path",
+        "explain": "The rocket likes is absent. The default string becomes the second printed line.",
+        "lines": [
+          7
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Question",
+            "value": "The rocket likes",
+            "detail": "Unknown prefix",
+            "tone": "muted"
+          },
+          {
+            "label": "Lookup",
+            "value": "No exact key",
+            "detail": "Use the default",
+            "tone": "warning"
+          },
+          {
+            "label": "Fallback",
+            "value": "I do not know yet",
+            "detail": "No invented dictionary entry",
+            "tone": "active"
+          }
+        ],
+        "console": "tea\nI do not know yet\n"
+      }
+    ],
+    "challenge": {
+      "question": "If you change prompt to The cat says, what does the first print show?",
+      "choices": [
+        {
+          "text": "tea",
+          "correct": false,
+          "feedback": "tea belongs to the other key. Look at the row matching the new prefix."
+        },
+        {
+          "text": "meow",
+          "correct": true,
+          "feedback": "Exactly. The key changes which stored value get returns."
+        }
+      ]
+    }
+  }
 }

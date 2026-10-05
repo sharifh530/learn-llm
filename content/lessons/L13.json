@@ -1,6 +1,6 @@
 {
   "id": "L13",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Similarity on a map",
   "zone": "Model Observatory",
@@ -207,5 +207,176 @@
   },
   "reflection": "Why does scaling every feature preserve cosine while changing just sourness usually changes it?",
   "lab": "similarity",
-  "tutor_context": "Teach Similarity on a map using the authored local similarity toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+  "tutor_context": "Teach Similarity on a map using the authored local similarity toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating.",
+  "visual": {
+    "title": "Compare direction, not just size",
+    "inputs": "Apple is [7, 8, 3]. scaled is half of every coordinate.",
+    "operation": "Cosine divides the dot product by the product of the vector lengths.",
+    "output": "The scaled vector has cosine 1.0000; the zero vector returns None.",
+    "limit": "The coordinates are handcrafted toy features, not learned embeddings. Similar direction is not identical meaning.",
+    "frames": [
+      {
+        "title": "Look at the coordinates",
+        "explain": "Every scaled coordinate is half its apple counterpart. The bars compare magnitudes on the same 0–8 scale.",
+        "lines": [
+          9,
+          10
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Apple x",
+            "value": "7",
+            "detail": "Coordinate 1",
+            "tone": "active",
+            "amount": 87.5
+          },
+          {
+            "label": "Scaled x",
+            "value": "3.5",
+            "detail": "Half of 7",
+            "tone": "neutral",
+            "amount": 43.75
+          },
+          {
+            "label": "Apple y",
+            "value": "8",
+            "detail": "Coordinate 2",
+            "tone": "active",
+            "amount": 100
+          },
+          {
+            "label": "Scaled y",
+            "value": "4",
+            "detail": "Half of 8",
+            "tone": "neutral",
+            "amount": 50
+          },
+          {
+            "label": "Apple z",
+            "value": "3",
+            "detail": "Coordinate 3",
+            "tone": "active",
+            "amount": 37.5
+          },
+          {
+            "label": "Scaled z",
+            "value": "1.5",
+            "detail": "Half of 3",
+            "tone": "neutral",
+            "amount": 18.75
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Find the two lengths",
+        "explain": "The dot product is 61. The product of lengths is also 61. Scaling all coordinates equally preserves direction.",
+        "lines": [
+          1,
+          3,
+          4,
+          7
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Dot product",
+            "value": "7×3.5 + 8×4 + 3×1.5 = 61",
+            "detail": "Coordinate products added",
+            "tone": "active"
+          },
+          {
+            "label": "Length product",
+            "value": "√122 × √30.5 = 61",
+            "detail": "Two magnitudes",
+            "tone": "neutral"
+          },
+          {
+            "label": "Ratio",
+            "value": "61 / 61 = 1",
+            "detail": "Same direction",
+            "tone": "success"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Report the same direction",
+        "explain": "Formatting to four decimal places prints 1.0000. The vectors have different sizes but identical direction.",
+        "lines": [
+          11
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Apple",
+            "value": "[7, 8, 3]",
+            "detail": "Larger magnitude",
+            "tone": "neutral"
+          },
+          {
+            "label": "Scaled",
+            "value": "[3.5, 4, 1.5]",
+            "detail": "Half the magnitude",
+            "tone": "neutral"
+          },
+          {
+            "label": "Cosine",
+            "value": "1.0000",
+            "detail": "Same direction",
+            "tone": "success"
+          }
+        ],
+        "console": "Same direction: 1.0000\n"
+      },
+      {
+        "title": "A zero vector has no direction",
+        "explain": "All coordinates zero gives magnitude 0. Return None before division to avoid dividing by zero.",
+        "lines": [
+          4,
+          5,
+          6,
+          12
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Other vector",
+            "value": "[0, 0, 0]",
+            "detail": "Zero magnitude",
+            "tone": "muted"
+          },
+          {
+            "label": "Guard",
+            "value": "magnitude == 0",
+            "detail": "Stop before division",
+            "tone": "warning"
+          },
+          {
+            "label": "Result",
+            "value": "None",
+            "detail": "Direction is undefined",
+            "tone": "active"
+          }
+        ],
+        "console": "Same direction: 1.0000\nZero vector: None\n"
+      }
+    ],
+    "challenge": {
+      "question": "If every nonzero coordinate is multiplied by a positive 2, what happens to its cosine with the original?",
+      "choices": [
+        {
+          "text": "It doubles to 2",
+          "correct": false,
+          "feedback": "The numerator and length product scale together; cosine remains bounded."
+        },
+        {
+          "text": "It stays 1: direction is unchanged",
+          "correct": true,
+          "feedback": "Exactly. Cosine compares direction, not raw magnitude."
+        }
+      ]
+    }
+  }
 }

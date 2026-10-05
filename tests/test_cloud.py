@@ -129,7 +129,8 @@ def test_progress_chats_and_encrypted_settings_survive_instances(cloud):
             assert first.get(path).status_code==200
         assert save(first).status_code==200
         assert 'fake-google-secret' not in first.get('/api/provider/status').text
-        assert first.post('/api/lessons/L01/acknowledgments',json={'kind':'reading','version':1}).status_code==200
+        version=first.get('/api/lessons/L01').json()['version']
+        assert first.post('/api/lessons/L01/acknowledgments',json={'kind':'reading','version':version}).status_code==200
         chat = first.post('/api/chats',json={'mode':'demo'}).json()['id']
         identity = str(uuid4())
         body = {'message':'My favorite fruit is mango','request_id':identity}

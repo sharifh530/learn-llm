@@ -132,13 +132,13 @@ def test_content_revisions_preserve_snapshot_and_reject_invalid_publish(setup):
     client, app, _, content = setup
     original = complete(client)
     path = content / "lessons" / "L01.json"
-    updated = {**original, "version": 2, "prediction": "Try a clearer example."}
+    updated = {**original, "version": original['version'] + 1, "prediction": "Try a clearer example."}
     path.write_text(json.dumps(updated), encoding="utf-8")
     assert client.post("/api/content/reload", json={}).status_code == 200
     summary = client.get("/api/progress").json()
     assert summary["xp"] == 80 and summary["lessons"]["L01"]["completed"]
     assert summary["lessons"]["L01"]["updated"] and summary["lessons"]["L01"]["game"]
-    updated["version"] = 3
+    updated["version"] = original['version'] + 2
     updated["game"]["rounds"][0]["id"] = "L01-game-r1-new"
     path.write_text(json.dumps(updated), encoding="utf-8")
     assert client.post("/api/content/reload", json={}).status_code == 200
@@ -148,7 +148,7 @@ def test_content_revisions_preserve_snapshot_and_reject_invalid_publish(setup):
     updated["game"]["rounds"][0]["feedback"] = {}
     path.write_text(json.dumps(updated), encoding="utf-8")
     assert client.post("/api/content/reload", json={}).status_code == 400
-    assert client.get("/api/lessons/L01").json()["version"] == 3
+    assert client.get("/api/lessons/L01").json()["version"] == original['version'] + 2
     assert app.state.progress.summary()["xp"] == 80
 
 

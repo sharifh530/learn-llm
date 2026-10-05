@@ -44,6 +44,8 @@ Feedback also uses wording and symbols. Main navigation, motion, copy, tutor, an
 
 ## Reproduce
 
+The later visual lesson upgrade has separate [all-scene responsive and motion proof](VISUAL_LESSONS.md). Run `tools/browser_visual_check.py` for those controls; the original design proof below remains a historical record.
+
 ```powershell
 .\.venv\Scripts\python.exe tools/design_check.py
 .\.venv\Scripts\python.exe tools/browser_check.py

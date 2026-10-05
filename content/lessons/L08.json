@@ -1,6 +1,6 @@
 {
   "id": "L08",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Give the robot a job",
   "zone": "Prompt Kitchen",
@@ -204,5 +204,117 @@
     "reference_solution": "request['system_instruction'] = 'Explain this using a lunchbox example for a Python beginner.'\nprint(request['user_message'])\nExpected question stays: What does messages[-2:] select?\nAsk AI hint: a nudge about counting from the end. Explain: a description of the last two items. Actual AI phrasing varies."
   },
   "reflection": "Which parts of our app are enforced by Python, and which are only requested from the model?",
-  "tutor_context": "Teach server-owned system instructions versus user content. Never claim prompt instructions enforce security, XP, or guaranteed hint-only output. No API keys in context."
+  "tutor_context": "Teach server-owned system instructions versus user content. Never claim prompt instructions enforce security, XP, or guaranteed hint-only output. No API keys in context.",
+  "visual": {
+    "title": "Keep the robot’s job beside the question",
+    "inputs": "A job instruction and a learner question in separate dictionary fields.",
+    "operation": "Named keys keep the two roles distinct, then print reads each field.",
+    "output": "The console labels the instruction Job and the question Question.",
+    "limit": "This is a Python dictionary rehearsal, not a provider request or a security boundary. A model may still follow bad instructions.",
+    "frames": [
+      {
+        "title": "Write the job",
+        "explain": "system_instruction defines the intended behavior: one small hint for a basic Python learner.",
+        "lines": [
+          1,
+          2
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Job instruction",
+            "value": "Give one small hint",
+            "detail": "For a basic Python learner",
+            "tone": "active"
+          },
+          {
+            "label": "Role",
+            "value": "system_instruction",
+            "detail": "A named field",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Add the learner question",
+        "explain": "user_message holds the question to answer. It does not replace the separate instruction field.",
+        "lines": [
+          3,
+          4
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Job instruction",
+            "value": "Give one small hint",
+            "detail": "Remains present",
+            "tone": "neutral"
+          },
+          {
+            "label": "Question",
+            "value": "What does messages[-2:] select?",
+            "detail": "user_message",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Read the job by key",
+        "explain": "request[system_instruction] retrieves that stored value. print labels the line Job.",
+        "lines": [
+          5
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Job",
+            "value": "Give one small hint for a basic Python learner.",
+            "detail": "Dictionary lookup",
+            "tone": "active"
+          }
+        ],
+        "console": "Job: Give one small hint for a basic Python learner.\n"
+      },
+      {
+        "title": "Read the question by key",
+        "explain": "The second lookup uses user_message. This program displays two strings; it does not ask Google for an answer.",
+        "lines": [
+          6
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Job",
+            "value": "Give one small hint for a basic Python learner.",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Question",
+            "value": "What does messages[-2:] select?",
+            "detail": "Separate from the job",
+            "tone": "active"
+          }
+        ],
+        "console": "Job: Give one small hint for a basic Python learner.\nQuestion: What does messages[-2:] select?\n"
+      }
+    ],
+    "challenge": {
+      "question": "Where should the learner’s changing question go?",
+      "choices": [
+        {
+          "text": "Replace system_instruction with the question",
+          "correct": false,
+          "feedback": "Replacing the job loses the intended hint behavior. Keep the roles separate."
+        },
+        {
+          "text": "In user_message",
+          "correct": true,
+          "feedback": "Exactly. The question changes while the intended job can stay the same."
+        }
+      ]
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "L14",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Attention Spotlight",
   "zone": "Model Observatory",
@@ -207,5 +207,157 @@
   },
   "reflection": "Which parts did you choose manually, and which parts did softmax calculate? Why is this different from explaining a model’s reasoning?",
   "lab": "attention",
-  "tutor_context": "Teach Attention Spotlight using the authored local attention toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+  "tutor_context": "Teach Attention Spotlight using the authored local attention toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating.",
+  "visual": {
+    "title": "Aim attention without looking ahead",
+    "inputs": "Scores [0, 2, 3], values [0.1, 0.9, 0.5], and query index 1.",
+    "operation": "Mask index 2, normalize the allowed scores, then mix values using their weights.",
+    "output": "Weights are 0.1192, 0.8808, 0.0000; the mixed value is 0.8046.",
+    "limit": "This single scalar mix omits learned Q/K/V projections, multiple heads, and transformer layers. The mask is a toy causal rule.",
+    "frames": [
+      {
+        "title": "Place the query at index 1",
+        "explain": "Allowed positions satisfy i <= query. The current and previous positions are available; index 2 is ahead.",
+        "lines": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Index 0",
+            "value": "score 0; value 0.1",
+            "detail": "Allowed",
+            "tone": "active"
+          },
+          {
+            "label": "Index 1",
+            "value": "score 2; value 0.9",
+            "detail": "Query; allowed",
+            "tone": "active"
+          },
+          {
+            "label": "Index 2",
+            "value": "score 3; value 0.5",
+            "detail": "Future; masked",
+            "tone": "muted"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Mask before normalization",
+        "explain": "Even though index 2 has the largest score, its part is forced to 0. Only allowed scores contribute to the denominator.",
+        "lines": [
+          7,
+          8
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Index 0",
+            "value": "exp(-2) ≈ 0.1353",
+            "detail": "Allowed",
+            "tone": "neutral",
+            "amount": 13.53
+          },
+          {
+            "label": "Index 1",
+            "value": "exp(0) = 1",
+            "detail": "Allowed",
+            "tone": "active",
+            "amount": 100
+          },
+          {
+            "label": "Index 2",
+            "value": "0",
+            "detail": "Masked",
+            "tone": "muted",
+            "amount": 0
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Share one unit of attention",
+        "explain": "Divide by the sum of allowed parts. The masked position stays at exactly zero and the unrounded weights sum to one.",
+        "lines": [
+          9,
+          10,
+          11
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Index 0",
+            "value": "0.1192",
+            "detail": "11.92% of attention",
+            "tone": "neutral",
+            "amount": 11.92
+          },
+          {
+            "label": "Index 1",
+            "value": "0.8808",
+            "detail": "88.08% of attention",
+            "tone": "active",
+            "amount": 88.08
+          },
+          {
+            "label": "Index 2",
+            "value": "0.0000",
+            "detail": "0%; masked",
+            "tone": "muted",
+            "amount": 0
+          }
+        ],
+        "console": "Weights: 0.1192, 0.8808, 0.0000\nTotal: 1.0000\n"
+      },
+      {
+        "title": "Mix values, not words",
+        "explain": "Multiply each value by its weight and add: about 0.0119 + 0.7927 + 0 = 0.8046.",
+        "lines": [
+          12
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Previous contribution",
+            "value": "0.1192 × 0.1 ≈ 0.0119",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Current contribution",
+            "value": "0.8808 × 0.9 ≈ 0.7927",
+            "detail": "Largest contribution",
+            "tone": "active"
+          },
+          {
+            "label": "Mixed output",
+            "value": "0.8046",
+            "detail": "A scalar in this toy",
+            "tone": "success"
+          }
+        ],
+        "console": "Weights: 0.1192, 0.8808, 0.0000\nTotal: 1.0000\nOutput: 0.8046\n"
+      }
+    ],
+    "challenge": {
+      "question": "Can future index 2 contribute because its score is highest?",
+      "choices": [
+        {
+          "text": "Yes, the highest score always wins",
+          "correct": false,
+          "feedback": "The mask is applied before normalization. This position contributes zero."
+        },
+        {
+          "text": "No, the mask forces its weight to zero",
+          "correct": true,
+          "feedback": "Right. The causal boundary overrides that future score."
+        }
+      ]
+    }
+  }
 }

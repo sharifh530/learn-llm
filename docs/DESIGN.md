@@ -97,3 +97,9 @@ no longer fits, preserving usable navigation at 200% CSS zoom.
 The isolated browser proof covers 360–1440px, keyboard focus, source-link focus,
 errors, missing evidence, recovery, safe text rendering, and reduced motion.
 See [M5 verification](M5_VALIDATION.md) for measured checks and their limits.
+
+## Visual teaching stories
+
+The Learn page begins with input, operation, and output context, then a sage-and-citrus visual workspace beside the matching Python. Chips show token boundaries, bars show numeric quantities, memory rows distinguish saved and selected text, and labeled checks explain source validation. The current scene controls the source highlight and its console trace; each picture explains an operation rather than decorating the page. Goals, guesses, and deeper prose remain expandable around the story.
+
+Brief calibration: layout variation 6/10, learner-controlled motion 6/10, density 5/10. Scene tiles enter over 380ms; probability bars interpolate over 650ms. Text remains still after a scene settles. Playback is explicit, pausable, bounded, and respects system/manual reduced motion. Phones stack diagram and source. The code pane follows the selected line without moving page focus. See [Visual lessons](VISUAL_LESSONS.md) for all-scene responsive and motion proof.

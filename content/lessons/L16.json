@@ -17,7 +17,7 @@
   ],
   "analogy_limit": "Index cards illustrate context and provenance. Our word splitter is not a model tokenizer, a learned retriever, or a complete document ingestion system.",
   "reflection": "If you had only one chunk, which subject or condition would you need inside it?",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "zone": "Knowledge Library",
   "minutes": 25,
@@ -207,5 +207,136 @@
     ],
     "reference_solution": "At six words, p1-2 says contains oat milk without naming Mango Cloud. At ten words, the whole first paragraph fits one piece. Blank paragraphs still split topics. The library IDs identify note/version/paragraph/piece; preview IDs identify only temporary practice pieces."
   },
-  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth.",
+  "visual": {
+    "title": "Cut a note without losing sight of its meaning",
+    "inputs": "A drink paragraph and a club paragraph, separated by a blank line.",
+    "operation": "Split paragraphs first, then take consecutive slices of at most six words.",
+    "output": "Three labeled pieces are printed; the second loses its explicit subject.",
+    "limit": "This toy normalizes spaces and can cut sentences. Production chunking needs deliberate boundaries and source metadata.",
+    "frames": [
+      {
+        "title": "Keep paragraphs separate",
+        "explain": "The blank line separates two topics before any word limit is applied.",
+        "lines": [
+          1,
+          2
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Paragraph 1",
+            "value": "Mango Cloud costs four coins. It contains oat milk.",
+            "detail": "Drink description",
+            "tone": "active"
+          },
+          {
+            "label": "Paragraph 2",
+            "value": "Puzzle club meets on Saturday.",
+            "detail": "Different topic",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Take the first six words",
+        "explain": "range steps offsets by six. words[0:6] includes It but not the rest of its sentence.",
+        "lines": [
+          3,
+          4,
+          5
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "p1-1",
+            "value": "Mango Cloud costs four coins. It",
+            "detail": "Six words",
+            "tone": "active"
+          },
+          {
+            "label": "Still in paragraph 1",
+            "value": "contains oat milk.",
+            "detail": "Remaining three words",
+            "tone": "muted"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Take the remainder",
+        "explain": "offset 6 selects the next slice. The second piece says contains oat milk, but its subject is outside the chunk.",
+        "lines": [
+          4,
+          5,
+          6
+        ],
+        "layout": "chunks",
+        "items": [
+          {
+            "label": "p1-1",
+            "value": "Mango Cloud costs four coins. It",
+            "detail": "Contains the subject",
+            "tone": "neutral"
+          },
+          {
+            "label": "p1-2",
+            "value": "contains oat milk.",
+            "detail": "Subject is missing here",
+            "tone": "warning"
+          }
+        ],
+        "console": "p1-1: Mango Cloud costs four coins. It\np1-2: contains oat milk.\n"
+      },
+      {
+        "title": "Move to the next paragraph",
+        "explain": "The paragraph number changes to 2 and offset starts at 0 again. Its five words fit in one piece.",
+        "lines": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "layout": "chunks",
+        "items": [
+          {
+            "label": "p1-1",
+            "value": "Mango Cloud costs four coins. It",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "p1-2",
+            "value": "contains oat milk.",
+            "detail": "Needs neighboring context",
+            "tone": "warning"
+          },
+          {
+            "label": "p2-1",
+            "value": "Puzzle club meets on Saturday.",
+            "detail": "A complete small paragraph",
+            "tone": "success"
+          }
+        ],
+        "console": "p1-1: Mango Cloud costs four coins. It\np1-2: contains oat milk.\np2-1: Puzzle club meets on Saturday.\n"
+      }
+    ],
+    "challenge": {
+      "question": "Can a six-word limit cut a sentence and lose the subject?",
+      "choices": [
+        {
+          "text": "No, a word limit guarantees complete meaning",
+          "correct": false,
+          "feedback": "The second piece has no named subject. Size limits are not meaning boundaries."
+        },
+        {
+          "text": "Yes, as p1-2 demonstrates",
+          "correct": true,
+          "feedback": "Right. Useful chunking balances size with understandable context."
+        }
+      ]
+    }
+  }
 }

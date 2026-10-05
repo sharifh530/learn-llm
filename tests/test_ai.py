@@ -58,13 +58,14 @@ def test_disabled_no_calls_and_secret_free_status(tmp_path):
 
 def test_tutor_context_separation_mode_and_stale_version(live_fixture):
     client, app, fake = live_fixture
-    hint = body(lesson_id='L07', version=1, mode='hint')
+    version = client.get('/api/lessons/L07').json()['version']
+    hint = body(lesson_id='L07', version=version, mode='hint')
     assert client.post('/api/tutor/messages', json=hint).status_code == 200
     instruction, message, input_limit, output_limit = fake.calls[-1]
     assert 'Mode: hint' in instruction and 'Prompt Kitchen' in message
     assert 'reference_solution' not in message and 'correct_choice_id' not in message and 'quiz' not in message
     assert (input_limit, output_limit) == (6000, 1024)
-    solution = body(lesson_id='L07', version=1, mode='solution')
+    solution = body(lesson_id='L07', version=version, mode='solution')
     assert client.post('/api/tutor/messages', json=solution).status_code == 200
     assert 'reference_solution' in fake.calls[-1][1]
     assert client.post('/api/ai/messages', json=body('chat-only-marker')).status_code == 200

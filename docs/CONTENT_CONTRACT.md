@@ -80,7 +80,15 @@ automatic comparison against the previous file. A fingerprint of the validated
 library binds cached Google selections to the actual content even if an author
 forgets a version bump.
 
-L16–L18 are ordinary version-1 lessons with existing game/quiz/build contracts.
+L16–L18 were introduced as ordinary version-1 lessons with existing game/quiz/build contracts.
 The Library awards no XP and changes no lesson progress. Practice chunk previews
 are temporary and do not become curated notes. Arbitrary uploads and an in-app
 note editor require a later scoped contract.
+
+## Visual lesson stories
+
+An optional `visual` object extends existing lessons without changing required activities. It contains bounded plain-text context (`title`, `inputs`, `operation`, `output`, `limit`), 3–8 `frames`, and a `challenge`. Each frame references unique existing Python line numbers and uses one registered layout: `flow`, `tokens`, `bars`, `memory`, `checks`, `chunks`, or `evidence`. Items have label/value/detail/tone; bar items require finite amounts from 0 to 100. No raw HTML or executable fields are accepted.
+
+The final frame console must exactly match the existing Python example's expected output. A challenge has two or three distinct choices and exactly one correct answer with feedback. Schema and cross-field checks run before a candidate snapshot is published; a failed check retains the current snapshot.
+
+The October visual revision advances course version to 7 and each authored lesson version by one. IDs, examples, answer keys, scoring, and completion snapshots are preserved. Scene playback and hunch choices add no XP, saved attempts, or provider requests. See [Visual lessons](VISUAL_LESSONS.md) for authoring files, controls, and verification.

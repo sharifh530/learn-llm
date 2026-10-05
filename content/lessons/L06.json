@@ -1,6 +1,6 @@
 {
   "id": "L06",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "The conversation backpack",
   "zone": "Token Arcade",
@@ -204,5 +204,152 @@
     "reference_solution": "With messages from the example:\nfor count in [3, 2]:\n    selected = messages[-count:]\n    print(count, any('Mira' in m['text'] for m in selected))\nprint('saved:', len(messages))\nExpected: 3 True; 2 False; saved: 4."
   },
   "reflection": "Explain how your future chatbot will keep saved history separate from the messages sent to Google.",
-  "tutor_context": "Explain list slices, saved history, selected context, and trained parameters. The backpack is a token-budget analogy; last-N messages is only a toy. Do not infer context correctness from a lucky model guess."
+  "tutor_context": "Explain list slices, saved history, selected context, and trained parameters. The backpack is a token-budget analogy; last-N messages is only a toy. Do not infer context correctness from a lucky model guess.",
+  "visual": {
+    "title": "Pack a smaller conversation backpack",
+    "inputs": "Four saved messages form two complete user/assistant pairs.",
+    "operation": "messages[-2:] makes a new list containing the last two messages.",
+    "output": "Four remain saved; only the puzzle pair is selected.",
+    "limit": "This exact slice is safe only for this alternating four-message toy. The real app selects bounded whole turns.",
+    "frames": [
+      {
+        "title": "Save two pairs",
+        "explain": "These rows are the app record. Saving them does not train a model.",
+        "lines": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "user",
+            "value": "My name is Mira.",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "assistant",
+            "value": "Hello Mira.",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "user",
+            "value": "I like puzzles.",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "assistant",
+            "value": "Let us try a puzzle.",
+            "detail": "",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Select the tail",
+        "explain": "-2 means start two positions from the end. The earlier name pair stays saved but is omitted from selected.",
+        "lines": [
+          7
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "user",
+            "value": "My name is Mira.",
+            "detail": "Saved, not selected",
+            "tone": "muted"
+          },
+          {
+            "label": "assistant",
+            "value": "Hello Mira.",
+            "detail": "Saved, not selected",
+            "tone": "muted"
+          },
+          {
+            "label": "user",
+            "value": "I like puzzles.",
+            "detail": "Selected",
+            "tone": "active"
+          },
+          {
+            "label": "assistant",
+            "value": "Let us try a puzzle.",
+            "detail": "Selected",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Count two different lists",
+        "explain": "len(messages) stays 4. len(selected) is 2. A slice does not erase the original list.",
+        "lines": [
+          8,
+          9
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Saved record",
+            "value": "4 messages",
+            "detail": "Still on the shelf",
+            "tone": "neutral"
+          },
+          {
+            "label": "Request backpack",
+            "value": "2 messages",
+            "detail": "Only the selected tail",
+            "tone": "active"
+          }
+        ],
+        "console": "saved: 4\nselected: 2\n"
+      },
+      {
+        "title": "Print the selected context",
+        "explain": "The loop visits only selected. The name Mira is absent from these two printed messages.",
+        "lines": [
+          10,
+          11
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "user",
+            "value": "I like puzzles.",
+            "detail": "Sent context",
+            "tone": "active"
+          },
+          {
+            "label": "assistant",
+            "value": "Let us try a puzzle.",
+            "detail": "Sent context",
+            "tone": "active"
+          }
+        ],
+        "console": "saved: 4\nselected: 2\nuser: I like puzzles.\nassistant: Let us try a puzzle.\n"
+      }
+    ],
+    "challenge": {
+      "question": "After the slice, is Mira erased from the saved messages?",
+      "choices": [
+        {
+          "text": "Yes, slicing deletes the older entries",
+          "correct": false,
+          "feedback": "A slice creates another list. The original messages still has four entries."
+        },
+        {
+          "text": "No, it is saved but omitted from selected",
+          "correct": true,
+          "feedback": "Correct. Saved history and selected context are different."
+        }
+      ]
+    }
+  }
 }

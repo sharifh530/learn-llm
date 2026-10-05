@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
 from app.models import LibraryData
+from app.visuals import validate_visual
 
 
 class ContentError(ValueError):
@@ -58,6 +59,7 @@ class ContentStore:
                 if errors:
                     error = errors[0]
                     raise ContentError(f"{identity}: {'/'.join(map(str, error.path))}: {error.message}")
+                validate_visual(lesson)
                 if lesson["id"] != identity or lesson["title"] != entry["title"]:
                     raise ContentError(f"{identity}: map and lesson identity/title differ.")
                 if lesson["prerequisites"] != entry["prerequisites"]:

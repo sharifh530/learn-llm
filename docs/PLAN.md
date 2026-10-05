@@ -10,6 +10,8 @@ M4 is implemented with three local numeric toys and L13–L15. See [M4 walkthrou
 
 ## Outcome
 
+The October lesson upgrade adds 73 visual scenes with matching Python across all 18 authored lessons. Use [the visual learning walkthrough](VISUAL_LESSONS.md) to explore them. M6 remains the next milestone.
+
 Build a playful web app that teaches LLMs and helps you construct a small ChatGPT-style assistant. Every session should end with a concept you can explain and an artifact you can show: a Python function, a better prompt, a saved chat, or a working feature.
 
 The app has two personalities: a patient tutor that helps you learn, and your own chatbot that you build and experiment with. They use separate instructions, conversations, and progress rules.

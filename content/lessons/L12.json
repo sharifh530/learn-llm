@@ -1,6 +1,6 @@
 {
   "id": "L12",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Judge a helpful response",
   "zone": "Chat Workshop",
@@ -206,5 +206,152 @@
     "reference_solution": "Demo variants can be identical because the same rule receives the same input. The selected_id determines the reply included in later context. A careful evaluation names each rubric criterion and provides evidence; a 4/4 score is still a limited judgment, not a universal guarantee."
   },
   "reflection": "Which rubric criterion could a cheerful, confident reply still fail? Give a concrete example.",
-  "tutor_context": "Teach Evaluate a reply using a small rubric instead of trusting confident wording., Compare variants without silently mixing conversation branches., Separate style, factual accuracy, uncertainty, and context use. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+  "tutor_context": "Teach Evaluate a reply using a small rubric instead of trusting confident wording., Compare variants without silently mixing conversation branches., Separate style, factual accuracy, uncertainty, and context use. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof.",
+  "visual": {
+    "title": "Score helpfulness with a visible checklist",
+    "inputs": "A person supplies four Boolean judgments for each of two replies.",
+    "operation": "sum counts True as 1 and False as 0; it does not judge the replies itself.",
+    "output": "One reply scores 2/4, the other 4/4 on this supplied rubric.",
+    "limit": "Human judgments can be wrong or incomplete. A four-point score is not a factual guarantee or a model benchmark.",
+    "frames": [
+      {
+        "title": "Supply the judgments",
+        "explain": "The code starts after someone has judged four criteria. It contains no text-analysis or fact-checking function.",
+        "lines": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "confident_but_wrong",
+            "value": "True, False, True, False",
+            "detail": "Human supplied",
+            "tone": "warning"
+          },
+          {
+            "label": "clear_and_careful",
+            "value": "True, True, True, True",
+            "detail": "Human supplied",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Count the first checklist",
+        "explain": "True contributes 1; False contributes 0. The first list totals 2.",
+        "lines": [
+          5,
+          6
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "Criterion 1",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          },
+          {
+            "label": "Criterion 2",
+            "value": "False → 0",
+            "detail": "Fail",
+            "tone": "warning"
+          },
+          {
+            "label": "Criterion 3",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          },
+          {
+            "label": "Criterion 4",
+            "value": "False → 0",
+            "detail": "Fail",
+            "tone": "warning"
+          }
+        ],
+        "console": "confident_but_wrong: 2/4\n"
+      },
+      {
+        "title": "Count the second checklist",
+        "explain": "All four supplied values are True, so the same calculation totals 4.",
+        "lines": [
+          5,
+          6
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "Criterion 1",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          },
+          {
+            "label": "Criterion 2",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          },
+          {
+            "label": "Criterion 3",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          },
+          {
+            "label": "Criterion 4",
+            "value": "True → 1",
+            "detail": "Pass",
+            "tone": "success"
+          }
+        ],
+        "console": "confident_but_wrong: 2/4\nclear_and_careful: 4/4\n"
+      },
+      {
+        "title": "Read the score with its boundary",
+        "explain": "The final printed notice tells us who supplied the judgments. Arithmetic aggregates the checklist; it cannot certify the answer.",
+        "lines": [
+          7
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "confident_but_wrong",
+            "value": "2 / 4",
+            "detail": "Supplied rubric",
+            "tone": "warning",
+            "amount": 50
+          },
+          {
+            "label": "clear_and_careful",
+            "value": "4 / 4",
+            "detail": "Supplied rubric",
+            "tone": "success",
+            "amount": 100
+          }
+        ],
+        "console": "confident_but_wrong: 2/4\nclear_and_careful: 4/4\nJudgments supplied by a person, not verified by code.\n"
+      }
+    ],
+    "challenge": {
+      "question": "What does a 4/4 prove here?",
+      "choices": [
+        {
+          "text": "The code independently verified every fact",
+          "correct": false,
+          "feedback": "There is no fact checker in this code. It only adds existing Boolean values."
+        },
+        {
+          "text": "All four supplied judgments were True",
+          "correct": true,
+          "feedback": "Right. Read a score together with how its judgments were produced."
+        }
+      ]
+    }
+  }
 }

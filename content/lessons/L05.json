@@ -1,6 +1,6 @@
 {
   "id": "L05",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "The probability arcade",
   "zone": "Token Arcade",
@@ -205,5 +205,168 @@
     "reference_solution": "With the example function defined:\nodds = probabilities(1.0)\nprint(round(odds['tea'], 3))  # 0.665\nprint(abs(sum(odds.values()) - 1) < 1e-9)  # True"
   },
   "reflection": "How would you explain to someone why a consistent chatbot answer can still be wrong?",
-  "tutor_context": "Explain invented logits, normalized probabilities, and positive temperature with a raffle analogy. Do not equate temperature with accuracy or creativity. Explain rounding and avoid deep calculus."
+  "tutor_context": "Explain invented logits, normalized probabilities, and positive temperature with a raffle analogy. Do not equate temperature with accuracy or creativity. Explain rounding and avoid deep calculus.",
+  "visual": {
+    "title": "Turn scores into a probability menu",
+    "inputs": "Tea has score 2, juice 1, and water 0. Compare temperatures 0.5 and 2.",
+    "operation": "Subtract the largest score, exponentiate scaled scores, and divide by their total.",
+    "output": "Lower temperature concentrates the distribution; higher temperature spreads it out.",
+    "limit": "The scores are authored. This toy prints probabilities and never samples a word. Temperature does not verify facts.",
+    "frames": [
+      {
+        "title": "Start with scores",
+        "explain": "Scores are not probabilities: they do not add to one. Tea is highest in this authored menu.",
+        "lines": [
+          3
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "tea",
+            "value": "Score 2",
+            "detail": "Largest score",
+            "tone": "active",
+            "amount": 100
+          },
+          {
+            "label": "juice",
+            "value": "Score 1",
+            "detail": "Middle score",
+            "tone": "neutral",
+            "amount": 50
+          },
+          {
+            "label": "water",
+            "value": "Score 0",
+            "detail": "Smallest score",
+            "tone": "neutral",
+            "amount": 0
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Scale the differences",
+        "explain": "At T=0.5, subtracting peak=2 gives scaled differences 0, -2, -4. exp turns these into positive weights.",
+        "lines": [
+          7,
+          8,
+          9,
+          10
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "tea",
+            "value": "exp(0) = 1",
+            "detail": "Unnormalized weight",
+            "tone": "active"
+          },
+          {
+            "label": "juice",
+            "value": "exp(-2) ≈ 0.1353",
+            "detail": "Unnormalized weight",
+            "tone": "neutral"
+          },
+          {
+            "label": "water",
+            "value": "exp(-4) ≈ 0.0183",
+            "detail": "Unnormalized weight",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Normalize a cooler menu",
+        "explain": "Divide each weight by their sum. Tea has about 86.68% probability. Two-decimal display rounding can make printed values sum to 1.01.",
+        "lines": [
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "tea",
+            "value": "0.87",
+            "detail": "T = 0.5",
+            "tone": "success",
+            "amount": 86.68
+          },
+          {
+            "label": "juice",
+            "value": "0.12",
+            "detail": "T = 0.5",
+            "tone": "neutral",
+            "amount": 11.73
+          },
+          {
+            "label": "water",
+            "value": "0.02",
+            "detail": "T = 0.5",
+            "tone": "neutral",
+            "amount": 1.59
+          }
+        ],
+        "console": "T = 0.5\ntea: 0.87, juice: 0.12, water: 0.02\n"
+      },
+      {
+        "title": "Warm it up",
+        "explain": "At T=2.0 the gaps shrink. Tea stays most likely, but juice and water receive more probability.",
+        "lines": [
+          8,
+          9,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "tea",
+            "value": "0.51",
+            "detail": "T = 2.0",
+            "tone": "success",
+            "amount": 50.65
+          },
+          {
+            "label": "juice",
+            "value": "0.31",
+            "detail": "T = 2.0",
+            "tone": "active",
+            "amount": 30.72
+          },
+          {
+            "label": "water",
+            "value": "0.19",
+            "detail": "T = 2.0",
+            "tone": "active",
+            "amount": 18.63
+          }
+        ],
+        "console": "T = 0.5\ntea: 0.87, juice: 0.12, water: 0.02\nT = 2.0\ntea: 0.51, juice: 0.31, water: 0.19\n"
+      }
+    ],
+    "challenge": {
+      "question": "What changes when temperature rises in this example?",
+      "choices": [
+        {
+          "text": "Water must become the most likely word",
+          "correct": false,
+          "feedback": "Scaling these score gaps does not reverse their order. Compare the two bar shapes."
+        },
+        {
+          "text": "The distribution gets flatter; tea still ranks first",
+          "correct": true,
+          "feedback": "Exactly. More spread does not mean the ranking reverses."
+        }
+      ]
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "L09",
-  "version": 2,
+  "version": 3,
   "status": "authored",
   "title": "Your first live model call",
   "zone": "Prompt Kitchen",
@@ -206,5 +206,149 @@
     "reference_solution": "A successful experiment shows a Google connection-test reply and a separate Google chatbot reply. The wording varies. Usage should display provider-reported tokens or unknown. Demo replies are labeled Python rules and make zero Google calls. If credentials are absent, the correct result is a clear configuration error, not a fabricated live reply."
   },
   "reflection": "Point to every step where a key, request limit, response, or usage record belongs. Which parts ran locally and which crossed the network?",
-  "tutor_context": "Teach the actual app request path and authentication distinction. Simulation and fake-provider tests are not live proof. No secrets in prompts. Missing usage is unknown, not free. Keep live build incomplete until real connection is verified."
+  "tutor_context": "Teach the actual app request path and authentication distinction. Simulation and fake-provider tests are not live proof. No secrets in prompts. Missing usage is unknown, not free. Keep live build incomplete until real connection is verified.",
+  "visual": {
+    "title": "Watch a question travel out and back",
+    "inputs": "A question plus six authored labels describing a typical request journey.",
+    "operation": "enumerate numbers those labels; this example only prints the journey.",
+    "output": "Six stages and an explicit Simulation only notice appear.",
+    "limit": "No network, token counting, or model generation occurs in this example. Those boxes describe the live app’s intended path.",
+    "frames": [
+      {
+        "title": "Browser hands off the question",
+        "explain": "In the live app the browser posts JSON. Here the question is just a function argument and the first stage is an authored string.",
+        "lines": [
+          1,
+          2,
+          5
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Browser",
+            "value": "Explain a token in one sentence.",
+            "detail": "Question",
+            "tone": "active"
+          },
+          {
+            "label": "Python server",
+            "value": "Receives a request",
+            "detail": "Live-app boundary",
+            "tone": "neutral"
+          }
+        ],
+        "console": "Question: Explain a token in one sentence.\n"
+      },
+      {
+        "title": "Python checks the request",
+        "explain": "A live server checks sizes and request limits before calling a provider. This toy does not perform those checks.",
+        "lines": [
+          2,
+          6,
+          7
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Browser",
+            "value": "Question",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Python server",
+            "value": "Check limits",
+            "detail": "Before provider access",
+            "tone": "active"
+          },
+          {
+            "label": "Google",
+            "value": "Not called by this toy",
+            "detail": "Simulation",
+            "tone": "muted"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Count, then generate",
+        "explain": "The real provider counts input and requests generation. Both stage labels are displayed by the same enumerate loop here.",
+        "lines": [
+          3,
+          6,
+          7
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Python server",
+            "value": "Bounded context",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Google count",
+            "value": "Input tokens",
+            "detail": "Live operation described",
+            "tone": "neutral"
+          },
+          {
+            "label": "Google generate",
+            "value": "Reply text",
+            "detail": "Live operation described",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Bring the reply back",
+        "explain": "The live reply returns through Python to the browser. The toy prints the labels and its simulation notice.",
+        "lines": [
+          4,
+          6,
+          7,
+          8,
+          10
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Google",
+            "value": "Reply text",
+            "detail": "Live operation described",
+            "tone": "neutral"
+          },
+          {
+            "label": "Python server",
+            "value": "Return safe response",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Browser",
+            "value": "Display text",
+            "detail": "End of journey",
+            "tone": "success"
+          }
+        ],
+        "console": "Question: Explain a token in one sentence.\n1. Browser posts question\n2. Python checks limits\n3. Google counts input tokens\n4. Google generates text\n5. Python returns reply\n6. Browser displays text\nSimulation only: no Google calls\n"
+      }
+    ],
+    "challenge": {
+      "question": "How many Google requests does this Python example make?",
+      "choices": [
+        {
+          "text": "Six: one request per displayed stage",
+          "correct": false,
+          "feedback": "Printing a string does not call the service it names. Read the simulation notice."
+        },
+        {
+          "text": "Zero: it prints authored stage names",
+          "correct": true,
+          "feedback": "Correct. A diagram of a request is not a real request."
+        }
+      ]
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "L11",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Catch a streaming reply",
   "zone": "Chat Workshop",
@@ -206,5 +206,143 @@
     "reference_solution": "A successful rehearsal retains partial text marked stopped after refresh. Recovery reads the same record. Try another demo reply creates a new variant; Use partial reply explicitly selects the existing text. Real Google cancellation can still have unknown billed usage."
   },
   "reflection": "What should the app do if your browser loses the reply after Python has already saved it?",
-  "tutor_context": "Teach Assemble streamed chunks without assuming one chunk equals one token., Distinguish running, complete, stopped, interrupted, and failed replies., Stop a reply and recover saved partial text without an automatic new request. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+  "tutor_context": "Teach Assemble streamed chunks without assuming one chunk equals one token., Distinguish running, complete, stopped, interrupted, and failed replies., Stop a reply and recover saved partial text without an automatic new request. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof.",
+  "visual": {
+    "title": "Catch a reply, then stop the stream",
+    "inputs": "Three chunks: 'A ', 'token ', and 'is text.'. reply starts empty.",
+    "operation": "The loop appends arriving chunks, but breaks before the third chunk.",
+    "output": "The saved partial is 'A token ' and its status is stopped.",
+    "limit": "These are authored chunks, not model tokens or a network stream. A live Stop may not undo work already billed upstream.",
+    "frames": [
+      {
+        "title": "Line up three arrivals",
+        "explain": "repr-style quotes make spaces visible. The chunks are arbitrary string pieces, not necessarily tokens.",
+        "lines": [
+          1,
+          2
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Chunk 0",
+            "value": "'A '",
+            "detail": "Arrives first",
+            "tone": "active"
+          },
+          {
+            "label": "Chunk 1",
+            "value": "'token '",
+            "detail": "Arrives next",
+            "tone": "neutral"
+          },
+          {
+            "label": "Chunk 2",
+            "value": "'is text.'",
+            "detail": "Arrives last",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Save the first chunk",
+        "explain": "index is 0, so the stop test is false. += extends the existing reply string.",
+        "lines": [
+          3,
+          4,
+          6,
+          7
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Saved reply",
+            "value": "'A '",
+            "detail": "Trailing space retained",
+            "tone": "active"
+          },
+          {
+            "label": "Waiting",
+            "value": "'token '",
+            "detail": "Next chunk",
+            "tone": "neutral"
+          }
+        ],
+        "console": "Saved: 'A '\n"
+      },
+      {
+        "title": "Save the next chunk",
+        "explain": "index is 1. Appending gives A token with a trailing space; the app can show this partial before the rest arrives.",
+        "lines": [
+          3,
+          4,
+          6,
+          7
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Saved reply",
+            "value": "'A token '",
+            "detail": "Two chunks accumulated",
+            "tone": "success"
+          },
+          {
+            "label": "Waiting",
+            "value": "'is text.'",
+            "detail": "Third chunk",
+            "tone": "muted"
+          }
+        ],
+        "console": "Saved: 'A '\nSaved: 'A token '\n"
+      },
+      {
+        "title": "Stop before the third append",
+        "explain": "At index 2, break runs first. is text. never enters reply. A stopped partial is not a complete answer.",
+        "lines": [
+          4,
+          5,
+          8,
+          9
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Saved partial",
+            "value": "'A token '",
+            "detail": "Retained",
+            "tone": "active"
+          },
+          {
+            "label": "Blocked chunk",
+            "value": "'is text.'",
+            "detail": "Not appended",
+            "tone": "muted"
+          },
+          {
+            "label": "Status",
+            "value": "stopped",
+            "detail": "Incomplete reply",
+            "tone": "warning"
+          }
+        ],
+        "console": "Saved: 'A '\nSaved: 'A token '\nStatus: stopped\nPartial: 'A token '\n"
+      }
+    ],
+    "challenge": {
+      "question": "Why is is text. missing from reply?",
+      "choices": [
+        {
+          "text": "Stopping deletes all earlier chunks",
+          "correct": false,
+          "feedback": "The two earlier chunks are visibly retained. Only the next append is skipped."
+        },
+        {
+          "text": "The loop breaks before appending chunk 2",
+          "correct": true,
+          "feedback": "Exactly. Stop retains the partial and prevents the next append in this toy."
+        }
+      ]
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "L07",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Prompt Kitchen",
   "zone": "Prompt Kitchen",
@@ -204,5 +204,141 @@
     "reference_solution": "vague = 'Explain dictionaries'\nclear = make_prompt('Explain a dictionary to a Python beginner', 'Use a phone contacts list', 'Two sentences and one key:value example')\nprint(vague)\nprint(clear)\nRubric: explains key-to-value lookup; uses contacts; follows the requested shape. Live answers will vary."
   },
   "reflection": "Which ingredient made your request easier to assess? Record the prompt, your rubric, and what remains uncertain.",
-  "tutor_context": "Teach task/context/output shape. Clearly distinguish string assembly from inference. Use small prompt comparisons and a rubric; never promise deterministic or truthful output."
+  "tutor_context": "Teach task/context/output shape. Clearly distinguish string assembly from inference. Use small prompt comparisons and a rubric; never promise deterministic or truthful output.",
+  "visual": {
+    "title": "Mix a prompt from three ingredients",
+    "inputs": "A task, a familiar context, and the requested output shape.",
+    "operation": "make_prompt inserts each argument into a labeled f-string.",
+    "output": "One string contains Task, Context, and Output on separate lines.",
+    "limit": "A well-shaped prompt guides a model; it cannot guarantee obedience or correct facts. This code only builds text.",
+    "frames": [
+      {
+        "title": "Choose the ingredients",
+        "explain": "Each argument has a different job. A shopping basket is the teaching example, not the task itself.",
+        "lines": [
+          4
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Task",
+            "value": "Explain a Python list",
+            "detail": "What to do",
+            "tone": "active"
+          },
+          {
+            "label": "Context",
+            "value": "Use a shopping basket",
+            "detail": "A familiar example",
+            "tone": "neutral"
+          },
+          {
+            "label": "Shape",
+            "value": "Two sentences",
+            "detail": "Requested format",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Fill the template",
+        "explain": "The function returns a string. Each placeholder is replaced by the corresponding argument.",
+        "lines": [
+          1,
+          2
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "task",
+            "value": "Explain a Python list",
+            "detail": "Inserted after Task:",
+            "tone": "neutral"
+          },
+          {
+            "label": "context",
+            "value": "Use a shopping basket",
+            "detail": "Inserted after Context:",
+            "tone": "neutral"
+          },
+          {
+            "label": "shape",
+            "value": "Two sentences",
+            "detail": "Inserted after Output:",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Line breaks organize the request",
+        "explain": "\\n means a newline inside this string. The labels make the three roles visible.",
+        "lines": [
+          2,
+          4
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Task",
+            "value": "Explain a Python list",
+            "detail": "First line",
+            "tone": "active"
+          },
+          {
+            "label": "Context",
+            "value": "Use a shopping basket",
+            "detail": "Second line",
+            "tone": "neutral"
+          },
+          {
+            "label": "Output",
+            "value": "Two sentences",
+            "detail": "Third line",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Print the assembled prompt",
+        "explain": "prompt holds the returned string. print displays it; no model is called here.",
+        "lines": [
+          5
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Function output",
+            "value": "One prompt string",
+            "detail": "Stored in prompt",
+            "tone": "neutral"
+          },
+          {
+            "label": "Destination",
+            "value": "Python console",
+            "detail": "No API request",
+            "tone": "success"
+          }
+        ],
+        "console": "Task: Explain a Python list\nContext: Use a shopping basket\nOutput: Two sentences\n"
+      }
+    ],
+    "challenge": {
+      "question": "Does this function produce the explanation of a Python list?",
+      "choices": [
+        {
+          "text": "Yes, the f-string is a language model",
+          "correct": false,
+          "feedback": "An f-string substitutes values. There is no generation call in this example."
+        },
+        {
+          "text": "No, it builds the request text",
+          "correct": true,
+          "feedback": "Right. Building a prompt and generating an answer are separate steps."
+        }
+      ]
+    }
+  }
 }

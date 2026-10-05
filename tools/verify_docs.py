@@ -14,6 +14,8 @@ import tempfile
 from pathlib import Path
 
 from render_lessons import OUTPUT, ROOT, render
+sys.path.insert(0, str(ROOT))
+from app.visuals import validate_visual
 
 
 def require(condition: bool, message: str) -> None:
@@ -39,6 +41,8 @@ def schema_check(value, schema: dict, root_schema: dict, location: str) -> None:
         "array": isinstance(value, list),
         "string": isinstance(value, str),
         "integer": type(value) is int,
+        "boolean": type(value) is bool,
+        "number": type(value) in (int, float),
     }
     if kind:
         require(valid[kind], f"{location}: expected {kind}")
@@ -66,9 +70,10 @@ def schema_check(value, schema: dict, root_schema: dict, location: str) -> None:
                 schema_check(child, schema["items"], root_schema, f"{location}[{index}]")
     elif kind == "string":
         require(len(value) >= schema.get("minLength", 0), f"{location}: empty text")
+        require(len(value) <= schema.get("maxLength", float('inf')), f"{location}: text is too long")
         if "pattern" in schema:
             require(re.search(schema["pattern"], value) is not None, f"{location}: pattern mismatch")
-    elif kind == "integer":
+    elif kind in ("integer", "number"):
         require(value >= schema.get("minimum", -float("inf")), f"{location}: too small")
         require(value <= schema.get("maximum", float("inf")), f"{location}: too large")
 
@@ -117,6 +122,7 @@ def main() -> None:
         require(path.resolve().is_relative_to((ROOT / "content" / "lessons").resolve()), "Lesson path escaped content")
         lesson = json.loads(path.read_text(encoding="utf-8"))
         schema_check(lesson, schema, schema, entry["id"])
+        validate_visual(lesson)
         require(lesson["id"] == entry["id"] and path.stem == entry["id"], "Lesson filename/ID mismatch")
         require(lesson["title"] == entry["title"], "Map title differs from authored lesson")
         require(lesson["prerequisites"] == entry["prerequisites"], "Prerequisite mismatch")

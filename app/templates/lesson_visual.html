@@ -1,0 +1,29 @@
+{% set visual = lesson.visual %}{% set frame = visual.frames[0] %}
+<section class="visual-story" aria-labelledby="visual-title" data-visual-story>
+  <header class="story-heading"><img src="/static/pip.svg" alt="" aria-hidden="true"><div><span class="eyebrow">See the Python idea move</span><h2 id="visual-title">{{ visual.title }}</h2><p>Follow the data. Each scene lights up the Python that explains it.</p></div></header>
+  <div class="story-context"><div><b>Start with</b><p>{{ visual.inputs }}</p></div><div><b>Python does</b><p>{{ visual.operation }}</p></div><div><b>Look for</b><p>{{ visual.output }}</p></div></div>
+  <div class="story-controls" hidden data-story-controls>
+    <button type="button" class="button" id="story-play" aria-pressed="false">Play story</button>
+    <button type="button" class="button secondary" id="story-back">Back</button>
+    <button type="button" class="button secondary" id="story-next">Next scene →</button>
+    <button type="button" class="text-link" id="story-reset">Start over</button>
+    <label class="story-pace">Pace<select id="story-pace"><option value="7000">Slow</option><option value="4500" selected>Steady</option><option value="2500">Quick</option></select></label>
+  </div>
+  <nav id="story-rail" aria-label="Visual story scenes" hidden></nav>
+  <div class="story-workbench">
+    <div class="story-stage">
+      <p class="story-position" id="story-position">Scene 1 of {{ visual.frames|length }}</p>
+      <h3 id="story-scene-title">{{ frame.title }}</h3>
+      <div id="story-diagram" class="story-diagram" data-layout="{{ frame.layout }}" role="group" aria-label="Scene data">
+        {% for item in frame["items"] %}<div class="visual-tile" data-tone="{{ item.tone }}"><span class="visual-label">{{ item.label }}</span><strong>{{ item.value }}</strong><small>{{ item.detail }}</small>{% if item.amount is defined %}<div class="visual-meter" aria-hidden="true"><span style="transform:scaleX({{ item.amount / 100 }})"></span></div>{% endif %}</div>{% endfor %}
+      </div>
+      <p id="story-explain" class="story-explain">{{ frame.explain }}</p>
+      <div class="story-console"><span>Console so far · authored trace</span><pre id="story-console">{{ frame.console or 'Nothing printed yet.' }}</pre></div>
+      <p id="story-status" class="small muted" role="status">Step through at your pace. This is a visual trace, not Python execution.</p>
+    </div>
+    <div class="story-code code-block"><div class="code-header"><span>Matching Python</span><button class="copy-button" data-copy="example-code">Copy code</button></div><p class="story-line-label" id="story-line-label">The current scene refers to lines {{ frame.lines|join(', ') }}.</p><pre tabindex="0" aria-label="Python source; highlighted lines match the scene"><code id="example-code">{{ lesson.python_example.code }}</code></pre></div>
+  </div>
+  <div class="story-boundary"><b>What this picture leaves out</b><p>{{ visual.limit }}</p></div>
+  <div class="story-challenge" hidden><span class="tag">Check your hunch</span><h3>{{ visual.challenge.question }}</h3><div id="story-choices"></div><p id="story-feedback" role="status">Try a choice. Hints and retries are welcome; this practice adds no XP.</p></div>
+  <noscript><p>JavaScript is off. The first scene and Python are visible above. Read the complete visual story below.</p><ol>{% for scene in visual.frames %}<li><h3>{{ scene.title }}</h3><p>{{ scene.explain }}</p><ul>{% for item in scene["items"] %}<li><b>{{ item.label }}:</b> {{ item.value }}. {{ item.detail }}</li>{% endfor %}</ul></li>{% endfor %}</ol></noscript>
+</section>

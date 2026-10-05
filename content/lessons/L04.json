@@ -1,6 +1,6 @@
 {
   "id": "L04",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Tokens are text pieces",
   "zone": "Token Arcade",
@@ -204,5 +204,140 @@
     "reference_solution": "# Manual illustration, not a model tokenizer.\npieces = ['chat', 'bot', ' builder', '!']\ntext = ''.join(pieces)\nprint(text)\nprint(len(pieces))\nprint(len(text.split()))"
   },
   "reflection": "Explain why 'ten words' does not mean 'exactly ten tokens' for your chatbot.",
-  "tutor_context": "Use text building blocks; clearly label all manual splits. Explain join and leading spaces. Never claim whitespace split is the actual Google tokenizer."
+  "tutor_context": "Use text building blocks; clearly label all manual splits. Explain join and leading spaces. Never claim whitespace split is the actual Google tokenizer.",
+  "visual": {
+    "title": "Snap text pieces together",
+    "inputs": "Four manually chosen strings, including a leading space in the third piece.",
+    "operation": "An empty separator joins the pieces exactly; split later counts whitespace words.",
+    "output": "The same text has four pieces but two whitespace words.",
+    "limit": "These pieces are manually chosen. A real tokenizer may split the text differently; characters, words, and tokens are distinct.",
+    "frames": [
+      {
+        "title": "Inspect the pieces",
+        "explain": "The leading space belongs to the robot piece. The exclamation mark is its own piece.",
+        "lines": [
+          1
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Piece 1",
+            "value": "'play'",
+            "detail": "No space",
+            "tone": "neutral"
+          },
+          {
+            "label": "Piece 2",
+            "value": "'ful'",
+            "detail": "No space",
+            "tone": "neutral"
+          },
+          {
+            "label": "Piece 3",
+            "value": "' robot'",
+            "detail": "Starts with a space",
+            "tone": "active"
+          },
+          {
+            "label": "Piece 4",
+            "value": "'!'",
+            "detail": "Punctuation",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Join without adding separators",
+        "explain": "''.join(pieces) adds no new spaces. It preserves the space already inside the third string.",
+        "lines": [
+          2,
+          3
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Joined text",
+            "value": "playful robot!",
+            "detail": "One string",
+            "tone": "success"
+          }
+        ],
+        "console": "playful robot!\n"
+      },
+      {
+        "title": "Count pieces",
+        "explain": "len(pieces) counts list entries, including the punctuation entry.",
+        "lines": [
+          4
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "play",
+            "value": "Piece 1",
+            "detail": "1",
+            "tone": "active"
+          },
+          {
+            "label": "ful",
+            "value": "Piece 2",
+            "detail": "2",
+            "tone": "active"
+          },
+          {
+            "label": " robot",
+            "value": "Piece 3",
+            "detail": "3",
+            "tone": "active"
+          },
+          {
+            "label": "!",
+            "value": "Piece 4",
+            "detail": "4",
+            "tone": "active"
+          }
+        ],
+        "console": "playful robot!\npieces: 4\n"
+      },
+      {
+        "title": "Count whitespace words",
+        "explain": "text.split() cuts at whitespace. playful and robot! are two entries; the punctuation stays attached here.",
+        "lines": [
+          5
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Word 1",
+            "value": "playful",
+            "detail": "Two original pieces",
+            "tone": "neutral"
+          },
+          {
+            "label": "Word 2",
+            "value": "robot!",
+            "detail": "Space separates this word",
+            "tone": "active"
+          }
+        ],
+        "console": "playful robot!\npieces: 4\nwhitespace words: 2\n"
+      }
+    ],
+    "challenge": {
+      "question": "Is len(pieces) guaranteed to equal len(text.split())?",
+      "choices": [
+        {
+          "text": "Yes, every token is a whole word",
+          "correct": false,
+          "feedback": "The same text visibly has four pieces and two words in this toy."
+        },
+        {
+          "text": "No, pieces and words can have different boundaries",
+          "correct": true,
+          "feedback": "Right. Different boundary rules create different counts."
+        }
+      ]
+    }
+  }
 }

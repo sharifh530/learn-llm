@@ -8,12 +8,62 @@ This reading copy is generated from `content/lessons/*.json`. Edit the JSON, the
 
 ## L01: The next-word detective
 
-Prediction Playground · about 20 minutes · version 1
+Prediction Playground · about 20 minutes · version 2
 
 ### Your goal
 
 - Explain next-token prediction using a familiar sentence.
 - Distinguish a likely continuation from a verified fact.
+
+### Visual story
+
+**Follow a sentence through a tiny lookup**
+
+**Start with:** Two known sentence prefixes and their next words live in next_word.
+
+**Python does:** get looks for an exact key. If it is absent, Python returns the fallback.
+
+**Look for:** The first print writes tea. The second writes I do not know yet.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L01?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Pack two known patterns** (Python lines 1, 2, 3, 4)
+
+A dictionary pairs each exact prefix with one reply. Read each row from left to right.
+
+- Known prefix: I drink a cup of. → tea
+- Known prefix: The cat says. → meow
+
+**Send a question** (Python lines 5)
+
+prompt is a string. Python uses that whole string as the dictionary key.
+
+- Question: I drink a cup of. The complete key
+- Lookup: next_word.get(prompt, fallback). Search the table
+- Stored reply: tea. Key exists
+
+**The matching key wins** (Python lines 6)
+
+get finds the key, so it returns tea instead of the fallback. print puts the result on the console.
+
+- Dictionary result: tea. Returned value
+- Console: tea. Printed once
+
+**A missing key takes the other path** (Python lines 7)
+
+The rocket likes is absent. The default string becomes the second printed line.
+
+- Question: The rocket likes. Unknown prefix
+- Lookup: No exact key. Use the default
+- Fallback: I do not know yet. No invented dictionary entry
+
+**Visual boundary:** This is an authored dictionary, not a model guessing probabilities. A lookup cannot establish a fact.
+
+**Check your hunch:** If you change prompt to The cat says, what does the first print show?
+
+- tea → tea belongs to the other key. Look at the row matching the new prefix.
+- meow → Exactly. The key changes which stored value get returns.
+
 
 ### Predict first
 
@@ -212,12 +262,62 @@ Explain to a friend why a chatbot can sound confident without proving its answer
 
 ## L02: Learning versus replying
 
-Prediction Playground · about 25 minutes · version 1
+Prediction Playground · about 25 minutes · version 2
 
 ### Your goal
 
 - Separate training, inference, and saved conversation state.
 - Learn a simple next-word preference by counting examples.
+
+### Visual story
+
+**Count examples, then make one prediction**
+
+**Start with:** Three training sentences: two end in fish after eat; one ends in rice.
+
+**Python does:** Counter accumulates counts. most_common reads the existing counts without changing them.
+
+**Look for:** The count dictionary is printed, then fish is selected.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L02?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Set out the examples** (Python lines 1, 3, 4)
+
+Counter starts empty. The sentences are examples to learn from, not questions to answer.
+
+- Example: cats eat fish.
+- Example: dogs eat fish.
+- Example: birds eat rice.
+
+**Learn from the first sentence** (Python lines 5, 6, 7, 8)
+
+split makes three words. words[1] is eat, so words[2], fish, gets one vote.
+
+- fish: 1 example. Count after eat
+- rice: 0 examples. Not seen yet
+
+**Finish counting the examples** (Python lines 5, 6, 7, 8, 9)
+
+The second sentence adds another fish. The third adds rice. The table now stores what the toy learned.
+
+- fish: 2 examples. Two votes
+- rice: 1 example. One vote
+
+**Reply without relearning** (Python lines 10, 11)
+
+most_common(1) returns the largest-count pair. [0][0] extracts its word. No count changes during this selection.
+
+- Learned table: fish: 2; rice: 1. Already stored
+- Select: most_common(1)[0][0]. Choose the word
+- Prediction: fish. Counts remain 2 and 1
+
+**Visual boundary:** Counting whole-word transitions is a tiny teaching model. Real LLM training changes numerical parameters.
+
+**Check your hunch:** Does selecting fish add another fish to the learned count?
+
+- Yes, replying is training → Only the += 1 line changes a count. Selection reads a result.
+- No, it only reads the counts → Right. Learning updates the table; this reply only reads it.
+
 
 ### Predict first
 
@@ -423,12 +523,71 @@ Describe one example each of training, inference, and application memory using y
 
 ## L03: Build a tiny story machine
 
-Prediction Playground · about 30 minutes · version 1
+Prediction Playground · about 30 minutes · version 2
 
 ### Your goal
 
 - Generate text by repeatedly selecting a next word.
 - Explain a bigram toy's limited context and stopping condition.
+
+### Visual story
+
+**Build a story one transition at a time**
+
+**Start with:** Two robots like puzzles examples and one robots eat rice example.
+
+**Python does:** Count neighboring words, then repeatedly pick the most common follower.
+
+**Look for:** The toy prints robots like puzzles and stops at <END>.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L03?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Learn neighboring pairs** (Python lines 3, 4, 5, 6, 7, 8)
+
+zip pairs every word with its immediate follower, including the ending marker.
+
+- robots: like × 2; eat × 1. Follower counts
+- like: puzzles × 2. Follower counts
+- puzzles: <END> × 2. Ending marker
+
+**Start the output** (Python lines 10, 11)
+
+word holds the current position. output starts with the same word.
+
+- Current word: robots. Look up its followers
+- Output so far: robots. A list with one word
+
+**Take the most common edge** (Python lines 12, 13, 16, 19)
+
+like beats eat by 2 votes to 1. It is appended, then becomes the current word.
+
+- Already written: robots.
+- Selected follower: like. 2 votes beats 1
+- Output so far: robots like. Append, then repeat
+
+**Repeat from like** (Python lines 13, 16, 19)
+
+The next lookup starts at like, not robots. Its most common follower is puzzles.
+
+- Already written: robots like.
+- Selected follower: puzzles. Following like
+- Output so far: robots like puzzles. Three words
+
+**Stop before appending the marker** (Python lines 16, 17, 18, 20)
+
+puzzles leads to <END>. break exits the loop, and join turns the word list into a sentence.
+
+- Current word: puzzles.
+- Follower: <END>. Stop; do not append
+- Printed story: robots like puzzles. Words joined with spaces
+
+**Visual boundary:** This bigram toy sees only the current word. It does not understand a story or use transformer attention.
+
+**Check your hunch:** Why is <END> absent from the printed story?
+
+- join removes every marker automatically → join only joins the values already in the list. The loop stops before adding this marker.
+- break happens before output.append → Yes. The order of the stop check and append matters.
+
 
 ### Predict first
 
@@ -638,12 +797,63 @@ Which two stopping rules would you keep in a real chatbot, and what extra contex
 
 ## L04: Tokens are text pieces
 
-Token Arcade · about 20 minutes · version 1
+Token Arcade · about 20 minutes · version 2
 
 ### Your goal
 
 - Explain why tokens are not necessarily whole words.
 - Distinguish an illustrative token split from a model-specific tokenizer.
+
+### Visual story
+
+**Snap text pieces together**
+
+**Start with:** Four manually chosen strings, including a leading space in the third piece.
+
+**Python does:** An empty separator joins the pieces exactly; split later counts whitespace words.
+
+**Look for:** The same text has four pieces but two whitespace words.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L04?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Inspect the pieces** (Python lines 1)
+
+The leading space belongs to the robot piece. The exclamation mark is its own piece.
+
+- Piece 1: 'play'. No space
+- Piece 2: 'ful'. No space
+- Piece 3: ' robot'. Starts with a space
+- Piece 4: '!'. Punctuation
+
+**Join without adding separators** (Python lines 2, 3)
+
+''.join(pieces) adds no new spaces. It preserves the space already inside the third string.
+
+- Joined text: playful robot!. One string
+
+**Count pieces** (Python lines 4)
+
+len(pieces) counts list entries, including the punctuation entry.
+
+- play: Piece 1. 1
+- ful: Piece 2. 2
+-  robot: Piece 3. 3
+- !: Piece 4. 4
+
+**Count whitespace words** (Python lines 5)
+
+text.split() cuts at whitespace. playful and robot! are two entries; the punctuation stays attached here.
+
+- Word 1: playful. Two original pieces
+- Word 2: robot!. Space separates this word
+
+**Visual boundary:** These pieces are manually chosen. A real tokenizer may split the text differently; characters, words, and tokens are distinct.
+
+**Check your hunch:** Is len(pieces) guaranteed to equal len(text.split())?
+
+- Yes, every token is a whole word → The same text visibly has four pieces and two words in this toy.
+- No, pieces and words can have different boundaries → Right. Different boundary rules create different counts.
+
 
 ### Predict first
 
@@ -845,12 +1055,64 @@ Explain why 'ten words' does not mean 'exactly ten tokens' for your chatbot.
 
 ## L05: The probability arcade
 
-Token Arcade · about 30 minutes · version 1
+Token Arcade · about 30 minutes · version 2
 
 ### Your goal
 
 - Explain how temperature reshapes a toy probability distribution.
 - Distinguish sampling settings from factual verification.
+
+### Visual story
+
+**Turn scores into a probability menu**
+
+**Start with:** Tea has score 2, juice 1, and water 0. Compare temperatures 0.5 and 2.
+
+**Python does:** Subtract the largest score, exponentiate scaled scores, and divide by their total.
+
+**Look for:** Lower temperature concentrates the distribution; higher temperature spreads it out.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L05?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Start with scores** (Python lines 3)
+
+Scores are not probabilities: they do not add to one. Tea is highest in this authored menu.
+
+- tea: Score 2. Largest score
+- juice: Score 1. Middle score
+- water: Score 0. Smallest score
+
+**Scale the differences** (Python lines 7, 8, 9, 10)
+
+At T=0.5, subtracting peak=2 gives scaled differences 0, -2, -4. exp turns these into positive weights.
+
+- tea: exp(0) = 1. Unnormalized weight
+- juice: exp(-2) ≈ 0.1353. Unnormalized weight
+- water: exp(-4) ≈ 0.0183. Unnormalized weight
+
+**Normalize a cooler menu** (Python lines 11, 13, 14, 15, 16)
+
+Divide each weight by their sum. Tea has about 86.68% probability. Two-decimal display rounding can make printed values sum to 1.01.
+
+- tea: 0.87. T = 0.5
+- juice: 0.12. T = 0.5
+- water: 0.02. T = 0.5
+
+**Warm it up** (Python lines 8, 9, 10, 11, 13, 14, 15, 16)
+
+At T=2.0 the gaps shrink. Tea stays most likely, but juice and water receive more probability.
+
+- tea: 0.51. T = 2.0
+- juice: 0.31. T = 2.0
+- water: 0.19. T = 2.0
+
+**Visual boundary:** The scores are authored. This toy prints probabilities and never samples a word. Temperature does not verify facts.
+
+**Check your hunch:** What changes when temperature rises in this example?
+
+- Water must become the most likely word → Scaling these score gaps does not reverse their order. Compare the two bar shapes.
+- The distribution gets flatter; tea still ranks first → Exactly. More spread does not mean the ranking reverses.
+
 
 ### Predict first
 
@@ -1063,12 +1325,64 @@ How would you explain to someone why a consistent chatbot answer can still be wr
 
 ## L06: The conversation backpack
 
-Token Arcade · about 25 minutes · version 1
+Token Arcade · about 25 minutes · version 2
 
 ### Your goal
 
 - Separate stored history from the messages sent to a model.
 - Explain why a context budget can omit an earlier fact.
+
+### Visual story
+
+**Pack a smaller conversation backpack**
+
+**Start with:** Four saved messages form two complete user/assistant pairs.
+
+**Python does:** messages[-2:] makes a new list containing the last two messages.
+
+**Look for:** Four remain saved; only the puzzle pair is selected.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L06?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Save two pairs** (Python lines 1, 2, 3, 4, 5, 6)
+
+These rows are the app record. Saving them does not train a model.
+
+- user: My name is Mira..
+- assistant: Hello Mira..
+- user: I like puzzles..
+- assistant: Let us try a puzzle..
+
+**Select the tail** (Python lines 7)
+
+-2 means start two positions from the end. The earlier name pair stays saved but is omitted from selected.
+
+- user: My name is Mira.. Saved, not selected
+- assistant: Hello Mira.. Saved, not selected
+- user: I like puzzles.. Selected
+- assistant: Let us try a puzzle.. Selected
+
+**Count two different lists** (Python lines 8, 9)
+
+len(messages) stays 4. len(selected) is 2. A slice does not erase the original list.
+
+- Saved record: 4 messages. Still on the shelf
+- Request backpack: 2 messages. Only the selected tail
+
+**Print the selected context** (Python lines 10, 11)
+
+The loop visits only selected. The name Mira is absent from these two printed messages.
+
+- user: I like puzzles.. Sent context
+- assistant: Let us try a puzzle.. Sent context
+
+**Visual boundary:** This exact slice is safe only for this alternating four-message toy. The real app selects bounded whole turns.
+
+**Check your hunch:** After the slice, is Mira erased from the saved messages?
+
+- Yes, slicing deletes the older entries → A slice creates another list. The original messages still has four entries.
+- No, it is saved but omitted from selected → Correct. Saved history and selected context are different.
+
 
 ### Predict first
 
@@ -1277,12 +1591,63 @@ Explain how your future chatbot will keep saved history separate from the messag
 
 ## L07: Prompt Kitchen
 
-Prompt Kitchen · about 25 minutes · version 1
+Prompt Kitchen · about 25 minutes · version 2
 
 ### Your goal
 
 - Construct a prompt from a task, context, and output shape.
 - Compare prompts by checking the resulting answer against a small rubric.
+
+### Visual story
+
+**Mix a prompt from three ingredients**
+
+**Start with:** A task, a familiar context, and the requested output shape.
+
+**Python does:** make_prompt inserts each argument into a labeled f-string.
+
+**Look for:** One string contains Task, Context, and Output on separate lines.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L07?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Choose the ingredients** (Python lines 4)
+
+Each argument has a different job. A shopping basket is the teaching example, not the task itself.
+
+- Task: Explain a Python list. What to do
+- Context: Use a shopping basket. A familiar example
+- Shape: Two sentences. Requested format
+
+**Fill the template** (Python lines 1, 2)
+
+The function returns a string. Each placeholder is replaced by the corresponding argument.
+
+- task: Explain a Python list. Inserted after Task:
+- context: Use a shopping basket. Inserted after Context:
+- shape: Two sentences. Inserted after Output:
+
+**Line breaks organize the request** (Python lines 2, 4)
+
+\n means a newline inside this string. The labels make the three roles visible.
+
+- Task: Explain a Python list. First line
+- Context: Use a shopping basket. Second line
+- Output: Two sentences. Third line
+
+**Print the assembled prompt** (Python lines 5)
+
+prompt holds the returned string. print displays it; no model is called here.
+
+- Function output: One prompt string. Stored in prompt
+- Destination: Python console. No API request
+
+**Visual boundary:** A well-shaped prompt guides a model; it cannot guarantee obedience or correct facts. This code only builds text.
+
+**Check your hunch:** Does this function produce the explanation of a Python list?
+
+- Yes, the f-string is a language model → An f-string substitutes values. There is no generation call in this example.
+- No, it builds the request text → Right. Building a prompt and generating an answer are separate steps.
+
 
 ### Predict first
 
@@ -1483,12 +1848,59 @@ Which ingredient made your request easier to assess? Record the prompt, your rub
 
 ## L08: Give the robot a job
 
-Prompt Kitchen · about 25 minutes · version 1
+Prompt Kitchen · about 25 minutes · version 2
 
 ### Your goal
 
 - Separate server-controlled instructions from a user question.
 - Explain why a role instruction guides behavior but is not a security boundary.
+
+### Visual story
+
+**Keep the robot’s job beside the question**
+
+**Start with:** A job instruction and a learner question in separate dictionary fields.
+
+**Python does:** Named keys keep the two roles distinct, then print reads each field.
+
+**Look for:** The console labels the instruction Job and the question Question.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L08?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Write the job** (Python lines 1, 2)
+
+system_instruction defines the intended behavior: one small hint for a basic Python learner.
+
+- Job instruction: Give one small hint. For a basic Python learner
+- Role: system_instruction. A named field
+
+**Add the learner question** (Python lines 3, 4)
+
+user_message holds the question to answer. It does not replace the separate instruction field.
+
+- Job instruction: Give one small hint. Remains present
+- Question: What does messages[-2:] select?. user_message
+
+**Read the job by key** (Python lines 5)
+
+request[system_instruction] retrieves that stored value. print labels the line Job.
+
+- Job: Give one small hint for a basic Python learner.. Dictionary lookup
+
+**Read the question by key** (Python lines 6)
+
+The second lookup uses user_message. This program displays two strings; it does not ask Google for an answer.
+
+- Job: Give one small hint for a basic Python learner..
+- Question: What does messages[-2:] select?. Separate from the job
+
+**Visual boundary:** This is a Python dictionary rehearsal, not a provider request or a security boundary. A model may still follow bad instructions.
+
+**Check your hunch:** Where should the learner’s changing question go?
+
+- Replace system_instruction with the question → Replacing the job loses the intended hint behavior. Keep the roles separate.
+- In user_message → Exactly. The question changes while the intended job can stay the same.
+
 
 ### Predict first
 
@@ -1688,13 +2100,64 @@ Which parts of our app are enforced by Python, and which are only requested from
 
 ## L09: Your first live model call
 
-Prompt Kitchen · about 25 minutes · version 2
+Prompt Kitchen · about 25 minutes · version 3
 
 ### Your goal
 
 - Trace browser → Python server → Google → browser.
 - Tell configured settings, a successful real test, and a demo reply apart.
 - Read usage without treating unknown tokens or cost as zero.
+
+### Visual story
+
+**Watch a question travel out and back**
+
+**Start with:** A question plus six authored labels describing a typical request journey.
+
+**Python does:** enumerate numbers those labels; this example only prints the journey.
+
+**Look for:** Six stages and an explicit Simulation only notice appear.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L09?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Browser hands off the question** (Python lines 1, 2, 5)
+
+In the live app the browser posts JSON. Here the question is just a function argument and the first stage is an authored string.
+
+- Browser: Explain a token in one sentence.. Question
+- Python server: Receives a request. Live-app boundary
+
+**Python checks the request** (Python lines 2, 6, 7)
+
+A live server checks sizes and request limits before calling a provider. This toy does not perform those checks.
+
+- Browser: Question.
+- Python server: Check limits. Before provider access
+- Google: Not called by this toy. Simulation
+
+**Count, then generate** (Python lines 3, 6, 7)
+
+The real provider counts input and requests generation. Both stage labels are displayed by the same enumerate loop here.
+
+- Python server: Bounded context.
+- Google count: Input tokens. Live operation described
+- Google generate: Reply text. Live operation described
+
+**Bring the reply back** (Python lines 4, 6, 7, 8, 10)
+
+The live reply returns through Python to the browser. The toy prints the labels and its simulation notice.
+
+- Google: Reply text. Live operation described
+- Python server: Return safe response.
+- Browser: Display text. End of journey
+
+**Visual boundary:** No network, token counting, or model generation occurs in this example. Those boxes describe the live app’s intended path.
+
+**Check your hunch:** How many Google requests does this Python example make?
+
+- Six: one request per displayed stage → Printing a string does not call the service it names. Read the simulation notice.
+- Zero: it prints authored stage names → Correct. A diagram of a request is not a real request.
+
 
 ### Predict first
 
@@ -1903,13 +2366,64 @@ Point to every step where a key, request limit, response, or usage record belong
 
 ## L10: Chats that remember the conversation
 
-Chat Workshop · about 25 minutes · version 1
+Chat Workshop · about 25 minutes · version 2
 
 ### Your goal
 
 - Distinguish saved messages from request context and model training.
 - Select complete recent user/reply pairs within a bounded conversation.
 - Save a persona and test a follow-up in your chatbot.
+
+### Visual story
+
+**See what a remembered chat can forget**
+
+**Start with:** Two saved turns, but only the last complete turn is selected.
+
+**Python does:** Append that user/assistant pair, then append the new user question.
+
+**Look for:** Three messages are printed; the older mango detail stays outside the request.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L10?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Keep a saved conversation** (Python lines 1, 2)
+
+Each tuple contains one user message and one assistant reply. Both turns remain stored.
+
+- Older turn: My fruit is mango → Noted.. Saved
+- Recent turn: I like it sliced → Nice snack.. Saved
+
+**Pack one complete pair** (Python lines 3, 4, 5, 6)
+
+turns[-1:] selects the final turn. Append user first, assistant second; do not include a reply without its question.
+
+- Older pair: My fruit is mango → Noted.. Saved, omitted
+- user: I like it sliced. Selected
+- assistant: Nice snack.. Selected
+
+**Add the new question** (Python lines 7)
+
+The new user message follows the selected pair. There is no answer to this new question in the context yet.
+
+- user: I like it sliced. Recent pair
+- assistant: Nice snack.. Recent pair
+- user: What do I like?. Current question
+
+**Inspect what is sent** (Python lines 8, 9, 10, 11)
+
+len(messages)//2 is 1 here because there are 3 messages: one pair plus the current question. Mango is absent.
+
+- Saved turns: 2. Still stored
+- Sent complete pairs: 1. Plus a new user question
+- Missing context: mango. Omitted, not unlearned
+
+**Visual boundary:** This toy prints context rather than answering. The real app uses a bounded whole-turn selector, not this fixed one-turn slice.
+
+**Check your hunch:** Can this selected context identify the fruit as mango?
+
+- Yes, any saved turn is automatically sent → Saved turns are not automatically request context. Inspect the three selected messages.
+- No, that detail was omitted → Yes. A memory failure can be a selection failure, not a training failure.
+
 
 ### Predict first
 
@@ -2116,13 +2630,63 @@ Which message would you remove from the backpack to make the fruit follow-up amb
 
 ## L11: Catch a streaming reply
 
-Chat Workshop · about 25 minutes · version 1
+Chat Workshop · about 25 minutes · version 2
 
 ### Your goal
 
 - Assemble streamed chunks without assuming one chunk equals one token.
 - Distinguish running, complete, stopped, interrupted, and failed replies.
 - Stop a reply and recover saved partial text without an automatic new request.
+
+### Visual story
+
+**Catch a reply, then stop the stream**
+
+**Start with:** Three chunks: 'A ', 'token ', and 'is text.'. reply starts empty.
+
+**Python does:** The loop appends arriving chunks, but breaks before the third chunk.
+
+**Look for:** The saved partial is 'A token ' and its status is stopped.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L11?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Line up three arrivals** (Python lines 1, 2)
+
+repr-style quotes make spaces visible. The chunks are arbitrary string pieces, not necessarily tokens.
+
+- Chunk 0: 'A '. Arrives first
+- Chunk 1: 'token '. Arrives next
+- Chunk 2: 'is text.'. Arrives last
+
+**Save the first chunk** (Python lines 3, 4, 6, 7)
+
+index is 0, so the stop test is false. += extends the existing reply string.
+
+- Saved reply: 'A '. Trailing space retained
+- Waiting: 'token '. Next chunk
+
+**Save the next chunk** (Python lines 3, 4, 6, 7)
+
+index is 1. Appending gives A token with a trailing space; the app can show this partial before the rest arrives.
+
+- Saved reply: 'A token '. Two chunks accumulated
+- Waiting: 'is text.'. Third chunk
+
+**Stop before the third append** (Python lines 4, 5, 8, 9)
+
+At index 2, break runs first. is text. never enters reply. A stopped partial is not a complete answer.
+
+- Saved partial: 'A token '. Retained
+- Blocked chunk: 'is text.'. Not appended
+- Status: stopped. Incomplete reply
+
+**Visual boundary:** These are authored chunks, not model tokens or a network stream. A live Stop may not undo work already billed upstream.
+
+**Check your hunch:** Why is is text. missing from reply?
+
+- Stopping deletes all earlier chunks → The two earlier chunks are visibly retained. Only the next append is skipped.
+- The loop breaks before appending chunk 2 → Exactly. Stop retains the partial and prevents the next append in this toy.
+
 
 ### Predict first
 
@@ -2326,13 +2890,65 @@ What should the app do if your browser loses the reply after Python has already 
 
 ## L12: Judge a helpful response
 
-Chat Workshop · about 25 minutes · version 1
+Chat Workshop · about 25 minutes · version 2
 
 ### Your goal
 
 - Evaluate a reply using a small rubric instead of trusting confident wording.
 - Compare variants without silently mixing conversation branches.
 - Separate style, factual accuracy, uncertainty, and context use.
+
+### Visual story
+
+**Score helpfulness with a visible checklist**
+
+**Start with:** A person supplies four Boolean judgments for each of two replies.
+
+**Python does:** sum counts True as 1 and False as 0; it does not judge the replies itself.
+
+**Look for:** One reply scores 2/4, the other 4/4 on this supplied rubric.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L12?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Supply the judgments** (Python lines 1, 2, 3, 4)
+
+The code starts after someone has judged four criteria. It contains no text-analysis or fact-checking function.
+
+- confident_but_wrong: True, False, True, False. Human supplied
+- clear_and_careful: True, True, True, True. Human supplied
+
+**Count the first checklist** (Python lines 5, 6)
+
+True contributes 1; False contributes 0. The first list totals 2.
+
+- Criterion 1: True → 1. Pass
+- Criterion 2: False → 0. Fail
+- Criterion 3: True → 1. Pass
+- Criterion 4: False → 0. Fail
+
+**Count the second checklist** (Python lines 5, 6)
+
+All four supplied values are True, so the same calculation totals 4.
+
+- Criterion 1: True → 1. Pass
+- Criterion 2: True → 1. Pass
+- Criterion 3: True → 1. Pass
+- Criterion 4: True → 1. Pass
+
+**Read the score with its boundary** (Python lines 7)
+
+The final printed notice tells us who supplied the judgments. Arithmetic aggregates the checklist; it cannot certify the answer.
+
+- confident_but_wrong: 2 / 4. Supplied rubric
+- clear_and_careful: 4 / 4. Supplied rubric
+
+**Visual boundary:** Human judgments can be wrong or incomplete. A four-point score is not a factual guarantee or a model benchmark.
+
+**Check your hunch:** What does a 4/4 prove here?
+
+- The code independently verified every fact → There is no fact checker in this code. It only adds existing Boolean values.
+- All four supplied judgments were True → Right. Read a score together with how its judgments were produced.
+
 
 ### Predict first
 
@@ -2533,13 +3149,68 @@ Which rubric criterion could a cheerful, confident reply still fail? Give a conc
 
 ## L13: Similarity on a map
 
-Model Observatory · about 25 minutes · version 1
+Model Observatory · about 25 minutes · version 2
 
 ### Your goal
 
 - Describe a vector as an ordered list of numeric features.
 - Compare directions with cosine and handle a zero vector honestly.
 - Distinguish authored features from learned language embeddings.
+
+### Visual story
+
+**Compare direction, not just size**
+
+**Start with:** Apple is [7, 8, 3]. scaled is half of every coordinate.
+
+**Python does:** Cosine divides the dot product by the product of the vector lengths.
+
+**Look for:** The scaled vector has cosine 1.0000; the zero vector returns None.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L13?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Look at the coordinates** (Python lines 9, 10)
+
+Every scaled coordinate is half its apple counterpart. The bars compare magnitudes on the same 0–8 scale.
+
+- Apple x: 7. Coordinate 1
+- Scaled x: 3.5. Half of 7
+- Apple y: 8. Coordinate 2
+- Scaled y: 4. Half of 8
+- Apple z: 3. Coordinate 3
+- Scaled z: 1.5. Half of 3
+
+**Find the two lengths** (Python lines 1, 3, 4, 7)
+
+The dot product is 61. The product of lengths is also 61. Scaling all coordinates equally preserves direction.
+
+- Dot product: 7×3.5 + 8×4 + 3×1.5 = 61. Coordinate products added
+- Length product: √122 × √30.5 = 61. Two magnitudes
+- Ratio: 61 / 61 = 1. Same direction
+
+**Report the same direction** (Python lines 11)
+
+Formatting to four decimal places prints 1.0000. The vectors have different sizes but identical direction.
+
+- Apple: [7, 8, 3]. Larger magnitude
+- Scaled: [3.5, 4, 1.5]. Half the magnitude
+- Cosine: 1.0000. Same direction
+
+**A zero vector has no direction** (Python lines 4, 5, 6, 12)
+
+All coordinates zero gives magnitude 0. Return None before division to avoid dividing by zero.
+
+- Other vector: [0, 0, 0]. Zero magnitude
+- Guard: magnitude == 0. Stop before division
+- Result: None. Direction is undefined
+
+**Visual boundary:** The coordinates are handcrafted toy features, not learned embeddings. Similar direction is not identical meaning.
+
+**Check your hunch:** If every nonzero coordinate is multiplied by a positive 2, what happens to its cosine with the original?
+
+- It doubles to 2 → The numerator and length product scale together; cosine remains bounded.
+- It stays 1: direction is unchanged → Exactly. Cosine compares direction, not raw magnitude.
+
 
 ### Predict first
 
@@ -2746,13 +3417,65 @@ Why does scaling every feature preserve cosine while changing just sourness usua
 
 ## L14: Attention Spotlight
 
-Model Observatory · about 25 minutes · version 1
+Model Observatory · about 25 minutes · version 2
 
 ### Your goal
 
 - Turn manual scores into nonnegative weights with softmax.
 - Use a causal mask to prevent future positions contributing.
 - Compute a weighted value and explain why the toy is not model introspection.
+
+### Visual story
+
+**Aim attention without looking ahead**
+
+**Start with:** Scores [0, 2, 3], values [0.1, 0.9, 0.5], and query index 1.
+
+**Python does:** Mask index 2, normalize the allowed scores, then mix values using their weights.
+
+**Look for:** Weights are 0.1192, 0.8808, 0.0000; the mixed value is 0.8046.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L14?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Place the query at index 1** (Python lines 3, 4, 5, 6)
+
+Allowed positions satisfy i <= query. The current and previous positions are available; index 2 is ahead.
+
+- Index 0: score 0; value 0.1. Allowed
+- Index 1: score 2; value 0.9. Query; allowed
+- Index 2: score 3; value 0.5. Future; masked
+
+**Mask before normalization** (Python lines 7, 8)
+
+Even though index 2 has the largest score, its part is forced to 0. Only allowed scores contribute to the denominator.
+
+- Index 0: exp(-2) ≈ 0.1353. Allowed
+- Index 1: exp(0) = 1. Allowed
+- Index 2: 0. Masked
+
+**Share one unit of attention** (Python lines 9, 10, 11)
+
+Divide by the sum of allowed parts. The masked position stays at exactly zero and the unrounded weights sum to one.
+
+- Index 0: 0.1192. 11.92% of attention
+- Index 1: 0.8808. 88.08% of attention
+- Index 2: 0.0000. 0%; masked
+
+**Mix values, not words** (Python lines 12)
+
+Multiply each value by its weight and add: about 0.0119 + 0.7927 + 0 = 0.8046.
+
+- Previous contribution: 0.1192 × 0.1 ≈ 0.0119.
+- Current contribution: 0.8808 × 0.9 ≈ 0.7927. Largest contribution
+- Mixed output: 0.8046. A scalar in this toy
+
+**Visual boundary:** This single scalar mix omits learned Q/K/V projections, multiple heads, and transformer layers. The mask is a toy causal rule.
+
+**Check your hunch:** Can future index 2 contribute because its score is highest?
+
+- Yes, the highest score always wins → The mask is applied before normalization. This position contributes zero.
+- No, the mask forces its weight to zero → Right. The causal boundary overrides that future score.
+
 
 ### Predict first
 
@@ -2960,13 +3683,62 @@ Which parts did you choose manually, and which parts did softmax calculate? Why 
 
 ## L15: Inside the training gym
 
-Model Observatory · about 25 minutes · version 1
+Model Observatory · about 25 minutes · version 2
 
 ### Your goal
 
 - Separate inference from a parameter update using one weight.
 - Use squared loss and a gradient step to fit a training example.
 - Compare training improvement with a held-out check and learning-rate behavior.
+
+### Visual story
+
+**Train one weight and watch two losses**
+
+**Start with:** weight=1, rate=0.25, training target 3; the held-out target favors weight 2.
+
+**Python does:** Subtract rate × gradient three times; compare training and held-out squared losses.
+
+**Look for:** Training loss falls each step, while held-out loss rises after the first step.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L15?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Start away from the training target** (Python lines 1, 2, 3, 4)
+
+At weight 1, the training gradient is 2×(1−3) = −4. Subtracting a negative update increases the weight.
+
+- Current weight: 1.0.
+- Gradient: −4.0. Slope toward target 3
+- Update: 1 − 0.25×(−4) = 2. First move
+
+**Take the first update** (Python lines 5, 6, 7, 8)
+
+weight becomes 2. Training loss is 1; held-out loss is 0. Bars use the same 0–4 loss scale throughout.
+
+- Training loss: 1.0000. weight = 2.0000
+- Held-out loss: 0.0000. weight = 2.0000
+
+**Train again, check again** (Python lines 3, 4, 5, 6, 7, 8)
+
+The new gradient is −2. weight becomes 2.5. Training improves to 0.25, but held-out loss becomes 1.
+
+- Training loss: 0.2500. weight = 2.5000
+- Held-out loss: 1.0000. weight = 2.5000
+
+**A smaller training loss can hide a worse check** (Python lines 3, 4, 5, 6, 7, 8)
+
+The third update gives weight 2.75. It fits the training example more closely and moves farther from the held-out target.
+
+- Training loss: 0.0625. weight = 2.7500
+- Held-out loss: 2.2500. weight = 2.7500
+
+**Visual boundary:** One scalar and two examples are a toy. Lower training loss alone cannot establish generalization to unseen data.
+
+**Check your hunch:** Which update has the best held-out result in this toy?
+
+- The last update, because training loss is smallest → Look at the separate held-out numbers: 0, 1, then 2.25.
+- The first update, at weight 2 → Exactly. A separate check can prefer a different stopping point.
+
 
 ### Predict first
 
@@ -3172,13 +3944,62 @@ Use the two losses to explain why a good training score is not enough. Which exa
 
 ## L16: Split your notes into useful pieces
 
-Knowledge Library · about 25 minutes · version 1
+Knowledge Library · about 25 minutes · version 2
 
 ### Your goal
 
 - Explain why a searchable chunk needs a source ID and enough context.
 - Split paragraphs into bounded word groups without changing the original note.
 - Compare small and large chunks, including a sentence cut by the word limit.
+
+### Visual story
+
+**Cut a note without losing sight of its meaning**
+
+**Start with:** A drink paragraph and a club paragraph, separated by a blank line.
+
+**Python does:** Split paragraphs first, then take consecutive slices of at most six words.
+
+**Look for:** Three labeled pieces are printed; the second loses its explicit subject.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L16?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Keep paragraphs separate** (Python lines 1, 2)
+
+The blank line separates two topics before any word limit is applied.
+
+- Paragraph 1: Mango Cloud costs four coins. It contains oat milk.. Drink description
+- Paragraph 2: Puzzle club meets on Saturday.. Different topic
+
+**Take the first six words** (Python lines 3, 4, 5)
+
+range steps offsets by six. words[0:6] includes It but not the rest of its sentence.
+
+- p1-1: Mango Cloud costs four coins. It. Six words
+- Still in paragraph 1: contains oat milk.. Remaining three words
+
+**Take the remainder** (Python lines 4, 5, 6)
+
+offset 6 selects the next slice. The second piece says contains oat milk, but its subject is outside the chunk.
+
+- p1-1: Mango Cloud costs four coins. It. Contains the subject
+- p1-2: contains oat milk.. Subject is missing here
+
+**Move to the next paragraph** (Python lines 2, 3, 4, 5, 6)
+
+The paragraph number changes to 2 and offset starts at 0 again. Its five words fit in one piece.
+
+- p1-1: Mango Cloud costs four coins. It.
+- p1-2: contains oat milk.. Needs neighboring context
+- p2-1: Puzzle club meets on Saturday.. A complete small paragraph
+
+**Visual boundary:** This toy normalizes spaces and can cut sentences. Production chunking needs deliberate boundaries and source metadata.
+
+**Check your hunch:** Can a six-word limit cut a sentence and lose the subject?
+
+- No, a word limit guarantees complete meaning → The second piece has no named subject. Size limits are not meaning boundaries.
+- Yes, as p1-2 demonstrates → Right. Useful chunking balances size with understandable context.
+
 
 ### Predict first
 
@@ -3380,13 +4201,64 @@ If you had only one chunk, which subject or condition would you need inside it?
 
 ## L17: Retrieve before you reply
 
-Knowledge Library · about 25 minutes · version 1
+Knowledge Library · about 25 minutes · version 2
 
 ### Your goal
 
 - Trace a question through keyword extraction, overlap scoring, and top-three selection.
 - Distinguish retrieved context from chat history and model training.
 - Recognize missing evidence, synonyms, negation, and ties as retrieval limitations.
+
+### Visual story
+
+**Find a clue with a set intersection**
+
+**Start with:** Three notes and a query containing mango and drink.
+
+**Python does:** Compare unique query words with note words, rank overlap, and omit zero scores.
+
+**Look for:** Only menu: 1 is printed. It shares mango but not drink.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L17?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Turn the question into a word set** (Python lines 1, 2, 3)
+
+re.findall extracts lowercase alphabetic runs. set keeps each distinct word once.
+
+- Question: mango drink. Two distinct words
+- Query set: {'mango', 'drink'}. Order is irrelevant
+
+**Intersect with each note** (Python lines 4)
+
+& keeps words appearing in both sets. Only the menu shares mango.
+
+- menu: mango oat milk. Overlap: mango
+- hours: saturday open. Overlap: none
+- club: puzzle saturday. Overlap: none
+
+**Rank counts, not confidence** (Python lines 4)
+
+len gives overlap counts 1, 0, 0. -score sorts the highest first; name breaks equal-score ties alphabetically.
+
+- menu: 1 shared word. Rank 1
+- club: 0 shared words. Alphabetical tie
+- hours: 0 shared words. Alphabetical tie
+
+**Keep only positive matches** (Python lines 5, 6, 7)
+
+The if condition removes zero-score notes. A score of 1 means one shared word, not certainty.
+
+- Check: score > 0. menu passes
+- Printed clue: menu: 1. Read the source before answering
+- Meaning: Not a confidence score. One literal word match
+
+**Visual boundary:** This toy uses literal lowercase words. It cannot understand negation, synonyms, relevance, or whether an answer is complete.
+
+**Check your hunch:** Does menu: 1 prove that the note completely answers the question?
+
+- Yes, any positive score proves the answer → Word overlap is a retrieval signal. You still need to inspect what the note says.
+- No, it only reports one overlapping word → Correct. Retrieval finds candidates; evidence needs another check.
+
 
 ### Predict first
 
@@ -3587,13 +4459,64 @@ Was your missing clue absent, filtered out, or missed because your question used
 
 ## L18: Answer with evidence
 
-Knowledge Library · about 25 minutes · version 1
+Knowledge Library · about 25 minutes · version 2
 
 ### Your goal
 
 - Check source IDs against the retrieved set and quotes against exact source text.
 - Distinguish source existence, quote fidelity, relevance, and truth.
 - Use uncertainty without silently retrying a paid request or inventing evidence.
+
+### Visual story
+
+**Check a receipt before showing it**
+
+**Start with:** One known source ID maps to one exact quote about four café coins.
+
+**Python does:** The guard checks source membership and exact text equality.
+
+**Look for:** The genuine quote passes; an altered price and an invented ID fail.
+
+[Step through the animated example](http://127.0.0.1:8001/lessons/L18?step=learn) in the running app. This is an authored trace, not Python execution or a model call.
+
+**Keep the source of truth visible** (Python lines 1)
+
+The dictionary ties menu-p1 to the exact text with price 4. Both fields matter.
+
+- Source ID: menu-p1. Known source
+- Source text: Mango Cloud costs 4 cafe coins.. Exact stored quote
+
+**A genuine quote passes both checks** (Python lines 2, 3, 4)
+
+The ID exists and the text equals its stored quote, so and yields True.
+
+- ID membership: PASS. menu-p1 exists
+- Quote equality: PASS. 4 matches 4
+- Verdict: True. Both conditions pass
+
+**A real ID cannot rescue an altered price** (Python lines 3, 5)
+
+menu-p1 still exists, but 40 differs from 4. The second condition is False, so the verdict is False.
+
+- ID membership: PASS. Known reference
+- Quote equality: FAIL. 40 differs from 4
+- Verdict: False. Withhold the altered quote
+
+**An invented ID stops at the first check** (Python lines 3, 6)
+
+invented-p9 is absent. Python short-circuits and: it does not perform the dictionary lookup on the right.
+
+- ID membership: FAIL. invented-p9 is unknown
+- Quote equality: NOT REACHED. Short-circuit avoids a missing-key lookup
+- Verdict: False. Reject the invented reference
+
+**Visual boundary:** Exact membership does not establish relevance or truth. The real Library also restricts selections to the retrieved set.
+
+**Check your hunch:** If a quote passes this checker, is it guaranteed relevant and true?
+
+- Yes, exact quotation proves every claim → The function has no relevance or real-world truth test. Sources themselves can be wrong.
+- No, only its ID and text were checked → Exactly. Source checking is useful, but its guarantee is limited.
+
 
 ### Predict first
 

@@ -17,7 +17,7 @@
   ],
   "analogy_limit": "A detective’s word index makes selection visible, but keyword overlap is not semantic understanding. We use no embeddings or vector database in M5.",
   "reflection": "Was your missing clue absent, filtered out, or missed because your question used different words?",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "zone": "Knowledge Library",
   "minutes": 25,
@@ -207,5 +207,146 @@
     ],
     "reference_solution": "For mango drink, menu and recipe both score 1 and sort menu then recipe. Hours and club are excluded. A Saturday question needs the hours or puzzle note; a drinks-only filter can hide useful evidence. This simple function lacks the app’s common-word filtering and alias normalization."
   },
-  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth.",
+  "visual": {
+    "title": "Find a clue with a set intersection",
+    "inputs": "Three notes and a query containing mango and drink.",
+    "operation": "Compare unique query words with note words, rank overlap, and omit zero scores.",
+    "output": "Only menu: 1 is printed. It shares mango but not drink.",
+    "limit": "This toy uses literal lowercase words. It cannot understand negation, synonyms, relevance, or whether an answer is complete.",
+    "frames": [
+      {
+        "title": "Turn the question into a word set",
+        "explain": "re.findall extracts lowercase alphabetic runs. set keeps each distinct word once.",
+        "lines": [
+          1,
+          2,
+          3
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Question",
+            "value": "mango drink",
+            "detail": "Two distinct words",
+            "tone": "neutral"
+          },
+          {
+            "label": "Query set",
+            "value": "{'mango', 'drink'}",
+            "detail": "Order is irrelevant",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Intersect with each note",
+        "explain": "& keeps words appearing in both sets. Only the menu shares mango.",
+        "lines": [
+          4
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "menu",
+            "value": "mango oat milk",
+            "detail": "Overlap: mango",
+            "tone": "active"
+          },
+          {
+            "label": "hours",
+            "value": "saturday open",
+            "detail": "Overlap: none",
+            "tone": "muted"
+          },
+          {
+            "label": "club",
+            "value": "puzzle saturday",
+            "detail": "Overlap: none",
+            "tone": "muted"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Rank counts, not confidence",
+        "explain": "len gives overlap counts 1, 0, 0. -score sorts the highest first; name breaks equal-score ties alphabetically.",
+        "lines": [
+          4
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "menu",
+            "value": "1 shared word",
+            "detail": "Rank 1",
+            "tone": "success",
+            "amount": 100
+          },
+          {
+            "label": "club",
+            "value": "0 shared words",
+            "detail": "Alphabetical tie",
+            "tone": "muted",
+            "amount": 0
+          },
+          {
+            "label": "hours",
+            "value": "0 shared words",
+            "detail": "Alphabetical tie",
+            "tone": "muted",
+            "amount": 0
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Keep only positive matches",
+        "explain": "The if condition removes zero-score notes. A score of 1 means one shared word, not certainty.",
+        "lines": [
+          5,
+          6,
+          7
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Check",
+            "value": "score > 0",
+            "detail": "menu passes",
+            "tone": "active"
+          },
+          {
+            "label": "Printed clue",
+            "value": "menu: 1",
+            "detail": "Read the source before answering",
+            "tone": "success"
+          },
+          {
+            "label": "Meaning",
+            "value": "Not a confidence score",
+            "detail": "One literal word match",
+            "tone": "warning"
+          }
+        ],
+        "console": "menu: 1\n"
+      }
+    ],
+    "challenge": {
+      "question": "Does menu: 1 prove that the note completely answers the question?",
+      "choices": [
+        {
+          "text": "Yes, any positive score proves the answer",
+          "correct": false,
+          "feedback": "Word overlap is a retrieval signal. You still need to inspect what the note says."
+        },
+        {
+          "text": "No, it only reports one overlapping word",
+          "correct": true,
+          "feedback": "Correct. Retrieval finds candidates; evidence needs another check."
+        }
+      ]
+    }
+  }
 }

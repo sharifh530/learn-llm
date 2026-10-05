@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ lesson.title }} · Tiny Chat Lab{% endblock %}
-{% block scripts %}<script id="lesson-data" type="application/json">{{ lesson|tojson }}</script><script id="progress-data" type="application/json">{{ progress|tojson }}</script><script type="module" src="/static/js/lesson.js"></script>{% endblock %}
+{% block scripts %}<link rel="stylesheet" href="/static/css/lesson-visual.css"><script id="lesson-data" type="application/json">{{ lesson|tojson }}</script><script id="progress-data" type="application/json">{{ progress|tojson }}</script><script type="module" src="/static/js/lesson.js"></script><script type="module" src="/static/js/lesson-visual.js"></script>{% endblock %}
 {% block content %}
 <div class="lesson-layout">
   <aside class="lesson-sidebar">
@@ -16,13 +16,14 @@
       {% for step in ['learn','play','quiz','build'] %}<button id="tab-{{ step }}" role="tab" aria-controls="panel-{{ step }}" aria-selected="{{ 'true' if step == 'learn' else 'false' }}" tabindex="{{ '0' if step == 'learn' else '-1' }}" data-step="{{ step }}"><span class="step-number">{{ loop.index }}</span>{{ step|capitalize }}<span class="step-check" data-check="{{ 'game' if step == 'play' else 'reading' if step == 'learn' else step }}" aria-label="Completed">{% if progress.lessons[lesson.id]['game' if step == 'play' else 'reading' if step == 'learn' else step] %}✓{% endif %}</span></button>{% endfor %}
     </div>
     <section id="panel-learn" role="tabpanel" aria-labelledby="tab-learn" class="step-panel reading-pane">
-      <div class="goal-box"><h2>By the end, you can…</h2><ul>{% for goal in lesson.objectives %}<li>{{ goal }}</li>{% endfor %}</ul></div>
-      <div class="prediction-box"><span class="tag neutral">Before you peek</span><h2>Make a prediction.</h2><p>{{ lesson.prediction }}</p><label for="prediction-note" class="small">Your guess (optional)</label><textarea id="prediction-note" rows="2" placeholder="I think…" maxlength="2000"></textarea><span class="small muted">Your draft stays in this tab.</span></div>
-      <h2>Let’s unpack the idea.</h2>{% for paragraph in lesson.explanation %}<p class="reading-paragraph">{{ paragraph }}</p>{% endfor %}
+      <details class="lesson-goals"><summary>What you’ll understand in this experiment</summary><ul>{% for goal in lesson.objectives %}<li>{{ goal }}</li>{% endfor %}</ul></details>
+      <div class="prediction-box story-prediction"><span class="tag neutral">Before you peek</span><p>{{ lesson.prediction }}</p><details><summary>Write your guess (optional)</summary><label for="prediction-note" class="small">Your prediction</label><textarea id="prediction-note" rows="2" placeholder="I think…" maxlength="2000"></textarea><span class="small muted">Your draft stays in this tab.</span></details></div>
+      {% if lesson.visual %}{% include 'lesson_visual.html' %}{% endif %}
+      <details class="lesson-deeper" {% if not lesson.visual %}open{% endif %}><summary>Read the deeper explanation</summary><h2>Let’s unpack the idea.</h2>{% for paragraph in lesson.explanation %}<p class="reading-paragraph">{{ paragraph }}</p>{% endfor %}</details>
       <details class="analogy-note"><summary>Where this analogy stops</summary><p>{{ lesson.analogy_limit }}</p></details>
       {% if lesson.lab %}<aside class="lesson-lab-link"><span class="tag">Try it with your hands</span><h3>Open the Model Observatory.</h3><p>Change the numbers and watch this idea respond. These are local teaching toys, separate from Google and your chat.</p><a class="button secondary" href="/observatory?experiment={{ lesson.lab }}">Explore the {{ lesson.lab }} toy →</a></aside>{% endif %}
       {% if lesson.id in ['L16','L17','L18'] %}<aside class="lesson-lab-link"><h3>Follow a clue in the Knowledge Library.</h3><p>Split a practice note, inspect retrieval, and check exact source quotes. Offline mode makes no Google calls.</p><a class="button secondary" href="/library">Explore the café notebook →</a></aside>{% endif %}
-      <div class="code-block"><div class="code-header"><span>Python · run locally</span><button class="copy-button" data-copy="example-code">Copy code</button></div><pre><code id="example-code">{{ lesson.python_example.code }}</code></pre></div>
+      {% if not lesson.visual %}<div class="code-block"><div class="code-header"><span>Python · run locally</span><button class="copy-button" data-copy="example-code">Copy code</button></div><pre><code id="example-code">{{ lesson.python_example.code }}</code></pre></div>{% endif %}
       <p class="small muted">Copy into a Python file and run it on your computer. This app does not execute Python in the browser.</p>
       <details class="output-details"><summary>Show expected output</summary><pre>{{ lesson.python_example.expected_output }}</pre></details>
       <h3>What each piece does</h3><ul class="walkthrough">{% for point in lesson.python_example.walkthrough %}<li>{{ point }}</li>{% endfor %}</ul>

@@ -55,9 +55,53 @@
     },
     "reflection": {"$ref": "#/$defs/text"},
     "tutor_context": {"$ref": "#/$defs/text"},
-    "lab": {"type": "string", "enum": ["similarity", "attention", "training"]}
+    "lab": {"type": "string", "enum": ["similarity", "attention", "training"]},
+    "visual": {"$ref": "#/$defs/visual"}
   },
   "$defs": {
+    "visualText": {"type": "string", "minLength": 1, "maxLength": 700},
+    "visual": {
+      "type": "object", "additionalProperties": false,
+      "required": ["title", "inputs", "operation", "output", "limit", "frames", "challenge"],
+      "properties": {
+        "title": {"$ref": "#/$defs/visualText"},
+        "inputs": {"$ref": "#/$defs/visualText"},
+        "operation": {"$ref": "#/$defs/visualText"},
+        "output": {"$ref": "#/$defs/visualText"},
+        "limit": {"$ref": "#/$defs/visualText"},
+        "frames": {"type": "array", "minItems": 3, "maxItems": 8, "items": {"$ref": "#/$defs/visualFrame"}},
+        "challenge": {
+          "type": "object", "additionalProperties": false, "required": ["question", "choices"],
+          "properties": {
+            "question": {"$ref": "#/$defs/visualText"},
+            "choices": {"type": "array", "minItems": 2, "maxItems": 3, "items": {
+              "type": "object", "additionalProperties": false, "required": ["text", "correct", "feedback"],
+              "properties": {"text": {"$ref": "#/$defs/visualText"}, "correct": {"type": "boolean"}, "feedback": {"$ref": "#/$defs/visualText"}}
+            }}
+          }
+        }
+      }
+    },
+    "visualFrame": {
+      "type": "object", "additionalProperties": false,
+      "required": ["title", "explain", "lines", "layout", "items", "console"],
+      "properties": {
+        "title": {"$ref": "#/$defs/visualText"},
+        "explain": {"$ref": "#/$defs/visualText"},
+        "lines": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+        "layout": {"type": "string", "enum": ["flow", "tokens", "bars", "memory", "checks", "chunks", "evidence"]},
+        "console": {"type": "string", "maxLength": 4000},
+        "items": {"type": "array", "minItems": 1, "maxItems": 8, "items": {
+          "type": "object", "additionalProperties": false, "required": ["label", "value", "detail", "tone"],
+          "properties": {
+            "label": {"$ref": "#/$defs/visualText"}, "value": {"$ref": "#/$defs/visualText"},
+            "detail": {"type": "string", "maxLength": 700},
+            "tone": {"type": "string", "enum": ["neutral", "active", "success", "warning", "muted"]},
+            "amount": {"type": "number", "minimum": 0, "maximum": 100}
+          }
+        }}
+      }
+    },
     "text": {"type": "string", "minLength": 1},
     "question": {
       "type": "object", "additionalProperties": false,

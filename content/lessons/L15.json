@@ -1,6 +1,6 @@
 {
   "id": "L15",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Inside the training gym",
   "zone": "Model Observatory",
@@ -208,5 +208,149 @@
   },
   "reflection": "Use the two losses to explain why a good training score is not enough. Which exact operation changed the weight?",
   "lab": "training",
-  "tutor_context": "Teach Inside the training gym using the authored local training toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating."
+  "tutor_context": "Teach Inside the training gym using the authored local training toy and basic Python. Explain its analogy limits. The observatory makes no Google calls and cannot reveal model embeddings, attention, or private reasoning. Training the numeric toy changes no hosted model. Help predict before calculating.",
+  "visual": {
+    "title": "Train one weight and watch two losses",
+    "inputs": "weight=1, rate=0.25, training target 3; the held-out target favors weight 2.",
+    "operation": "Subtract rate × gradient three times; compare training and held-out squared losses.",
+    "output": "Training loss falls each step, while held-out loss rises after the first step.",
+    "limit": "One scalar and two examples are a toy. Lower training loss alone cannot establish generalization to unseen data.",
+    "frames": [
+      {
+        "title": "Start away from the training target",
+        "explain": "At weight 1, the training gradient is 2×(1−3) = −4. Subtracting a negative update increases the weight.",
+        "lines": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Current weight",
+            "value": "1.0",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Gradient",
+            "value": "−4.0",
+            "detail": "Slope toward target 3",
+            "tone": "active"
+          },
+          {
+            "label": "Update",
+            "value": "1 − 0.25×(−4) = 2",
+            "detail": "First move",
+            "tone": "success"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Take the first update",
+        "explain": "weight becomes 2. Training loss is 1; held-out loss is 0. Bars use the same 0–4 loss scale throughout.",
+        "lines": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Training loss",
+            "value": "1.0000",
+            "detail": "weight = 2.0000",
+            "tone": "active",
+            "amount": 25
+          },
+          {
+            "label": "Held-out loss",
+            "value": "0.0000",
+            "detail": "weight = 2.0000",
+            "tone": "success",
+            "amount": 0
+          }
+        ],
+        "console": "1: weight=2.0000, train=1.0000, check=0.0000\n"
+      },
+      {
+        "title": "Train again, check again",
+        "explain": "The new gradient is −2. weight becomes 2.5. Training improves to 0.25, but held-out loss becomes 1.",
+        "lines": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Training loss",
+            "value": "0.2500",
+            "detail": "weight = 2.5000",
+            "tone": "success",
+            "amount": 6.25
+          },
+          {
+            "label": "Held-out loss",
+            "value": "1.0000",
+            "detail": "weight = 2.5000",
+            "tone": "warning",
+            "amount": 25
+          }
+        ],
+        "console": "1: weight=2.0000, train=1.0000, check=0.0000\n2: weight=2.5000, train=0.2500, check=1.0000\n"
+      },
+      {
+        "title": "A smaller training loss can hide a worse check",
+        "explain": "The third update gives weight 2.75. It fits the training example more closely and moves farther from the held-out target.",
+        "lines": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "Training loss",
+            "value": "0.0625",
+            "detail": "weight = 2.7500",
+            "tone": "success",
+            "amount": 1.5625
+          },
+          {
+            "label": "Held-out loss",
+            "value": "2.2500",
+            "detail": "weight = 2.7500",
+            "tone": "warning",
+            "amount": 56.25
+          }
+        ],
+        "console": "1: weight=2.0000, train=1.0000, check=0.0000\n2: weight=2.5000, train=0.2500, check=1.0000\n3: weight=2.7500, train=0.0625, check=2.2500\n"
+      }
+    ],
+    "challenge": {
+      "question": "Which update has the best held-out result in this toy?",
+      "choices": [
+        {
+          "text": "The last update, because training loss is smallest",
+          "correct": false,
+          "feedback": "Look at the separate held-out numbers: 0, 1, then 2.25."
+        },
+        {
+          "text": "The first update, at weight 2",
+          "correct": true,
+          "feedback": "Exactly. A separate check can prefer a different stopping point."
+        }
+      ]
+    }
+  }
 }

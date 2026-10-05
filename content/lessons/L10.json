@@ -1,6 +1,6 @@
 {
   "id": "L10",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Chats that remember the conversation",
   "zone": "Chat Workshop",
@@ -206,5 +206,146 @@
     "reference_solution": "The follow-up snapshot contains the mango user message, its selected reply, and the new question. Demo labels identify the Python rule. The chat survives refresh through SQLite. A Google comparison is only live proof if an actual Google response is obtained."
   },
   "reflection": "Which message would you remove from the backpack to make the fruit follow-up ambiguous? Why does it remain saved?",
-  "tutor_context": "Teach Distinguish saved messages from request context and model training., Select complete recent user/reply pairs within a bounded conversation., Save a persona and test a follow-up in your chatbot. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof."
+  "tutor_context": "Teach Distinguish saved messages from request context and model training., Select complete recent user/reply pairs within a bounded conversation., Save a persona and test a follow-up in your chatbot. Use the authored analogy limits. Demo lookup/chunk/rubric toys are not LLMs, private reasoning, fact verification, or live Google proof.",
+  "visual": {
+    "title": "See what a remembered chat can forget",
+    "inputs": "Two saved turns, but only the last complete turn is selected.",
+    "operation": "Append that user/assistant pair, then append the new user question.",
+    "output": "Three messages are printed; the older mango detail stays outside the request.",
+    "limit": "This toy prints context rather than answering. The real app uses a bounded whole-turn selector, not this fixed one-turn slice.",
+    "frames": [
+      {
+        "title": "Keep a saved conversation",
+        "explain": "Each tuple contains one user message and one assistant reply. Both turns remain stored.",
+        "lines": [
+          1,
+          2
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Older turn",
+            "value": "My fruit is mango → Noted.",
+            "detail": "Saved",
+            "tone": "neutral"
+          },
+          {
+            "label": "Recent turn",
+            "value": "I like it sliced → Nice snack.",
+            "detail": "Saved",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Pack one complete pair",
+        "explain": "turns[-1:] selects the final turn. Append user first, assistant second; do not include a reply without its question.",
+        "lines": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "Older pair",
+            "value": "My fruit is mango → Noted.",
+            "detail": "Saved, omitted",
+            "tone": "muted"
+          },
+          {
+            "label": "user",
+            "value": "I like it sliced",
+            "detail": "Selected",
+            "tone": "active"
+          },
+          {
+            "label": "assistant",
+            "value": "Nice snack.",
+            "detail": "Selected",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Add the new question",
+        "explain": "The new user message follows the selected pair. There is no answer to this new question in the context yet.",
+        "lines": [
+          7
+        ],
+        "layout": "memory",
+        "items": [
+          {
+            "label": "user",
+            "value": "I like it sliced",
+            "detail": "Recent pair",
+            "tone": "neutral"
+          },
+          {
+            "label": "assistant",
+            "value": "Nice snack.",
+            "detail": "Recent pair",
+            "tone": "neutral"
+          },
+          {
+            "label": "user",
+            "value": "What do I like?",
+            "detail": "Current question",
+            "tone": "active"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Inspect what is sent",
+        "explain": "len(messages)//2 is 1 here because there are 3 messages: one pair plus the current question. Mango is absent.",
+        "lines": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Saved turns",
+            "value": "2",
+            "detail": "Still stored",
+            "tone": "neutral"
+          },
+          {
+            "label": "Sent complete pairs",
+            "value": "1",
+            "detail": "Plus a new user question",
+            "tone": "active"
+          },
+          {
+            "label": "Missing context",
+            "value": "mango",
+            "detail": "Omitted, not unlearned",
+            "tone": "warning"
+          }
+        ],
+        "console": "user: I like it sliced\nassistant: Nice snack.\nuser: What do I like?\nSaved turns: 2\nSent pairs: 1\n"
+      }
+    ],
+    "challenge": {
+      "question": "Can this selected context identify the fruit as mango?",
+      "choices": [
+        {
+          "text": "Yes, any saved turn is automatically sent",
+          "correct": false,
+          "feedback": "Saved turns are not automatically request context. Inspect the three selected messages."
+        },
+        {
+          "text": "No, that detail was omitted",
+          "correct": true,
+          "feedback": "Yes. A memory failure can be a selection failure, not a training failure."
+        }
+      ]
+    }
+  }
 }

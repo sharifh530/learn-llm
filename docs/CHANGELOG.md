@@ -1,5 +1,12 @@
 # Course and project changelog
 
+## 5 October 2026: visual lesson stories
+
+- Added 73 authored scenes across all 18 lessons, input/operation/result context, synchronized Python highlights, console traces, and 18 hunch games.
+- Added explicit playback, pause, scene navigation, pace, responsive diagrams, and reduced-motion support. Deeper prose remains available in an expandable reading section.
+- Advanced each lesson version by one and course version to 7. Existing examples, games, quizzes, activity IDs, answers, completion snapshots, and XP rules are preserved.
+- Passed 156 backend tests, the 108-round learning flow, and all visual scenes at five viewport widths. See [the visual lesson walkthrough and proof](VISUAL_LESSONS.md).
+
 ## 5 October 2026: M5 Knowledge Library
 
 - Added four fictional cafe notes, nine source chunks, transparent keyword ranking, note filtering, source links, and a temporary chunk preview.

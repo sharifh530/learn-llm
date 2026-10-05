@@ -36,6 +36,19 @@ def render() -> str:
                   f"{lesson['zone']} · about {lesson['minutes']} minutes · version {lesson['version']}", "",
                   "### Your goal", ""]
         lines.extend(f"- {goal}" for goal in lesson["objectives"])
+        if lesson.get('visual'):
+            visual = lesson['visual']
+            lines += ['', '### Visual story', '', f"**{visual['title']}**", '',
+                      f"**Start with:** {visual['inputs']}", '', f"**Python does:** {visual['operation']}", '',
+                      f"**Look for:** {visual['output']}", '',
+                      f"[Step through the animated example](http://127.0.0.1:8001/lessons/{lesson['id']}?step=learn) in the running app. This is an authored trace, not Python execution or a model call.", '']
+            for frame in visual['frames']:
+                lines += [f"**{frame['title']}** (Python lines {', '.join(map(str, frame['lines']))})", '', frame['explain'], '']
+                lines.extend(f"- {item['label']}: {item['value']}. {item['detail']}".rstrip() for item in frame['items'])
+                lines.append('')
+            lines += [f"**Visual boundary:** {visual['limit']}", '', f"**Check your hunch:** {visual['challenge']['question']}", '']
+            lines.extend(f"- {choice['text']} → {choice['feedback']}" for choice in visual['challenge']['choices'])
+            lines.append('')
         lines += ["", "### Predict first", "", lesson["prediction"], "", "### Learn", ""]
         for paragraph in lesson["explanation"]:
             lines += [paragraph, ""]

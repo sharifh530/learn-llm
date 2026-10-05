@@ -1,6 +1,6 @@
 {
   "id": "L02",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Learning versus replying",
   "zone": "Prediction Playground",
@@ -204,5 +204,147 @@
     "reference_solution": "from collections import Counter\nsentences = ['cats eat fish', 'dogs eat fish', 'birds eat rice', 'robots eat rice', 'mice eat rice']\ncounts = Counter(sentence.split()[2] for sentence in sentences)\nprint(dict(counts))\nprint(counts.most_common(1)[0][0])"
   },
   "reflection": "Describe one example each of training, inference, and application memory using your chatbot project.",
-  "tutor_context": "Teach training versus inference versus app memory. Explain Counter and nested indexes with tiny lists. Count-table learning is a toy, not neural training."
+  "tutor_context": "Teach training versus inference versus app memory. Explain Counter and nested indexes with tiny lists. Count-table learning is a toy, not neural training.",
+  "visual": {
+    "title": "Count examples, then make one prediction",
+    "inputs": "Three training sentences: two end in fish after eat; one ends in rice.",
+    "operation": "Counter accumulates counts. most_common reads the existing counts without changing them.",
+    "output": "The count dictionary is printed, then fish is selected.",
+    "limit": "Counting whole-word transitions is a tiny teaching model. Real LLM training changes numerical parameters.",
+    "frames": [
+      {
+        "title": "Set out the examples",
+        "explain": "Counter starts empty. The sentences are examples to learn from, not questions to answer.",
+        "lines": [
+          1,
+          3,
+          4
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Example",
+            "value": "cats eat fish",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Example",
+            "value": "dogs eat fish",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Example",
+            "value": "birds eat rice",
+            "detail": "",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Learn from the first sentence",
+        "explain": "split makes three words. words[1] is eat, so words[2], fish, gets one vote.",
+        "lines": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "fish",
+            "value": "1 example",
+            "detail": "Count after eat",
+            "tone": "active",
+            "amount": 50
+          },
+          {
+            "label": "rice",
+            "value": "0 examples",
+            "detail": "Not seen yet",
+            "tone": "muted",
+            "amount": 0
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Finish counting the examples",
+        "explain": "The second sentence adds another fish. The third adds rice. The table now stores what the toy learned.",
+        "lines": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "layout": "bars",
+        "items": [
+          {
+            "label": "fish",
+            "value": "2 examples",
+            "detail": "Two votes",
+            "tone": "success",
+            "amount": 100
+          },
+          {
+            "label": "rice",
+            "value": "1 example",
+            "detail": "One vote",
+            "tone": "active",
+            "amount": 50
+          }
+        ],
+        "console": "{'fish': 2, 'rice': 1}\n"
+      },
+      {
+        "title": "Reply without relearning",
+        "explain": "most_common(1) returns the largest-count pair. [0][0] extracts its word. No count changes during this selection.",
+        "lines": [
+          10,
+          11
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Learned table",
+            "value": "fish: 2; rice: 1",
+            "detail": "Already stored",
+            "tone": "neutral"
+          },
+          {
+            "label": "Select",
+            "value": "most_common(1)[0][0]",
+            "detail": "Choose the word",
+            "tone": "active"
+          },
+          {
+            "label": "Prediction",
+            "value": "fish",
+            "detail": "Counts remain 2 and 1",
+            "tone": "success"
+          }
+        ],
+        "console": "{'fish': 2, 'rice': 1}\nfish\n"
+      }
+    ],
+    "challenge": {
+      "question": "Does selecting fish add another fish to the learned count?",
+      "choices": [
+        {
+          "text": "Yes, replying is training",
+          "correct": false,
+          "feedback": "Only the += 1 line changes a count. Selection reads a result."
+        },
+        {
+          "text": "No, it only reads the counts",
+          "correct": true,
+          "feedback": "Right. Learning updates the table; this reply only reads it."
+        }
+      ]
+    }
+  }
 }

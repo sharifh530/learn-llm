@@ -30,6 +30,8 @@ Open [Settings](http://127.0.0.1:8001/settings), paste your Google Cloud express
 2. Try [the starter lessons](docs/STARTER_LESSONS.md). Each contains an explanation, game, runnable Python example, quiz, and build mission.
 3. Use [the prompt playbook](docs/PROMPT_PLAYBOOK.md) to start building or request changes over time.
 
+Every authored lesson now includes an animated visual story beside its matching Python. Watch inputs turn into results, pause on highlighted lines, and try a short hunch game. Begin with [the visual learning walkthrough](docs/VISUAL_LESSONS.md).
+
 ## What we will build
 
 Two connected spaces: **Learn** teaches one concept at a time; **Build** turns those concepts into a chatbot with conversation history, streaming replies, a persona, and eventually answers from your own notes. A separate **Ask AI** tutor helps with the current lesson through Google Cloud / Vertex AI.
@@ -62,6 +64,7 @@ We will build an application around a pretrained model. We will also build tiny 
 | [Google integration](docs/GOOGLE_INTEGRATION.md) | How will my Vertex AI key or Cloud credentials be used? |
 | [Design](docs/DESIGN.md) | How will the learning experience feel playful and usable? |
 | [UI verification](docs/UI_VALIDATION.md) | What was checked in the studio redesign and motion update? |
+| [Visual lessons](docs/VISUAL_LESSONS.md) | How do the 73 scenes explain Python, and how were they verified? |
 | [Backlog](docs/BACKLOG.md) | What are the implementation tasks and completion criteria? |
 | [Validation](docs/VALIDATION.md) | How will we know it works and teaches the right concepts? |
 | [Decisions](docs/DECISIONS.md) | Which choices are settled and which depend on later information? |
@@ -99,6 +102,7 @@ The plan uses Google Cloud / Vertex AI because you selected it. Cloud express ke
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m playwright install chromium
 .\.venv\Scripts\python.exe tools/browser_check.py
+.\.venv\Scripts\python.exe tools/browser_visual_check.py
 .\.venv\Scripts\python.exe tools/browser_ai_check.py
 .\.venv\Scripts\python.exe tools/browser_chat_check.py
 .\.venv\Scripts\python.exe tools/browser_labs_check.py

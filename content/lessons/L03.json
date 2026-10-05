@@ -1,6 +1,6 @@
 {
   "id": "L03",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "title": "Build a tiny story machine",
   "zone": "Prediction Playground",
@@ -204,5 +204,182 @@
     "reference_solution": "Use the example generator with data = ['robots cook noodles', 'robots cook noodles', 'robots eat rice']. With word = 'robots', it prints 'robots cook noodles'. With word = 'spaceships', it prints only 'spaceships' and exits safely."
   },
   "reflection": "Which two stopping rules would you keep in a real chatbot, and what extra context would it need beyond one word?",
-  "tutor_context": "Explain zip, defaultdict, Counter, list append, and stopping limits. Treat the bigram generator as an educational count model. Do not claim it is a miniature transformer."
+  "tutor_context": "Explain zip, defaultdict, Counter, list append, and stopping limits. Treat the bigram generator as an educational count model. Do not claim it is a miniature transformer.",
+  "visual": {
+    "title": "Build a story one transition at a time",
+    "inputs": "Two robots like puzzles examples and one robots eat rice example.",
+    "operation": "Count neighboring words, then repeatedly pick the most common follower.",
+    "output": "The toy prints robots like puzzles and stops at <END>.",
+    "limit": "This bigram toy sees only the current word. It does not understand a story or use transformer attention.",
+    "frames": [
+      {
+        "title": "Learn neighboring pairs",
+        "explain": "zip pairs every word with its immediate follower, including the ending marker.",
+        "lines": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "robots",
+            "value": "like × 2; eat × 1",
+            "detail": "Follower counts",
+            "tone": "active"
+          },
+          {
+            "label": "like",
+            "value": "puzzles × 2",
+            "detail": "Follower counts",
+            "tone": "neutral"
+          },
+          {
+            "label": "puzzles",
+            "value": "<END> × 2",
+            "detail": "Ending marker",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Start the output",
+        "explain": "word holds the current position. output starts with the same word.",
+        "lines": [
+          10,
+          11
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Current word",
+            "value": "robots",
+            "detail": "Look up its followers",
+            "tone": "active"
+          },
+          {
+            "label": "Output so far",
+            "value": "robots",
+            "detail": "A list with one word",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Take the most common edge",
+        "explain": "like beats eat by 2 votes to 1. It is appended, then becomes the current word.",
+        "lines": [
+          12,
+          13,
+          16,
+          19
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Already written",
+            "value": "robots",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Selected follower",
+            "value": "like",
+            "detail": "2 votes beats 1",
+            "tone": "active"
+          },
+          {
+            "label": "Output so far",
+            "value": "robots like",
+            "detail": "Append, then repeat",
+            "tone": "success"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Repeat from like",
+        "explain": "The next lookup starts at like, not robots. Its most common follower is puzzles.",
+        "lines": [
+          13,
+          16,
+          19
+        ],
+        "layout": "tokens",
+        "items": [
+          {
+            "label": "Already written",
+            "value": "robots like",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Selected follower",
+            "value": "puzzles",
+            "detail": "Following like",
+            "tone": "active"
+          },
+          {
+            "label": "Output so far",
+            "value": "robots like puzzles",
+            "detail": "Three words",
+            "tone": "success"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "Stop before appending the marker",
+        "explain": "puzzles leads to <END>. break exits the loop, and join turns the word list into a sentence.",
+        "lines": [
+          16,
+          17,
+          18,
+          20
+        ],
+        "layout": "flow",
+        "items": [
+          {
+            "label": "Current word",
+            "value": "puzzles",
+            "detail": "",
+            "tone": "neutral"
+          },
+          {
+            "label": "Follower",
+            "value": "<END>",
+            "detail": "Stop; do not append",
+            "tone": "warning"
+          },
+          {
+            "label": "Printed story",
+            "value": "robots like puzzles",
+            "detail": "Words joined with spaces",
+            "tone": "success"
+          }
+        ],
+        "console": "robots like puzzles\n"
+      }
+    ],
+    "challenge": {
+      "question": "Why is <END> absent from the printed story?",
+      "choices": [
+        {
+          "text": "join removes every marker automatically",
+          "correct": false,
+          "feedback": "join only joins the values already in the list. The loop stops before adding this marker."
+        },
+        {
+          "text": "break happens before output.append",
+          "correct": true,
+          "feedback": "Yes. The order of the stop check and append matters."
+        }
+      ]
+    }
+  }
 }

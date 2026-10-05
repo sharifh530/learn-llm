@@ -17,7 +17,7 @@
   ],
   "analogy_limit": "Checking a receipt verifies what was written, not whether a purchase happened. Our exact-quote gate prevents fabricated references and altered quotes but cannot certify relevance, completeness, or real-world truth.",
   "reflection": "Which property did your Python check prove, and which properties still required your judgment?",
-  "version": 1,
+  "version": 2,
   "status": "authored",
   "zone": "Knowledge Library",
   "minutes": 25,
@@ -207,5 +207,143 @@
     ],
     "reference_solution": "The three printed checks are True, False, False. Add hours-p1: The cafe closes at 17:00. verified(hours-p1, that exact sentence) returns True, but the sentence cannot answer a drink-price question. The owner question gets uncertainty without a Google call. A live comparison is complete only after actual configured Google access."
   },
-  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth."
+  "tutor_context": "Teach this Knowledge Library lesson with the fictional cafe notes and basic Python. Explain retrieval versus training, exact quotes versus relevance, and offline rehearsal versus an actual Google call. Do not invent sources or imply keywords establish truth.",
+  "visual": {
+    "title": "Check a receipt before showing it",
+    "inputs": "One known source ID maps to one exact quote about four café coins.",
+    "operation": "The guard checks source membership and exact text equality.",
+    "output": "The genuine quote passes; an altered price and an invented ID fail.",
+    "limit": "Exact membership does not establish relevance or truth. The real Library also restricts selections to the retrieved set.",
+    "frames": [
+      {
+        "title": "Keep the source of truth visible",
+        "explain": "The dictionary ties menu-p1 to the exact text with price 4. Both fields matter.",
+        "lines": [
+          1
+        ],
+        "layout": "evidence",
+        "items": [
+          {
+            "label": "Source ID",
+            "value": "menu-p1",
+            "detail": "Known source",
+            "tone": "active"
+          },
+          {
+            "label": "Source text",
+            "value": "Mango Cloud costs 4 cafe coins.",
+            "detail": "Exact stored quote",
+            "tone": "neutral"
+          }
+        ],
+        "console": ""
+      },
+      {
+        "title": "A genuine quote passes both checks",
+        "explain": "The ID exists and the text equals its stored quote, so and yields True.",
+        "lines": [
+          2,
+          3,
+          4
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "ID membership",
+            "value": "PASS",
+            "detail": "menu-p1 exists",
+            "tone": "success"
+          },
+          {
+            "label": "Quote equality",
+            "value": "PASS",
+            "detail": "4 matches 4",
+            "tone": "success"
+          },
+          {
+            "label": "Verdict",
+            "value": "True",
+            "detail": "Both conditions pass",
+            "tone": "success"
+          }
+        ],
+        "console": "True\n"
+      },
+      {
+        "title": "A real ID cannot rescue an altered price",
+        "explain": "menu-p1 still exists, but 40 differs from 4. The second condition is False, so the verdict is False.",
+        "lines": [
+          3,
+          5
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "ID membership",
+            "value": "PASS",
+            "detail": "Known reference",
+            "tone": "success"
+          },
+          {
+            "label": "Quote equality",
+            "value": "FAIL",
+            "detail": "40 differs from 4",
+            "tone": "warning"
+          },
+          {
+            "label": "Verdict",
+            "value": "False",
+            "detail": "Withhold the altered quote",
+            "tone": "warning"
+          }
+        ],
+        "console": "True\nFalse\n"
+      },
+      {
+        "title": "An invented ID stops at the first check",
+        "explain": "invented-p9 is absent. Python short-circuits and: it does not perform the dictionary lookup on the right.",
+        "lines": [
+          3,
+          6
+        ],
+        "layout": "checks",
+        "items": [
+          {
+            "label": "ID membership",
+            "value": "FAIL",
+            "detail": "invented-p9 is unknown",
+            "tone": "warning"
+          },
+          {
+            "label": "Quote equality",
+            "value": "NOT REACHED",
+            "detail": "Short-circuit avoids a missing-key lookup",
+            "tone": "muted"
+          },
+          {
+            "label": "Verdict",
+            "value": "False",
+            "detail": "Reject the invented reference",
+            "tone": "warning"
+          }
+        ],
+        "console": "True\nFalse\nFalse\n"
+      }
+    ],
+    "challenge": {
+      "question": "If a quote passes this checker, is it guaranteed relevant and true?",
+      "choices": [
+        {
+          "text": "Yes, exact quotation proves every claim",
+          "correct": false,
+          "feedback": "The function has no relevance or real-world truth test. Sources themselves can be wrong."
+        },
+        {
+          "text": "No, only its ID and text were checked",
+          "correct": true,
+          "feedback": "Exactly. Source checking is useful, but its guarantee is limited."
+        }
+      ]
+    }
+  }
 }

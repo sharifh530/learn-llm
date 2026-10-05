@@ -1,7 +1,7 @@
 {
   "id": "tiny-chat-lab",
   "title": "Tiny Chat Lab",
-  "version": 6,
+  "version": 7,
   "learner_level": "Basic Python; no machine learning prerequisites",
   "provider": "google_cloud_vertex",
   "xp": {
