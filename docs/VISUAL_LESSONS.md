@@ -6,7 +6,7 @@ Updated 5 October 2026. All 18 authored lessons now have visual stories: 73 scen
 
 Open L05, **The probability arcade**, on the Learn tab. Read **Start with**, **Python does**, and **Look for**. These explain the values entering the example, the operation, and the result you should watch.
 
-1. Choose **Next scene** to see the scores become probabilities at temperature 0.5. Tea has about 86.68% of the probability.
+1. Choose scene 3, **Normalize a cooler menu**, to see the probabilities at temperature 0.5. Tea has about 86.68% of the probability.
 2. Advance to temperature 2. Tea still leads, but falls to about 50.65%; the alternatives grow.
 3. Follow the highlighted Python lines beside the bars. The function divides scores by temperature, exponentiates, and normalizes them. It does not ask Google or generate a reply.
 4. Try the hunch question, including the wrong choice to read its hint. Retries are welcome.
@@ -14,7 +14,7 @@ Open L05, **The probability arcade**, on the Learn tab. Read **Start with**, **P
 
 Use **Play story** for automatic scene changes, **Pause story** to inspect a step, or select any numbered scene. **Start over** resets the picture. Pace can be Slow (7 seconds), Steady (4.5 seconds), or Quick (2.5 seconds).
 
-Next, try L14: the future position gets zero attention even when it has the largest score. Then L15: training loss falls while held-out loss rises. In L18, change a quoted price in the story and watch the exact-source check fail.
+Next, try L14: the future position gets zero attention even when it has the largest score. Then L15: training loss falls while held-out loss rises. In L18, choose the altered-price scene and watch the exact-source check fail.
 
 ## What each lesson shows
 
@@ -57,6 +57,8 @@ Existing lesson/activity IDs, games, quizzes, build missions, Python examples, a
 - The existing **108-round lesson flow passed** with expected 1,440 XP and no browser errors. Visual-only checks recorded zero XP, journals, or AI requests.
 
 Screenshots and the report are ignored local artifacts under `data/qa/`. The pre-change content and consistent SQLite backup are under `data/backups/before-visual-lessons/`. Checks use disposable profiles; no real Google requests were made. These checks establish software behavior, not learner comprehension or a full assistive-technology audit.
+
+Feature commit `0977f95` reached Ready in Vercel's production deployment on 5 October. The private live [L05 lesson](https://learn-llm-pi.vercel.app/lessons/L05?step=learn) rendered the visual controls, cooler-temperature probabilities, console, and matching Python references. Local port 8001 was restarted with the same learner database and Settings file.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
